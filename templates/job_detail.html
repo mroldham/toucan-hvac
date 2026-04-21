@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block title %}Job Detail - Toucan HVAC{% endblock %}
+{% block content %}
+<section class="card mobile-job-hero">
+    <div class="mobile-job-header">
+        <div>
+            <h2>Job Detail</h2>
+            <p class="job-subline">{{ job.job_date }} • {{ job.status }}</p>
+        </div>
+        <div class="job-status-badge status-{{ (job.status or 'Scheduled')|lower }}">
+            {{ job.status }}
+        </div>
+    </div>
+
+    <div class="field-action-grid">
+        {% if job.customer.phone %}
+            <a class="field-action-btn" href="tel:{{ job.customer.phone }}">Call Customer</a>
+        {% endif %}
+        <a class="field-action-btn" href="https://www.google.com/maps/search/{{ job.property.address | replace(' ', '+') }}" target="_blank">Open Maps</a>
+        <a class="field-action-btn" href="{{ url_for('jobs') }}">Back to Jobs</a>
+        <a class="field-action-btn" href="{{ url_for('customers') }}">Customers</a>
+    </div>
+
+    <div class="status-button-row">
+        <form method="POST" action="{{ url_for('quick_update_job_status', job_id=job.id, status='Scheduled') }}">
+            <button type="submit" class="status-quick-btn status-scheduled-btn">Scheduled</button>
+        </form>
+        <form method="POST" action="{{ url_for('quick_update_job_status', job_id=job.id, status='Open') }}">
+            <button type="submit" class="status-quick-btn status-open-btn">Open</button>
+        </form>
+        <form method="POST" action="{{ url_for('quick_update_job_status', job_id=job.id, status='Completed') }}">
+            <button type="submit" class="status-quick-btn status-completed-btn">Completed</button>
+        </form>
+        <form method="POST" action="{{ url_for('quick_update_job_status', job_id=job.id, status='Billed') }}">
+            <button type="submit" class="status-quick-btn status-billed-btn">Billed</button>
+        </form>
+    </div>
+
+    {% if is_admin %}
+    <div class="invoice-from-job-wrap">
+        <form method="POST" action="{{ url_for('create_invoice_from_job', job_id=job.id) }}">
+            <button type="submit" class="create-invoice-btn">Create Invoice from Job</button>
+        </form>
+    </div>
+    {% endif %}
+</section>
+
+<div class="grid-two">
+    <section class="card">
+        <h3>Customer & Job Info</h3>
+        <p><strong>Customer:</strong> <a href="{{ url_for('customer_detail', customer_id=job.customer.id) }}">{{ job.customer.name }}</a></p>
+        <p><strong>Phone:</strong>
+            {% if job.customer.phone %}
+                <a href="tel:{{ job.customer.phone }}">{{ job.customer.phone }}</a>
+            {% else %}
+                No phone saved
+            {% endif %}
+        </p>
+        <p><strong>Email:</strong> {{ job.customer.email or "" }}</p>
+        <p><strong>Property:</strong> <a href="{{ url_for('property_detail', property_id=job.property.id) }}">{{ job.property.address }}</a></p>
+        <p><strong>Job Type:</strong> {{ job.job_type or "" }}</p>
+        <p><strong>Technician:</strong> {{ job.technician_name or "Not recorded" }}</p>
+        {% if job.equipment %}
+            <p><strong>Equipment:</strong> <a href="{{ url_for('equipment_detail', equipment_id=job.equipment.id) }}">{{ job.equipment.unit_label or "Unit" }} - {{ job.equipment.brand or "" }} {{ job.equipment.model or "" }}</a></p>
+        {% else %}
+            <p><strong>Equipment:</strong> Not selected</p>
+        {% endif %}
+    </section>
+
+    <section class="card">
+        <h3>Charge Summary</h3>
+        <p class="job-amount">${{ job.amount_charged or "0.00" }}</p>
+        <p><strong>Status:</strong> {{ job.status }}</p>
+        <p><strong>Maps:</strong> <a href="https://www.google.com/maps/search/{{ job.property.address | replace(' ', '+') }}" target="_blank">Open in Google Maps</a></p>
+    </section>
+</div>
+
+<section class="card">
+    <h3>Update Job</h3>
+    <form method="POST" action="{{ url_for('update_job', job_id=job.id) }}" class="form-grid mobile-job-form">
+        <input type="text" name="job_date" value="{{ job.job_date or '' }}" placeholder="Job Date">
+        <input type="text" name="job_type" value="{{ job.job_type or '' }}" placeholder="Job Type">
+
+        <select name="status">
+            <option value="Scheduled" {% if job.status == 'Scheduled' %}selected{% endif %}>Scheduled</option>
+            <option value="Open" {% if job.status == 'Open' %}selected{% endif %}>Open</option>
+            <option value="Completed" {% if job.status == 'Completed' %}selected{% endif %}>Completed</option>
+            <option value="Billed" {% if job.status == 'Billed' %}selected{% endif %}>Billed</option>
+        </select>
+
+        <input type="text" name="amount_charged" value="{{ job.amount_charged or '' }}" placeholder="Amount Charged">
+
+        <textarea name="problem_reported" placeholder="Problem Reported">{{ job.problem_reported or "" }}</textarea>
+        <textarea name="diagnosis" placeholder="Diagnosis">{{ job.diagnosis or "" }}</textarea>
+        <textarea name="work_performed" placeholder="Work Performed">{{ job.work_performed or "" }}</textarea>
+        <textarea name="parts_used" placeholder="Parts Used">{{ job.parts_used or "" }}</textarea>
+        <textarea name="notes" placeholder="Notes">{{ job.notes or "" }}</textarea>
+
+        <button type="submit">Save Job Update</button>
+    </form>
+</section>
+{% endblock %}

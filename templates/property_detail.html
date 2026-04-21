@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Property - Toucan HVAC{% endblock %}
+{% block content %}
+<section class="card">
+    <h2>{{ property.address }}</h2>
+    <p><strong>Customer:</strong> <a href="{{ url_for('customer_detail', customer_id=property.customer.id) }}">{{ property.customer.name }}</a></p>
+    <p><strong>Gate Code:</strong> {{ property.gate_code or "" }}</p>
+    <p><strong>Notes:</strong> {{ property.notes or "" }}</p>
+    <p><strong>Maps:</strong>
+        <a href="https://www.google.com/maps/search/{{ property.address | replace(' ', '+') }}" target="_blank">Open in Google Maps</a>
+    </p>
+</section>
+
+<div class="grid-two">
+    <section class="card">
+        <h3>Add Equipment</h3>
+        <form method="POST" action="{{ url_for('add_equipment', property_id=property.id) }}" class="form-grid">
+            <input type="text" name="unit_label" placeholder="Unit Label">
+            <input type="text" name="unit_type" placeholder="Unit Type">
+            <input type="text" name="brand" placeholder="Brand">
+            <input type="text" name="model" placeholder="Model">
+            <input type="text" name="serial_number" placeholder="Serial Number">
+            <input type="text" name="tonnage" placeholder="Tonnage">
+            <input type="text" name="refrigerant" placeholder="Refrigerant">
+            <input type="text" name="filter_size" placeholder="Filter Size">
+            <input type="text" name="install_date" placeholder="Install Date">
+            <input type="text" name="warranty_expiration" placeholder="Warranty Expiration">
+            <input type="text" name="voltage" placeholder="Voltage">
+            <input type="text" name="belt_size" placeholder="Belt Size">
+            <input type="text" name="location_on_property" placeholder="Location On Property">
+            <textarea name="notes" placeholder="Equipment Notes"></textarea>
+            <button type="submit">Save Equipment</button>
+        </form>
+    </section>
+
+    <section class="card">
+        <h3>Equipment</h3>
+        {% if property.equipment %}
+            <ul class="simple-list">
+                {% for item in property.equipment %}
+                    <li>
+                        <a href="{{ url_for('equipment_detail', equipment_id=item.id) }}">
+                            {{ item.unit_label or "Unit" }} - {{ item.brand or "" }} {{ item.model or "" }}
+                        </a>
+                        {% if item.serial_number %}(S/N: {{ item.serial_number }}){% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No equipment yet.</p>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

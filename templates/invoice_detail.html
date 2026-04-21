@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice #{{ invoice.invoice_number or invoice.id }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="invoice-page">
+    <div class="invoice-actions no-print">
+        <a href="{{ url_for('invoices') }}">← Back to Invoices</a>
+        <div class="invoice-action-buttons">
+            <a class="invoice-action-link" href="{{ url_for('text_invoice', invoice_id=invoice.id) }}">Text Invoice</a>
+            <a class="invoice-action-link" href="{{ url_for('email_invoice', invoice_id=invoice.id) }}">Email Invoice</a>
+            <button onclick="window.print()">Print Invoice</button>
+        </div>
+    </div>
+
+    <div class="match-invoice">
+        <div class="match-header">
+            <div class="match-logo">
+                <img src="{{ url_for('static', filename='logo.png') }}" alt="Toucan logo">
+            </div>
+
+            <div class="match-company">
+                <h1>Stephen Oldham</h1>
+                <div>2227 Beaumont Ave. #2, Liberty, Texas, 77575</div>
+                <div>stephen.oldham@me.com</div>
+                <div>936-334-2944</div>
+            </div>
+
+            <div class="match-meta">
+                <div class="invoice-title">INVOICE</div>
+                <div class="invoice-no">{{ invoice.invoice_number or invoice.id }}</div>
+            </div>
+        </div>
+
+        <div class="match-top-row">
+            <div class="to-area">
+                <div class="label">TO:</div>
+                <div class="write-line"></div>
+                <div class="write-line"></div>
+                <div class="write-line"></div>
+
+                <div class="to-fill">
+                    <div>{{ invoice.customer.name }}</div>
+                    <div>{{ invoice.customer.phone or "" }}</div>
+                    <div>{{ invoice.customer.email or "" }}</div>
+                </div>
+            </div>
+
+            <div class="date-area">
+                <span class="label">DATE:</span>
+                <span class="date-line">{{ invoice.invoice_date or "" }}</span>
+            </div>
+        </div>
+
+        <div class="job-row">
+            <span class="label">JOB LOCATION:</span>
+            <span class="job-line">{% if invoice.property %}{{ invoice.property.address }}{% endif %}</span>
+        </div>
+
+        <table class="match-table">
+            <thead>
+                <tr>
+                    <th class="services-head">SERVICES</th>
+                    <th class="amount-head">AMOUNT +/-</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% set desc_lines = (invoice.description or '').split('\n') %}
+                {% for i in range(1, 18) %}
+                <tr>
+                    <td>
+                        <span class="num">{{ i }}</span>
+                        <span class="service-text">
+                            {% if desc_lines|length >= i %}
+                                {{ desc_lines[i-1] }}
+                            {% endif %}
+                        </span>
+                    </td>
+                    <td>{% if i == 1 %}${{ invoice.amount or "" }}{% endif %}</td>
+                </tr>
+                {% endfor %}
+                <tr class="total-line">
+                    <td></td>
+                    <td><strong>TOTAL</strong></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="check-pay">* Make check payable to Stephen Oldham</div>
+
+        <div class="thank-you-fixed">Thank You!</div>
+
+        <div class="sign-row">
+            <div class="sign-block">
+                <span class="label">SIGNATURE</span>
+                <span class="sign-line"></span>
+            </div>
+            <div class="sign-block date-sign-block">
+                <span class="label">DATE</span>
+                <span class="sign-line"></span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

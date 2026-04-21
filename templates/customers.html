@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Customers - Toucan HVAC{% endblock %}
+{% block content %}
+<div class="grid-two">
+    <section class="card">
+        <h2>Add Customer</h2>
+        <form method="POST" action="{{ url_for('add_customer') }}" class="form-grid">
+            <input type="text" name="name" placeholder="Customer Name" required>
+            <input type="text" name="phone" placeholder="Phone">
+            <input type="email" name="email" placeholder="Email">
+            <textarea name="notes" placeholder="Notes"></textarea>
+            <button type="submit">Save Customer</button>
+        </form>
+    </section>
+
+    <section class="card">
+        <h2>Customers</h2>
+        {% if customers %}
+            <ul class="simple-list">
+                {% for customer in customers %}
+                    <li>
+                        <a href="{{ url_for('customer_detail', customer_id=customer.id) }}">{{ customer.name }}</a>
+                        {% if customer.phone %} - {{ customer.phone }}{% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No customers yet.</p>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

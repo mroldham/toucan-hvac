@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Customer - Toucan HVAC{% endblock %}
+{% block content %}
+<section class="card">
+    <h2>{{ customer.name }}</h2>
+    <p><strong>Phone:</strong> {{ customer.phone or "" }}</p>
+    <p><strong>Email:</strong> {{ customer.email or "" }}</p>
+    <p><strong>Notes:</strong> {{ customer.notes or "" }}</p>
+</section>
+
+<div class="grid-two">
+    <section class="card">
+        <h3>Add Property</h3>
+        <form method="POST" action="{{ url_for('add_property', customer_id=customer.id) }}" class="form-grid">
+            <input type="text" name="address" placeholder="Property Address" required>
+            <input type="text" name="gate_code" placeholder="Gate Code">
+            <textarea name="notes" placeholder="Property Notes"></textarea>
+            <button type="submit">Save Property</button>
+        </form>
+    </section>
+
+    <section class="card">
+        <h3>Properties</h3>
+        {% if customer.properties %}
+            <ul class="simple-list">
+                {% for property in customer.properties %}
+                    <li>
+                        <a href="{{ url_for('property_detail', property_id=property.id) }}">{{ property.address }}</a>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No properties yet.</p>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

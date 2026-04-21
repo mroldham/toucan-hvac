@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}Equipment - Toucan HVAC{% endblock %}
+{% block content %}
+<section class="card">
+    <h2>{{ equipment.unit_label or "Equipment" }}</h2>
+    <p><strong>Property:</strong> <a href="{{ url_for('property_detail', property_id=equipment.property.id) }}">{{ equipment.property.address }}</a></p>
+    <p><strong>Customer:</strong> <a href="{{ url_for('customer_detail', customer_id=equipment.property.customer.id) }}">{{ equipment.property.customer.name }}</a></p>
+    <p><strong>Call Customer:</strong>
+        {% if equipment.property.customer.phone %}
+            <a href="tel:{{ equipment.property.customer.phone }}">{{ equipment.property.customer.phone }}</a>
+        {% else %}
+            No phone saved
+        {% endif %}
+    </p>
+</section>
+
+<div class="grid-two">
+    <section class="card">
+        <h3>Equipment Info</h3>
+        <p><strong>Type:</strong> {{ equipment.unit_type or "" }}</p>
+        <p><strong>Brand:</strong> {{ equipment.brand or "" }}</p>
+        <p><strong>Model:</strong> {{ equipment.model or "" }}</p>
+        <p><strong>Serial:</strong> {{ equipment.serial_number or "" }}</p>
+        <p><strong>Tonnage:</strong> {{ equipment.tonnage or "" }}</p>
+        <p><strong>Refrigerant:</strong> {{ equipment.refrigerant or "" }}</p>
+        <p><strong>Filter Size:</strong> {{ equipment.filter_size or "" }}</p>
+        <p><strong>Install Date:</strong> {{ equipment.install_date or "" }}</p>
+        <p><strong>Warranty Expiration:</strong> {{ equipment.warranty_expiration or "" }}</p>
+        <p><strong>Voltage:</strong> {{ equipment.voltage or "" }}</p>
+        <p><strong>Belt Size:</strong> {{ equipment.belt_size or "" }}</p>
+        <p><strong>Location:</strong> {{ equipment.location_on_property or "" }}</p>
+        <p><strong>Notes:</strong> {{ equipment.notes or "" }}</p>
+    </section>
+
+    <section class="card">
+        <h3>Add Service Visit</h3>
+        <form method="POST" action="{{ url_for('add_service_visit', equipment_id=equipment.id) }}" class="form-grid">
+            <input type="text" name="visit_date" placeholder="Visit Date (YYYY-MM-DD)">
+            <input type="text" name="technician_name" placeholder="Technician Name">
+            <textarea name="problem_reported" placeholder="Problem Reported"></textarea>
+            <textarea name="diagnosis" placeholder="Diagnosis"></textarea>
+            <textarea name="work_performed" placeholder="Work Performed"></textarea>
+            <textarea name="parts_used" placeholder="Parts Used"></textarea>
+            <input type="text" name="amount_charged" placeholder="Amount Charged">
+            <textarea name="notes" placeholder="Additional Notes"></textarea>
+            <button type="submit">Save Service Visit</button>
+        </form>
+    </section>
+</div>
+
+<section class="card">
+    <h3>Service History</h3>
+    {% if equipment.service_visits %}
+        <ul class="simple-list">
+            {% for visit in equipment.service_visits|reverse %}
+                <li>
+                    <strong>{{ visit.visit_date or "" }}</strong><br>
+                    <strong>Technician:</strong> {{ visit.technician_name or "" }}<br>
+                    <strong>Problem:</strong> {{ visit.problem_reported or "" }}<br>
+                    <strong>Diagnosis:</strong> {{ visit.diagnosis or "" }}<br>
+                    <strong>Work Performed:</strong> {{ visit.work_performed or "" }}<br>
+                    <strong>Parts Used:</strong> {{ visit.parts_used or "" }}<br>
+                    <strong>Amount Charged:</strong> {{ visit.amount_charged or "" }}<br>
+                    <strong>Notes:</strong> {{ visit.notes or "" }}
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No service history yet.</p>
+    {% endif %}
+</section>
+{% endblock %}

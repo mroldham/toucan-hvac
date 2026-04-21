@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}Jobs - Toucan HVAC{% endblock %}
+{% block content %}
+<div class="grid-two">
+    <section class="card">
+        <h2>Add Job</h2>
+        <form method="POST" action="{{ url_for('add_job') }}" class="form-grid">
+            <input type="text" name="job_date" placeholder="Job Date (YYYY-MM-DD)">
+
+            <select name="customer_id" required>
+                <option value="">Select Customer</option>
+                {% for customer in customers %}
+                    <option value="{{ customer.id }}">{{ customer.name }}</option>
+                {% endfor %}
+            </select>
+
+            <select name="property_id" required>
+                <option value="">Select Property</option>
+                {% for property in properties %}
+                    <option value="{{ property.id }}">{{ property.address }}</option>
+                {% endfor %}
+            </select>
+
+            <select name="equipment_id">
+                <option value="">Select Equipment (optional)</option>
+                {% for item in equipment_list %}
+                    <option value="{{ item.id }}">
+                        {{ item.unit_label or "Unit" }} - {{ item.brand or "" }} {{ item.model or "" }}
+                    </option>
+                {% endfor %}
+            </select>
+
+            <input type="text" name="job_type" placeholder="Job Type (service, install, maintenance, estimate)">
+            <select name="status">
+                <option value="Scheduled">Scheduled</option>
+                <option value="Open">Open</option>
+                <option value="Completed">Completed</option>
+                <option value="Billed">Billed</option>
+            </select>
+
+            <textarea name="problem_reported" placeholder="Problem Reported"></textarea>
+            <textarea name="diagnosis" placeholder="Diagnosis"></textarea>
+            <textarea name="work_performed" placeholder="Work Performed"></textarea>
+            <textarea name="parts_used" placeholder="Parts Used"></textarea>
+            <input type="text" name="amount_charged" placeholder="Amount Charged">
+            <textarea name="notes" placeholder="Notes"></textarea>
+
+            <button type="submit">Save Job</button>
+        </form>
+    </section>
+
+    <section class="card">
+        <h2>Jobs</h2>
+        {% if jobs %}
+            <ul class="simple-list">
+                {% for job in jobs %}
+                    <li>
+                        <a href="{{ url_for('job_detail', job_id=job.id) }}">
+                            {{ job.job_date }} - {{ job.customer.name }} - {{ job.status }}
+                        </a><br>
+                        {{ job.property.address }}{% if job.amount_charged %} - ${{ job.amount_charged }}{% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No jobs yet.</p>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

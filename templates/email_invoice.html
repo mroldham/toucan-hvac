@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Email Invoice - Toucan HVAC{% endblock %}
+{% block content %}
+<section class="card">
+    <h2>Email Invoice</h2>
+    <p><strong>Customer:</strong> {{ invoice.customer.name }}</p>
+    <p><strong>Email:</strong> {{ customer_email or "No email saved" }}</p>
+    <p><strong>Invoice #:</strong> {{ invoice.invoice_number or invoice.id }}</p>
+</section>
+
+<section class="card">
+    <h3>Send from your email</h3>
+    {% if mailto_link %}
+        <p>This will open your default email app with the message prefilled.</p>
+        <a class="quick-action-btn" href="{{ mailto_link }}">Open Email Draft</a>
+    {% else %}
+        <p>No customer email is saved on this invoice’s customer.</p>
+    {% endif %}
+</section>
+
+<section class="card">
+    <h3>How this works</h3>
+    <p>Tap the button, review the email draft, then send it from your own email account.</p>
+</section>
+{% endblock %}

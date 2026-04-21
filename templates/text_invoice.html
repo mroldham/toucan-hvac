@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Text Invoice - Toucan HVAC{% endblock %}
+{% block content %}
+<section class="card">
+    <h2>Text Invoice</h2>
+    <p><strong>Customer:</strong> {{ invoice.customer.name }}</p>
+    <p><strong>Phone:</strong> {{ customer_phone or "No phone number saved" }}</p>
+    <p><strong>Invoice #:</strong> {{ invoice.invoice_number or invoice.id }}</p>
+</section>
+
+<section class="card">
+    <h3>Send from your phone</h3>
+    {% if sms_link %}
+        <p>This will open your Messages app with a prefilled text.</p>
+        <a class="quick-action-btn" href="{{ sms_link }}">Open Text Message</a>
+    {% else %}
+        <p>No customer phone number is saved on this invoice’s customer.</p>
+    {% endif %}
+</section>
+
+<section class="card">
+    <h3>How this works</h3>
+    <p>Tap the button on your iPhone or Mac, review the message, then hit send from your own number.</p>
+</section>
+{% endblock %}
