@@ -1,3 +1,27 @@
+@app.route("/reset-admin-now")
+def reset_admin_now():
+    from werkzeug.security import generate_password_hash
+
+    email = "admin@toucanhvac.com"
+    password = "admin123"
+
+    user = User.query.filter_by(email=email).first()
+
+    if not user:
+        user = User()
+        user.email = email
+        user.password_hash = generate_password_hash(password)
+        if hasattr(User, "role"):
+            user.role = "admin"
+        db.session.add(user)
+        db.session.commit()
+        return "Admin created"
+
+    user.password_hash = generate_password_hash(password)
+    if hasattr(User, "role"):
+        user.role = "admin"
+    db.session.commit()
+    return "Admin reset"
 from datetime import datetime
 from functools import wraps
 from urllib.parse import quote
