@@ -1,29 +1,152 @@
-<!doctype html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Toucan HVAC</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin:0; background:#f3f4f6; }
-    .top { background:#111827; color:white; padding:20px; display:flex; justify-content:space-between; align-items:center; }
-    .wrap { max-width:900px; margin:30px auto; padding:0 16px; }
-    .card { background:white; border-radius:16px; padding:24px; box-shadow:0 8px 24px rgba(0,0,0,.08); }
-    a { color:#f59e0b; text-decoration:none; }
-  </style>
-</head>
-<body>
-  <div class="top">
-    <div><strong>Toucan HVAC</strong></div>
-    <div><a href="{{ url_for('logout') }}">Log out</a></div>
-  </div>
-  <div class="wrap">
-    <div class="card">
-      <h2>Welcome, {{ user.name }}</h2>
-      <p>You are logged in.</p>
-      <p>Email: {{ user.email }}</p>
-      <p>Role: {{ user.role }}</p>
+{% extends "base.html" %}
+{% block title %}Home - Toucan HVAC{% endblock %}
+{% block content %}
+<div class="hero-card">
+    <h2>Welcome to Toucan HVAC</h2>
+    <p>Your customer, property, equipment, job tracking, and invoice system.</p>
+</div>
+
+<section class="card quick-actions-card">
+    <h3>Field Quick Actions</h3>
+    <div class="quick-actions-grid">
+        <a class="quick-action-btn" href="{{ url_for('jobs') }}">Open Jobs</a>
+        <a class="quick-action-btn" href="{{ url_for('customers') }}">View Customers</a>
+        <a class="quick-action-btn" href="{{ url_for('jobs') }}">Add Job</a>
+        {% if not technician_view %}
+            <a class="quick-action-btn" href="{{ url_for('invoices') }}">Create Invoice</a>
+        {% endif %}
     </div>
-  </div>
-</body>
-</html>
+</section>
+
+{% if technician_view %}
+<div class="stats-grid">
+    <div class="card">
+        <h3>Technician View</h3>
+        <p>You can update jobs, customer data, properties, and equipment.</p>
+        <p>Financial information is hidden.</p>
+    </div>
+
+    <div class="card">
+        <h3>Recent Jobs</h3>
+        {% if recent_jobs %}
+            <ul class="simple-list">
+                {% for job in recent_jobs %}
+                    <li>
+                        <a href="{{ url_for('job_detail', job_id=job.id) }}">
+                            {{ job.job_date }} - {{ job.customer.name }} - {{ job.status }}
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No jobs yet.</p>
+        {% endif %}
+    </div>
+</div>
+
+<div class="grid-two">
+    <section class="card">
+        <h3>Recent Customers</h3>
+        {% if customers %}
+            <ul class="simple-list">
+                {% for customer in customers %}
+                    <li><a href="{{ url_for('customer_detail', customer_id=customer.id) }}">{{ customer.name }}</a></li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No customers yet.</p>
+        {% endif %}
+    </section>
+
+    <section class="card">
+        <h3>Quick Actions</h3>
+        <p><a href="{{ url_for('customers') }}">View customers</a></p>
+        <p><a href="{{ url_for('jobs') }}">Create or update jobs</a></p>
+    </section>
+</div>
+{% else %}
+<div class="stats-grid">
+    <div class="card">
+        <h3>Money Owed</h3>
+        <p class="big-number">${{ "%.2f"|format(unpaid_total) }}</p>
+        <p>{{ unpaid_count }} unpaid invoice(s)</p>
+    </div>
+
+    <div class="card">
+        <h3>Paid This Month</h3>
+        <p class="big-number">${{ "%.2f"|format(paid_this_month_total) }}</p>
+        <p>{{ invoice_count_this_month }} paid invoice(s) this month</p>
+    </div>
+</div>
+
+<div class="stats-grid">
+    <div class="card">
+        <h3>Job Status</h3>
+        <p><strong>Scheduled:</strong> {{ scheduled_count }}</p>
+        <p><strong>Open:</strong> {{ open_count }}</p>
+        <p><strong>Completed:</strong> {{ completed_count }}</p>
+        <p><strong>Billed:</strong> {{ billed_count }}</p>
+    </div>
+
+    <div class="card">
+        <h3>Unbilled Jobs</h3>
+        <p class="big-number">${{ "%.2f"|format(unbilled_job_total) }}</p>
+        <p>{{ unbilled_count }} unbilled job(s)</p>
+    </div>
+</div>
+
+<div class="stats-grid">
+    <div class="card">
+        <h3>Quick Actions</h3>
+        <p><a href="{{ url_for('customers') }}">Add or view customers</a></p>
+        <p><a href="{{ url_for('jobs') }}">Create or track jobs</a></p>
+        <p><a href="{{ url_for('invoices') }}">Create invoices</a></p>
+        <p><a href="{{ url_for('users') }}">Manage users</a></p>
+    </div>
+
+    <div class="card">
+        <h3>Business Snapshot</h3>
+        <p><strong>Unpaid Revenue:</strong> ${{ "%.2f"|format(unpaid_total) }}</p>
+        <p><strong>Collected This Month:</strong> ${{ "%.2f"|format(paid_this_month_total) }}</p>
+        <p><strong>Unbilled Job Value:</strong> ${{ "%.2f"|format(unbilled_job_total) }}</p>
+    </div>
+</div>
+
+<div class="grid-two">
+    <section class="card">
+        <h3>Recent Jobs</h3>
+        {% if recent_jobs %}
+            <ul class="simple-list">
+                {% for job in recent_jobs %}
+                    <li>
+                        <a href="{{ url_for('job_detail', job_id=job.id) }}">
+                            {{ job.job_date }} - {{ job.customer.name }} - {{ job.status }}
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No jobs yet.</p>
+        {% endif %}
+    </section>
+
+    <section class="card">
+        <h3>Recent Invoices</h3>
+        {% if invoices %}
+            <ul class="simple-list">
+                {% for invoice in invoices %}
+                    <li>
+                        #{{ invoice.invoice_number or invoice.id }} -
+                        {{ invoice.customer.name }} -
+                        ${{ invoice.amount or "0.00" }} -
+                        {{ invoice.status }}
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No invoices yet.</p>
+        {% endif %}
+    </section>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,117 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Customer Detail - Toucan HVAC</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin:0; background:#f3f4f6; }
+    .top { background:#111827; color:white; padding:20px; display:flex; justify-content:space-between; align-items:center; }
+    .wrap { max-width:1100px; margin:30px auto; padding:0 16px; }
+    .card { background:white; border-radius:16px; padding:24px; box-shadow:0 8px 24px rgba(0,0,0,.08); margin-bottom:20px; }
+    .msg { background:#e5e7eb; padding:10px; border-radius:10px; margin-bottom:12px; }
+    a { color:#f59e0b; text-decoration:none; }
+    table { width:100%; border-collapse:collapse; }
+    th, td { padding:12px; border-bottom:1px solid #e5e7eb; text-align:left; vertical-align:top; }
+  </style>
+</head>
+<body>
+  <div class="top">
+    <div><strong>Toucan HVAC</strong></div>
+    <div><a href="{{ url_for('home') }}">Dashboard</a></div>
+  </div>
+
+  <div class="wrap">
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        {% for message in messages %}
+          <div class="msg">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <div class="card">
+      <h2>{{ customer.first_name }} {{ customer.last_name }}</h2>
+      <p><strong>Phone:</strong> {{ customer.phone or "" }}</p>
+      <p><strong>Email:</strong> {{ customer.email or "" }}</p>
+      <p><strong>Notes:</strong> {{ customer.notes or "" }}</p>
+      <p><a href="{{ url_for('create_property', customer_id=customer.id) }}">Add Property</a></p>
+    </div>
+
+    <div class="card">
+      <h2>Properties</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Property Name</th>
+            <th>Address</th>
+            <th>City</th>
+            <th>State</th>
+            <th>Zip</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for property in properties %}
+          <tr>
+            <td>{{ property.property_name }}</td>
+            <td>{{ property.address }}</td>
+            <td>{{ property.city or "" }}</td>
+            <td>{{ property.state or "" }}</td>
+            <td>{{ property.zip_code or "" }}</td>
+            <td>{{ property.notes or "" }}</td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="6">No properties yet.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</body>
+</html>
+nano templates/create_property.html
+
+
+
+
+
+ano templates/create_property.html{% extends "base.html" %}
+{% block title %}Customer - Toucan HVAC{% endblock %}
+{% block content %}
+<section class="card">
+    <h2>{{ customer.name }}</h2>
+    <p><strong>Phone:</strong> {{ customer.phone or "" }}</p>
+    <p><strong>Email:</strong> {{ customer.email or "" }}</p>
+    <p><strong>Notes:</strong> {{ customer.notes or "" }}</p>
+</section>
+
+<div class="grid-two">
+    <section class="card">
+        <h3>Add Property</h3>
+        <form method="POST" action="{{ url_for('add_property', customer_id=customer.id) }}" class="form-grid">
+            <input type="text" name="address" placeholder="Property Address" required>
+            <input type="text" name="gate_code" placeholder="Gate Code">
+            <textarea name="notes" placeholder="Property Notes"></textarea>
+            <button type="submit">Save Property</button>
+        </form>
+    </section>
+
+    <section class="card">
+        <h3>Properties</h3>
+        {% if customer.properties %}
+            <ul class="simple-list">
+                {% for property in customer.properties %}
+                    <li>
+                        <a href="{{ url_for('property_detail', property_id=property.id) }}">{{ property.address }}</a>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No properties yet.</p>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}
