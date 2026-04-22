@@ -1,32 +1,41 @@
 {% extends "base.html" %}
-{% block title %}Customers - Toucan HVAC{% endblock %}
 {% block content %}
-<div class="grid-two">
-    <section class="card">
-        <h2>Add Customer</h2>
-        <form method="POST" action="{{ url_for('add_customer') }}" class="form-grid">
-            <input type="text" name="name" placeholder="Customer Name" required>
-            <input type="text" name="phone" placeholder="Phone">
-            <input type="email" name="email" placeholder="Email">
-            <textarea name="notes" placeholder="Notes"></textarea>
-            <button type="submit">Save Customer</button>
-        </form>
-    </section>
+<section class="card">
+  <h2>Customers</h2>
+  <form method="post" action="{{ url_for('create_customer') }}">
+    <div class="form-grid">
+      <input name="first_name" placeholder="First name" required>
+      <input name="last_name" placeholder="Last name" required>
+      <input name="phone" placeholder="Phone">
+      <input name="email" placeholder="Email">
+    </div>
+    <button class="primary-btn" type="submit">Add Customer</button>
+  </form>
+</section>
 
-    <section class="card">
-        <h2>Customers</h2>
-        {% if customers %}
-            <ul class="simple-list">
-                {% for customer in customers %}
-                    <li>
-                        <a href="{{ url_for('customer_detail', customer_id=customer.id) }}">{{ customer.name }}</a>
-                        {% if customer.phone %} - {{ customer.phone }}{% endif %}
-                    </li>
-                {% endfor %}
-            </ul>
-        {% else %}
-            <p>No customers yet.</p>
-        {% endif %}
-    </section>
-</div>
+<section class="card">
+  <h3>Customer List</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Phone</th>
+        <th>Email</th>
+        <th>Open</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for customer in customers %}
+      <tr>
+        <td>{{ customer.first_name }} {{ customer.last_name }}</td>
+        <td>{{ customer.phone or "" }}</td>
+        <td>{{ customer.email or "" }}</td>
+        <td><a href="{{ url_for('customer_detail', customer_id=customer.id) }}">Open</a></td>
+      </tr>
+      {% else %}
+      <tr><td colspan="4">No customers yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
 {% endblock %}

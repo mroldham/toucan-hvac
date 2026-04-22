@@ -1,166 +1,42 @@
-<!doctype html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Toucan HVAC</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #0f172a;
-      color: #e5e7eb;
-    }
+{% extends "base.html" %}
+{% block content %}
+<div class="hero-card">
+  <h2>Welcome to Toucan HVAC</h2>
+  <p>Your customer, property, and equipment system.</p>
+</div>
 
-    .top {
-      background: linear-gradient(90deg, #14b8a6, #0ea5e9);
-      padding: 18px 24px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      color: white;
-    }
-
-    .wrap {
-      max-width: 1100px;
-      margin: 24px auto;
-      padding: 0 16px;
-    }
-
-    .card {
-      background: #111827;
-      border-radius: 18px;
-      padding: 24px;
-      margin-bottom: 20px;
-      box-shadow: 0 10px 30px rgba(0,0,0,.4);
-    }
-
-    h2 {
-      margin-top: 0;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-    }
-
-    input, button {
-      width: 100%;
-      padding: 12px;
-      border-radius: 10px;
-      border: none;
-      box-sizing: border-box;
-      margin: 8px 0;
-    }
-
-    input {
-      background: #1f2937;
-      color: white;
-    }
-
-    button {
-      background: #14b8a6;
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background: #0ea5e9;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 10px;
-    }
-
-    th, td {
-      padding: 12px;
-      border-bottom: 1px solid #374151;
-      text-align: left;
-      vertical-align: middle;
-    }
-
-    a {
-      color: #22d3ee;
-      text-decoration: none;
-      font-weight: bold;
-    }
-
-    .msg {
-      background: #1f2937;
-      padding: 10px;
-      border-radius: 10px;
-      margin-bottom: 12px;
-    }
-  </style>
-</head>
-<body>
-
-  <div class="top">
-    <div>
-      <strong>Toucan HVAC</strong><br>
-      <small>Welcome, {{ user.name }}</small>
-    </div>
-    <div>
-      <a href="{{ url_for('logout') }}">Logout</a>
-    </div>
+<div class="stats-grid">
+  <div class="stat-card">
+    <h3>Customers</h3>
+    <p>{{ customer_count }}</p>
   </div>
-
-  <div class="wrap">
-
-    {% with messages = get_flashed_messages() %}
-      {% if messages %}
-        {% for message in messages %}
-          <div class="msg">{{ message }}</div>
-        {% endfor %}
-      {% endif %}
-    {% endwith %}
-
-    <div class="card">
-      <h2>Add Customer</h2>
-      <form method="post" action="{{ url_for('create_customer') }}">
-        <div class="grid">
-          <input name="first_name" placeholder="First name" required>
-          <input name="last_name" placeholder="Last name" required>
-          <input name="phone" placeholder="Phone">
-          <input name="email" placeholder="Email">
-        </div>
-        <button type="submit">Add Customer</button>
-      </form>
-    </div>
-
-    <div class="card">
-      <h2>Customers</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Phone</th>
-            <th>Email</th>
-            <th>Open</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for customer in customers %}
-          <tr>
-            <td>{{ customer.first_name }} {{ customer.last_name }}</td>
-            <td>{{ customer.phone or "" }}</td>
-            <td>{{ customer.email or "" }}</td>
-            <td><a href="{{ url_for('customer_detail', customer_id=customer.id) }}">Open</a></td>
-          </tr>
-          {% else %}
-          <tr>
-            <td colspan="4">No customers yet.</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-
+  <div class="stat-card">
+    <h3>Properties</h3>
+    <p>{{ property_count }}</p>
   </div>
+  <div class="stat-card">
+    <h3>Equipment</h3>
+    <p>{{ equipment_count }}</p>
+  </div>
+</div>
 
-</body>
-</html>
+<section class="card">
+  <h3>Quick Actions</h3>
+  <div class="quick-actions-grid">
+    <a class="quick-action-btn" href="{{ url_for('customers') }}">Open Customers</a>
+    <a class="quick-action-btn" href="{{ url_for('properties') }}">Open Properties</a>
+    <a class="quick-action-btn" href="{{ url_for('equipment') }}">Open Equipment</a>
+  </div>
+</section>
+
+<section class="card">
+  <h3>Recent Customers</h3>
+  <ul class="simple-list">
+    {% for customer in recent_customers %}
+      <li><a href="{{ url_for('customer_detail', customer_id=customer.id) }}">{{ customer.first_name }} {{ customer.last_name }}</a></li>
+    {% else %}
+      <li>No customers yet.</li>
+    {% endfor %}
+  </ul>
+</section>
+{% endblock %}

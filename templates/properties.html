@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card">
+  <h2>Properties</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Property</th>
+        <th>Address</th>
+        <th>Customer</th>
+        <th>Open</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in rows %}
+      <tr>
+        <td>{{ row.property.property_name }}</td>
+        <td>{{ row.property.address }}</td>
+        <td>
+          {% if row.customer %}
+            {{ row.customer.first_name }} {{ row.customer.last_name }}
+          {% endif %}
+        </td>
+        <td><a href="{{ url_for('property_detail', property_id=row.property.id) }}">Open</a></td>
+      </tr>
+      {% else %}
+      <tr><td colspan="4">No properties yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endblock %}

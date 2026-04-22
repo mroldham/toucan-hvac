@@ -1,44 +1,11 @@
-<!doctype html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Add Property</title>
-  <style>
-    body { font-family: Arial, sans-serif; background:#f3f4f6; margin:0; }
-    .top { background:#111827; color:white; padding:20px; display:flex; justify-content:space-between; align-items:center; }
-    .wrap { max-width:700px; margin:30px auto; padding:0 16px; }
-    .card { background:white; border-radius:16px; padding:24px; box-shadow:0 8px 24px rgba(0,0,0,.08); }
-    input, button { width:100%; padding:12px; margin:8px 0; box-sizing:border-box; border-radius:10px; border:1px solid #d1d5db; }
-    button { background:#f59e0b; border:0; font-weight:bold; color:#111827; cursor:pointer; }
-    .msg { background:#e5e7eb; padding:10px; border-radius:10px; margin-bottom:12px; }
-    a { color:#f59e0b; text-decoration:none; }
-  </style>
-</head>
-<body>
-  <div class="top">
-    <div><strong>Toucan HVAC</strong></div>
-    <div><a href="{{ url_for('customer_detail', customer_id=customer.id) }}">Back to Customer</a></div>
-  </div>
-
-  <div class="wrap">
-    <div class="card">
-      <h1>Add Property for {{ customer.first_name }} {{ customer.last_name }}</h1>
-
-      {% with messages = get_flashed_messages() %}
-        {% if messages %}
-          {% for message in messages %}
-            <div class="msg">{{ message }}</div>
-          {% endfor %}
-        {% endif %}
-      {% endwith %}
-
-      <form method="post">
-        <input name="property_name" placeholder="Property name" required>
-        <input name="address" placeholder="Street address" required>
-        <button type="submit">Save Property</button>
-      </form>
-    </div>
-  </div>
-</body>
-</html>
+{% extends "base.html" %}
+{% block content %}
+<section class="card">
+  <h2>Add Property for {{ customer.first_name }} {{ customer.last_name }}</h2>
+  <form method="post">
+    <input name="property_name" placeholder="Property name" required>
+    <input name="address" placeholder="Street address" required>
+    <button class="primary-btn" type="submit">Save Property</button>
+  </form>
+</section>
+{% endblock %}

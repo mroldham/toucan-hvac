@@ -1,37 +1,33 @@
 {% extends "base.html" %}
-{% block title %}Customer - Toucan HVAC{% endblock %}
 {% block content %}
 <section class="card">
-    <h2>{{ customer.name }}</h2>
-    <p><strong>Phone:</strong> {{ customer.phone or "" }}</p>
-    <p><strong>Email:</strong> {{ customer.email or "" }}</p>
-    <p><strong>Notes:</strong> {{ customer.notes or "" }}</p>
+  <h2>{{ customer.first_name }} {{ customer.last_name }}</h2>
+  <p><strong>Phone:</strong> {{ customer.phone or "" }}</p>
+  <p><strong>Email:</strong> {{ customer.email or "" }}</p>
+  <a class="primary-btn" href="{{ url_for('create_property', customer_id=customer.id) }}">Add Property</a>
 </section>
 
-<div class="grid-two">
-    <section class="card">
-        <h3>Add Property</h3>
-        <form method="POST" action="{{ url_for('add_property', customer_id=customer.id) }}" class="form-grid">
-            <input type="text" name="address" placeholder="Property Address" required>
-            <input type="text" name="gate_code" placeholder="Gate Code">
-            <textarea name="notes" placeholder="Property Notes"></textarea>
-            <button type="submit">Save Property</button>
-        </form>
-    </section>
-
-    <section class="card">
-        <h3>Properties</h3>
-        {% if customer.properties %}
-            <ul class="simple-list">
-                {% for property in customer.properties %}
-                    <li>
-                        <a href="{{ url_for('property_detail', property_id=property.id) }}">{{ property.address }}</a>
-                    </li>
-                {% endfor %}
-            </ul>
-        {% else %}
-            <p>No properties yet.</p>
-        {% endif %}
-    </section>
-</div>
+<section class="card">
+  <h3>Properties</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Property</th>
+        <th>Address</th>
+        <th>Open</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for property in properties %}
+      <tr>
+        <td>{{ property.property_name }}</td>
+        <td>{{ property.address }}</td>
+        <td><a href="{{ url_for('property_detail', property_id=property.id) }}">Open</a></td>
+      </tr>
+      {% else %}
+      <tr><td colspan="3">No properties yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
 {% endblock %}

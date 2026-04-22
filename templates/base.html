@@ -1,49 +1,40 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Toucan HVAC{% endblock %}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Toucan HVAC</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <header class="topbar">
-        <div class="brand">
-            <div class="logo-wrap">
-                <img src="{{ url_for('static', filename='logo.png') }}" alt="Toucan HVAC logo" class="logo" onerror="this.style.display='none'">
-            </div>
-            <div>
-                <h1>Toucan HVAC</h1>
-                <p>936-334-2944</p>
-            </div>
-        </div>
+  <header class="topbar">
+    <div class="brand">
+      <img src="{{ url_for('static', filename='logo.png') }}" class="logo" onerror="this.style.display='none'">
+      <div>
+        <div class="brand-title">Toucan HVAC</div>
+        <div class="brand-subtitle">Welcome, {{ user.name if user else 'Guest' }}</div>
+      </div>
+    </div>
 
-        {% if current_user %}
-        <nav class="nav">
-            <a href="{{ url_for('dashboard') }}">Home</a>
-            <a href="{{ url_for('customers') }}">Customers</a>
-            <a href="{{ url_for('jobs') }}">Jobs</a>
-            {% if is_admin %}
-                <a href="{{ url_for('invoices') }}">Invoices</a>
-                <a href="{{ url_for('users') }}">Users</a>
-            {% endif %}
-            <a href="{{ url_for('logout') }}">Logout</a>
-        </nav>
-        {% endif %}
-    </header>
+    <nav class="tabs">
+      <a href="{{ url_for('home') }}">Dashboard</a>
+      <a href="{{ url_for('customers') }}">Customers</a>
+      <a href="{{ url_for('properties') }}">Properties</a>
+      <a href="{{ url_for('equipment') }}">Equipment</a>
+      <a href="{{ url_for('logout') }}">Logout</a>
+    </nav>
+  </header>
 
-    <main class="container">
-        {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                <div class="flash-wrap">
-                    {% for message in messages %}
-                        <div class="flash">{{ message }}</div>
-                    {% endfor %}
-                </div>
-            {% endif %}
-        {% endwith %}
+  <main class="page-wrap">
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        {% for message in messages %}
+          <div class="flash-msg">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
 
-        {% block content %}{% endblock %}
-    </main>
+    {% block content %}{% endblock %}
+  </main>
 </body>
 </html>
