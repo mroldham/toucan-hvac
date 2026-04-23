@@ -21,6 +21,7 @@
         <th>Name</th>
         <th>Phone</th>
         <th>Email</th>
+        <th>Photos</th>
         <th>Open</th>
       </tr>
     </thead>
@@ -30,10 +31,11 @@
         <td>{{ customer.first_name }} {{ customer.last_name }}</td>
         <td>{{ customer.phone or "" }}</td>
         <td>{{ customer.email or "" }}</td>
+        <td>{{ photo_counts.get(customer.id, 0) }}</td>
         <td><a href="{{ url_for('customer_detail', customer_id=customer.id) }}">Open</a></td>
       </tr>
       {% else %}
-      <tr><td colspan="4">No customers yet.</td></tr>
+      <tr><td colspan="5">No customers yet.</td></tr>
       {% endfor %}
     </tbody>
   </table>

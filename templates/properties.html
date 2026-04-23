@@ -8,6 +8,7 @@
         <th>Property</th>
         <th>Address</th>
         <th>Customer</th>
+        <th>Photos</th>
         <th>Open</th>
       </tr>
     </thead>
@@ -21,10 +22,11 @@
             {{ row.customer.first_name }} {{ row.customer.last_name }}
           {% endif %}
         </td>
+        <td>{{ row.photo_count }}</td>
         <td><a href="{{ url_for('property_detail', property_id=row.property.id) }}">Open</a></td>
       </tr>
       {% else %}
-      <tr><td colspan="4">No properties yet.</td></tr>
+      <tr><td colspan="5">No properties yet.</td></tr>
       {% endfor %}
     </tbody>
   </table>
