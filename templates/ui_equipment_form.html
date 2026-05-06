@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="card">
+  <h1>{{ title }}</h1>
+  <p><b>Property:</b> {{ property.property_name }} — {{ property.address }}</p>
+
+  <form method="POST" class="form-card">
+    <label>Unit Name</label>
+    <input name="unit_name" value="{{ equipment.unit_name if equipment else '' }}" placeholder="Main system, upstairs unit, downstairs unit" required>
+
+    <label>Filter Size</label>
+    <input name="filter_size" value="{{ equipment.filter_size if equipment else '' }}" placeholder="20x25x1">
+
+    <label>Heating Type</label>
+    <select name="heat_type">
+      <option value="">Select one</option>
+      <option value="gas" {% if equipment and equipment.heat_type == 'gas' %}selected{% endif %}>Gas</option>
+      <option value="electric" {% if equipment and equipment.heat_type == 'electric' %}selected{% endif %}>Electric</option>
+      <option value="heat pump" {% if equipment and equipment.heat_type == 'heat pump' %}selected{% endif %}>Heat Pump</option>
+    </select>
+
+    <h2>Gas System</h2>
+
+    <label>Furnace Model Number</label>
+    <input name="furnace_model" value="{{ equipment.furnace_model if equipment else '' }}">
+
+    <label>Furnace Serial Number</label>
+    <input name="furnace_serial" value="{{ equipment.furnace_serial if equipment else '' }}">
+
+    <label>Evaporator Coil Model Number</label>
+    <input name="evaporator_model" value="{{ equipment.evaporator_model if equipment else '' }}">
+
+    <label>Evaporator Coil Serial Number</label>
+    <input name="evaporator_serial" value="{{ equipment.evaporator_serial if equipment else '' }}">
+
+    <label>Condenser Model Number</label>
+    <input name="condenser_model" value="{{ equipment.condenser_model if equipment else '' }}">
+
+    <label>Condenser Serial Number</label>
+    <input name="condenser_serial" value="{{ equipment.condenser_serial if equipment else '' }}">
+
+    <h2>Electric / Heat Pump System</h2>
+
+    <label>Air Handler Model Number</label>
+    <input name="air_handler_model" value="{{ equipment.air_handler_model if equipment else '' }}">
+
+    <label>Air Handler Serial Number</label>
+    <input name="air_handler_serial" value="{{ equipment.air_handler_serial if equipment else '' }}">
+
+    
+    <h2>Filter Reminder</h2>
+
+    <label>Last Filter Change Date</label>
+    <input type="date" name="last_filter_change" value="{{ equipment.last_filter_change if equipment and equipment.last_filter_change is defined else '' }}">
+
+    <label>Reminder Interval</label>
+    <select name="filter_interval_days">
+      <option value="30" {% if equipment and equipment.filter_interval_days == 30 %}selected{% endif %}>Every 30 days</option>
+      <option value="60" {% if equipment and equipment.filter_interval_days == 60 %}selected{% endif %}>Every 60 days</option>
+      <option value="90" {% if not equipment or equipment.filter_interval_days == 90 %}selected{% endif %}>Every 90 days</option>
+      <option value="180" {% if equipment and equipment.filter_interval_days == 180 %}selected{% endif %}>Every 6 months</option>
+      <option value="365" {% if equipment and equipment.filter_interval_days == 365 %}selected{% endif %}>Every year</option>
+    </select>
+
+    <label>Filter Brand</label>
+    <input name="filter_brand" value="{{ equipment.filter_brand if equipment and equipment.filter_brand is defined else '' }}" placeholder="Honeywell, Glasfloss, Aprilaire, etc.">
+
+    <label>Filter Quantity</label>
+    <input name="filter_quantity" value="{{ equipment.filter_quantity if equipment and equipment.filter_quantity is defined else '' }}" placeholder="1, 2, 4, etc.">
+
+    <label>Filter Notes</label>
+    <textarea name="filter_notes" placeholder="Customer preference, special instructions, etc.">{{ equipment.filter_notes if equipment and equipment.filter_notes is defined else '' }}</textarea>
+
+    <label>Notes</label>
+    <textarea name="notes">{{ equipment.notes if equipment else '' }}</textarea>
+
+    <button type="submit">Save Equipment</button>
+  </form>
+</div>
+
+{% endblock %}

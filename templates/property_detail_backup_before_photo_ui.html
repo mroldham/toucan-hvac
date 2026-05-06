@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="card">
+
+  <h1>{{ property.property_name }}</h1>
+
+  <p><b>Address:</b> {{ property.address }}</p>
+
+  {% if customer %}
+    <p><b>Customer:</b> {{ customer.first_name }} {{ customer.last_name }}</p>
+    <p><b>Phone:</b> {{ customer.phone }}</p>
+  {% endif %}
+
+  <div class="action-bar">
+    <a class="action-btn"
+       target="_blank"
+       href="https://www.google.com/maps/search/?api=1&query={{ property.address | urlencode }}">
+       📍 Open in Google Maps
+    </a>
+
+    <a class="action-btn gold"
+       href="/ui/properties/{{ property.id }}/equipment/add">
+       + Add Equipment
+    </a>
+
+    <a class="action-btn"
+       href="/properties">
+       Back to Properties
+    </a>
+  </div>
+
+</div>
+
+<div class="card">
+
+  <h2>Equipment at this Property</h2>
+
+  <p>
+    Units, filter sizes, model numbers,
+    serial numbers, and notes for this address.
+  </p>
+
+  <div class="equipment-grid">
+
+    {% for unit in equipment %}
+
+    <div class="equipment-card">
+
+      <div class="equipment-top">
+
+        <h3>{{ unit.system_type }} System</h3>
+
+        <span class="badge">
+          {{ unit.filter_size or 'No Filter Size' }}
+        </span>
+
+      </div>
+
+      <div class="equipment-body">
+
+        {% if unit.system_type == 'Gas' %}
+
+          <p><b>Furnace:</b> {{ unit.furnace_model }}</p>
+          <p><b>Coil:</b> {{ unit.evaporator_model }}</p>
+          <p><b>Condenser:</b> {{ unit.condenser_model }}</p>
+
+        {% elif unit.system_type == 'Electric' %}
+
+          <p><b>Air Handler:</b> {{ unit.air_handler_model }}</p>
+          <p><b>Condenser:</b> {{ unit.condenser_model }}</p>
+
+        {% else %}
+
+          <p><b>Equipment:</b> HVAC System</p>
+
+        {% endif %}
+
+      </div>
+
+      <div class="equipment-actions">
+
+        <a class="action-btn"
+           href="/equipment/{{ unit.id }}">
+           View
+        </a>
+
+        <a class="action-btn gold"
+           href="/job/add?equipment_id={{ unit.id }}">
+           Add Job
+        </a>
+
+      </div>
+
+    </div>
+
+    {% else %}
+
+    <div class="equipment-card">
+
+      <h3>No equipment added yet.</h3>
+
+      <p>
+        Add the units for this property so service
+        history, filters, model numbers,
+        and serial numbers stay organized.
+      </p>
+
+    </div>
+
+    {% endfor %}
+
+  </div>
+
+</div>
+
+{% endblock %}

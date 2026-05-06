@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="card">
+  <h1>Add Property</h1>
+  <p>Customer: <b>{{ customer.first_name }} {{ customer.last_name }}</b></p>
+
+  <form method="POST" class="form-card">
+    <label>Property Name</label>
+    <input name="property_name" placeholder="Home, Shop, Rental, Lake House" required>
+
+    <label>Property Address</label>
+    <input name="address" placeholder="Street, city, state, zip" required>
+
+    <button type="submit">Save Property</button>
+  </form>
+
+  <div class="action-bar">
+    <a class="action-btn" href="/customers/{{ customer.id }}">Back to Customer</a>
+  </div>
+</div>
+
+{% endblock %}

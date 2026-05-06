@@ -1,0 +1,30 @@
+<!doctype html>
+<html>
+<head>
+  <title>Toucan Filter Delivery</title>
+  <link rel="stylesheet" href="/static/public_filters.css">
+
+<link rel="apple-touch-icon" href="/static/apple-touch-icon.png?v=99">
+<link rel="icon" href="/static/apple-touch-icon.png?v=99">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Toucan HVAC">
+<meta name="theme-color" content="#27b8ad">
+
+</head>
+<body>
+  <header class="public-header">
+    <div class="public-brand">
+      <img src="/static/logo.png" onerror="this.style.display='none'">
+      <div>
+        <h1>Toucan Filters</h1>
+        <p>by Toucan HVAC</p>
+      </div>
+    </div>
+    <a class="phone-pill" href="tel:9363342944">936-334-2944</a>
+  </header>
+
+  <main class="public-main">
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

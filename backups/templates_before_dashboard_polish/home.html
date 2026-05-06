@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="hero">
+  <h1>Toucan HVAC</h1>
+  <p>Customer, property, equipment, jobs, and invoice management.</p>
+</div>
+
+<div class="cards">
+  <a class="card" href="/customers">
+    <h2>Customers</h2>
+    <p>View saved customers.</p>
+  </a>
+  <a class="card" href="/customers/new">
+    <h2>Add Customer</h2>
+    <p>Add customer information.</p>
+  </a>
+  <a class="card" href="/invoices">
+    <h2>Invoices</h2>
+    <p>Print-ready invoice layout.</p>
+  </a>
+</div>
+{% endblock %}

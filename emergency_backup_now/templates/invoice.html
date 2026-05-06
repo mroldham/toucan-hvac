@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="invoice">
+  <div class="invoice-header">
+    <div>
+      <h1>Toucan HVAC</h1>
+      <p>936-334-2944</p>
+    </div>
+    <div class="invoice-title">INVOICE</div>
+  </div>
+
+  <div class="invoice-boxes">
+    <div>
+      <h3>Bill To</h3>
+      <p>Customer Name</p>
+      <p>Customer Address</p>
+    </div>
+    <div>
+      <h3>Invoice Details</h3>
+      <p>Date: __________</p>
+      <p>Invoice #: ______</p>
+    </div>
+  </div>
+
+  <table>
+    <tr>
+      <th>Description</th>
+      <th>Amount</th>
+    </tr>
+    <tr>
+      <td>HVAC Service</td>
+      <td>$0.00</td>
+    </tr>
+  </table>
+
+  <div class="total">Total: $0.00</div>
+
+  <div class="thanks">Thank You for your business.</div>
+
+  <button onclick="window.print()" class="print-btn">Print Invoice</button>
+</div>
+{% endblock %}

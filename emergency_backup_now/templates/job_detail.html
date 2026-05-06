@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card">
+  <h2>{{ job.title }}</h2>
+  <p><strong>Date:</strong> {{ job.job_date }}</p>
+  <p><strong>Time:</strong> {{ job.start_time }}</p>
+  <p><strong>Duration:</strong> {{ job.duration_minutes }} minutes</p>
+  <p><strong>Status:</strong> {{ job.status }}</p>
+
+  {% if customer %}
+    <p><strong>Customer:</strong> {{ customer.first_name }} {{ customer.last_name }}</p>
+    <p><strong>Phone:</strong> {{ customer.phone or "" }}</p>
+  {% endif %}
+
+  {% if property %}
+    <p><strong>Property:</strong> {{ property.property_name }}</p>
+    <p><strong>Address:</strong> {{ property.address }}</p>
+    <p><a href="https://maps.google.com/?q={{ property.address | urlencode }}" target="_blank">Open in Maps</a></p>
+  {% endif %}
+
+  <p><strong>Notes:</strong><br>{{ job.notes or "" }}</p>
+
+  <p><a class="primary-btn" href="{{ url_for('jobs') }}">Back to Jobs</a></p>
+</section>
+{% endblock %}

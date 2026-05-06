@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="card">
+  <h1>Properties</h1>
+
+  <table>
+    <tr>
+      <th>Property</th>
+      <th>Address</th>
+      <th>Customer</th>
+      <th>Photos</th>
+      <th>Open</th>
+      <th>Actions</th>
+    </tr>
+
+    {% set rows = property_rows if property_rows is defined else properties if properties is defined else property_list if property_list is defined else [] %}
+
+    {% for row in rows %}
+      {% set p = row.property if row.property is defined else row.prop if row.prop is defined else row %}
+      {% set customer = row.customer if row.customer is defined else p.customer if p.customer is defined else none %}
+      <tr>
+        <td>{{ p.property_name }}</td>
+        <td>{{ p.address }}</td>
+        <td>
+          {% if customer %}
+            {{ customer.first_name }} {{ customer.last_name }}
+          {% else %}
+            {{ row.customer_name if row.customer_name is defined else "" }}
+          {% endif %}
+        </td>
+        <td>{{ photo_counts.get(p.id, 0) if photo_counts is defined else 0 }}</td>
+        <td><a href="/properties/{{ p.id }}">Open</a></td>
+        <td>
+          <a class="action-btn gold" href="/properties/{{ p.id }}">Edit/View</a>
+          <a class="action-btn" href="/properties/{{ p.id }}">Manage Equipment</a>
+        </td>
+      </tr>
+    {% else %}
+      <tr>
+        <td colspan="6">No properties yet.</td>
+      </tr>
+    {% endfor %}
+  </table>
+</div>
+
+{% endblock %}

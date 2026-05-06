@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Add Customer</h1>
+
+<form method="POST" class="form-card">
+  <label>First Name</label>
+  <input name="first_name">
+
+  <label>Last Name</label>
+  <input name="last_name">
+
+  <label>Phone</label>
+  <input name="phone">
+
+  <label>Email</label>
+  <input name="email">
+
+  <label>Address</label>
+  <input name="address">
+
+  <button type="submit">Save Customer</button>
+</form>
+{% endblock %}

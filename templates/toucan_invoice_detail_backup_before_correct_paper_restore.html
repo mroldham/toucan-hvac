@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="action-bar no-print">
+  <button onclick="window.print()" class="action-btn gold">Print Invoice</button>
+
+  {% if customer and customer.email %}
+    <a class="action-btn" href="mailto:{{ customer.email }}?subject=Invoice {{ invoice.invoice_number }}&body=Invoice {{ invoice.invoice_number }}%0AAmount Due: ${{ '%.2f'|format(invoice.total or 0) }}%0AThank you.%0A%0AStephen Oldham%0A936-334-2944">
+      Email Invoice
+    </a>
+  {% endif %}
+
+  {% if customer and customer.phone %}
+    <a class="action-btn" href="sms:{{ customer.phone }}&body=Invoice {{ invoice.invoice_number }} - Amount Due: ${{ '%.2f'|format(invoice.total or 0) }}. Stephen Oldham 936-334-2944">
+      Text Invoice
+    </a>
+  {% endif %}
+
+  <a class="action-btn" href="/invoice-center/{{ invoice.id }}/mark-paid">Mark Paid</a>
+</div>
+
+<div class="paper-invoice">
+
+  <div class="paper-top">
+    <div class="paper-logo-box">
+      <img src="/static/logo.png" class="paper-logo">
+    </div>
+
+    <div class="paper-business">
+      <h1>Stephen Oldham</h1>
+      <p>2227 Beaumont Ave. #2, Liberty, Texas, 77575</p>
+      <p>stephen.oldham@me.com</p>
+      <p>936-334-2944</p>
+    </div>
+
+    <div class="paper-invoice-number">
+      <h2>INVOICE</h2>
+      <p>9269-{{ invoice.id }}</p>
+    </div>
+  </div>
+
+  <div class="paper-info-row">
+    <div class="paper-to">
+      <h3>TO:</h3>
+
+      <div class="write-line">
+        {% if customer %}{{ customer.first_name }} {{ customer.last_name }}{% endif %}
+      </div>
+
+      <div class="write-line">
+        {% if customer %}{{ customer.phone }}{% endif %}
+      </div>
+
+      <div class="write-line">
+        {% if customer %}{{ customer.email }}{% endif %}
+      </div>
+    </div>
+
+    <div class="paper-date">
+      <b>DATE:</b>
+      <span>{{ invoice.invoice_date }}</span>
+    </div>
+  </div>
+
+  <div class="job-location">
+    <b>JOB LOCATION:</b>
+    <span>
+      {% if property %}
+        {{ property.address }}
+      {% endif %}
+    </span>
+  </div>
+
+  <table class="paper-service-table">
+    <thead>
+      <tr>
+        <th class="service-col">SERVICES</th>
+        <th class="amount-col">AMOUNT +/-</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      {% for n in range(1, 18) %}
+      <tr>
+        <td>
+          <span class="row-num">{{ n }}</span>
+          {% if items|length >= n %}
+            {{ items[n-1].description }}
+          {% endif %}
+        </td>
+        <td>
+          {% if items|length >= n %}
+            ${{ "%.2f"|format(items[n-1].line_total or 0) }}
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+
+      <tr class="total-row">
+        <td></td>
+        <td><b>TOTAL</b> ${{ "%.2f"|format(invoice.total or 0) }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="thank-you-paper">Thank You!</div>
+
+  <p class="check-note">* Make check payable to Stephen Oldham</p>
+
+  <div class="signature-row">
+    <div><b>SIGNATURE</b><span></span></div>
+    <div><b>DATE</b><span></span></div>
+  </div>
+
+</div>
+
+{% endblock %}

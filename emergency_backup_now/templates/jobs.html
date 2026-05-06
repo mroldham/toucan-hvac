@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card">
+  <h2>Jobs / Schedule</h2>
+
+  <p><strong>Apple Calendar subscription link:</strong></p>
+  <p><input value="{{ calendar_url }}" readonly onclick="this.select()"></p>
+</section>
+
+<section class="card">
+  <h3>Add Job</h3>
+
+  <form method="post" action="{{ url_for('create_job') }}">
+    <div class="form-grid">
+      <select name="customer_id" required>
+        <option value="">Select customer</option>
+        {% for customer in customers %}
+          <option value="{{ customer.id }}">{{ customer.first_name }} {{ customer.last_name }}</option>
+        {% endfor %}
+      </select>
+
+      <select name="property_id">
+        <option value="">Select property optional</option>
+        {% for property in properties %}
+          <option value="{{ property.id }}">{{ property.property_name }} - {{ property.address }}</option>
+        {% endfor %}
+      </select>
+
+      <input name="title" placeholder="Job title, like Float switch or Spring checkup" required>
+
+      <input id="jobDate" name="job_date" placeholder="Date, like 4/25/2026" required>
+      <input id="jobTime" name="start_time" placeholder="Time, like 8:30 AM" required>
+
+      <select name="duration_minutes">
+        <option value="30">30 minutes</option>
+        <option value="60" selected>1 hour</option>
+        <option value="90">1.5 hours</option>
+        <option value="120">2 hours</option>
+        <option value="180">3 hours</option>
+      </select>
+
+      <select name="status">
+        <option value="Scheduled">Scheduled</option>
+        <option value="In Progress">In Progress</option>
+        <option value="Completed">Completed</option>
+        <option value="Billed">Billed</option>
+      </select>
+    </div>
+
+    <div style="margin: 8px 0 14px;">
+      <button type="button" class="primary-btn" onclick="setToday()">Today</button>
+      <button type="button" class="primary-btn" onclick="setTomorrow()">Tomorrow</button>
+      <button type="button" class="primary-btn" onclick="setTime('8:00 AM')">8 AM</button>
+      <button type="button" class="primary-btn" onclick="setTime('12:00 PM')">Noon</button>
+      <button type="button" class="primary-btn" onclick="setTime('4:00 PM')">4 PM</button>
+    </div>
+
+    <textarea name="notes" placeholder="Job notes" rows="4"></textarea>
+    <button class="primary-btn" type="submit">Create Job</button>
+  </form>
+</section>
+
+<section class="card">
+  <h3>Scheduled Jobs</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Time</th>
+        <th>Job</th>
+        <th>Customer</th>
+        <th>Property</th>
+        <th>Status</th>
+        <th>Open</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in rows %}
+      <tr>
+        <td>{{ row.job.job_date }}</td>
+        <td>{{ row.job.start_time }}</td>
+        <td>{{ row.job.title }}</td>
+        <td>{% if row.customer %}{{ row.customer.first_name }} {{ row.customer.last_name }}{% endif %}</td>
+        <td>{% if row.property %}{{ row.property.property_name }}{% endif %}</td>
+        <td>{{ row.job.status }}</td>
+        <td><a href="{{ url_for('job_detail', job_id=row.job.id) }}">Open</a></td>
+      </tr>
+      {% else %}
+      <tr><td colspan="7">No jobs yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+
+<script>
+function formatDate(d) {
+  return (d.getMonth() + 1) + "/" + d.getDate() + "/" + d.getFullYear();
+}
+function setToday() {
+  document.getElementById("jobDate").value = formatDate(new Date());
+}
+function setTomorrow() {
+  const d = new Date();
+  d.setDate(d.getDate() + 1);
+  document.getElementById("jobDate").value = formatDate(d);
+}
+function setTime(t) {
+  document.getElementById("jobTime").value = t;
+}
+</script>
+{% endblock %}

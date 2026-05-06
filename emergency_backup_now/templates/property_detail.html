@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card">
+  <h2>{{ property.property_name }}</h2>
+  <p><strong>Customer:</strong> {{ customer.first_name }} {{ customer.last_name }}</p>
+  <p><strong>Address:</strong> {{ property.address }}</p>
+
+  <form method="post" action="{{ url_for('upload_property_photos', property_id=property.id) }}" enctype="multipart/form-data">
+    <input type="file" name="photos" accept="image/*" multiple required>
+    <input type="text" name="caption" placeholder="Optional caption for uploaded photos">
+    <button class="primary-btn" type="submit">Upload Property Photo(s)</button>
+  </form>
+
+  <a class="primary-btn" href="{{ url_for('create_equipment', property_id=property.id) }}">Add Equipment</a>
+</section>
+
+<section class="card">
+  <h3>Property Photo Gallery</h3>
+
+  {% if photos %}
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;">
+      {% for photo in photos %}
+      <div style="background:white;border:1px solid #e5e7eb;border-radius:16px;padding:12px;">
+        <a href="{{ url_for('property_photo_view', photo_id=photo.id) }}">
+          <img
+            src="{{ url_for('static', filename='uploads/' + photo.filename) }}"
+            style="width:100%;height:170px;object-fit:cover;border-radius:12px;display:block;"
+          >
+        </a>
+
+        <div style="margin-top:10px;font-size:14px;color:#4b5563;">
+          {{ photo.caption or "No caption" }}
+        </div>
+
+        {% if photo.latitude and photo.longitude %}
+        <div style="margin-top:8px;font-size:13px;">
+          <a href="https://maps.google.com/?q={{ photo.latitude }},{{ photo.longitude }}" target="_blank">Open photo location</a>
+        </div>
+        {% endif %}
+
+        <div style="margin-top:10px;">
+          <a class="primary-btn" href="{{ url_for('property_photo_view', photo_id=photo.id) }}">View Large</a>
+        </div>
+
+        <form method="post" action="{{ url_for('delete_property_photo', photo_id=photo.id) }}" style="margin-top:10px;">
+          <button class="primary-btn" type="submit" style="background:#ef4444;">Delete Photo</button>
+        </form>
+      </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p>No property photos yet.</p>
+  {% endif %}
+</section>
+
+<section class="card">
+  <h3>Equipment</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Unit</th>
+        <th>Heat Type</th>
+        <th>Filter</th>
+        <th>Model</th>
+        <th>Serial</th>
+        <th>Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in equipment_list %}
+      <tr>
+        <td>{{ item.unit_name }}</td>
+        <td>{{ item.heat_type or "" }}</td>
+        <td>{{ item.filter_size or "" }}</td>
+        <td>{{ item.model_number or "" }}</td>
+        <td>{{ item.serial_number or "" }}</td>
+        <td>{{ item.notes or "" }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="6">No equipment yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endblock %}

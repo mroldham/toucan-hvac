@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Invoices - Toucan HVAC{% endblock %}
+{% block content %}
+<div class="grid-two">
+    <section class="card">
+        <h2>Create Invoice</h2>
+        <form method="POST" action="{{ url_for('add_invoice') }}" class="form-grid">
+            <input type="text" name="invoice_number" placeholder="Invoice Number">
+            <input type="text" name="invoice_date" placeholder="Invoice Date (YYYY-MM-DD)">
+
+            <select name="customer_id" required>
+                <option value="">Select Customer</option>
+                {% for customer in customers %}
+                    <option value="{{ customer.id }}">{{ customer.name }}</option>
+                {% endfor %}
+            </select>
+
+            <select name="property_id">
+                <option value="">Select Property (optional)</option>
+                {% for property in properties %}
+                    <option value="{{ property.id }}">{{ property.address }}</option>
+                {% endfor %}
+            </select>
+
+            <textarea name="description" placeholder="Description"></textarea>
+            <input type="text" name="amount" placeholder="Amount">
+            <select name="status">
+                <option value="Unpaid">Unpaid</option>
+                <option value="Paid">Paid</option>
+            </select>
+            <textarea name="notes" placeholder="Invoice Notes"></textarea>
+            <button type="submit">Create Invoice</button>
+        </form>
+    </section>
+
+    <section class="card">
+        <h2>Invoices</h2>
+        {% if invoices %}
+            <ul class="simple-list">
+                {% for invoice in invoices %}
+                    <li>
+                        <a href="{{ url_for('invoice_detail', invoice_id=invoice.id) }}">
+                            #{{ invoice.invoice_number or invoice.id }}
+                        </a>
+                        - {{ invoice.customer.name }} -
+                        ${{ invoice.amount or "0.00" }} -
+                        {{ invoice.status }}
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No invoices yet.</p>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

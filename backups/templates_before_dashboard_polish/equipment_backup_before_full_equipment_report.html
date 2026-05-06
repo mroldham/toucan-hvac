@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card">
+  <h2>Equipment</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Unit</th>
+        <th>Heat Type</th>
+        <th>Property</th>
+        <th>Customer</th>
+        <th>Filter</th>
+        <th>Model</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in rows %}
+      <tr>
+        <td>{{ row.equipment.unit_name }}</td>
+        <td>{{ row.equipment.heat_type or "" }}</td>
+        <td>{{ row.property.property_name if row.property else "" }}</td>
+        <td>
+          {% if row.customer %}
+            {{ row.customer.first_name }} {{ row.customer.last_name }}
+          {% endif %}
+        </td>
+        <td>{{ row.equipment.filter_size or "" }}</td>
+        <td>{{ row.equipment.model_number or "" }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="6">No equipment yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endblock %}

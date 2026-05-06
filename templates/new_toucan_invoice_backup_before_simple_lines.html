@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="card">
+  <h1>Create Invoice</h1>
+
+  <form method="POST" class="form-card">
+    <label>Invoice Number</label>
+    <input name="invoice_number" placeholder="Example: 1001">
+
+    <label>Invoice Date</label>
+    <input type="date" name="invoice_date">
+
+    <label>Customer</label>
+    <select name="customer_id">
+      <option value="">Select customer</option>
+      {% for c in customers %}
+        <option value="{{ c.id }}" {% if customer is defined and customer and customer.id == c.id %}selected{% endif %}>
+          {{ c.first_name }} {{ c.last_name }} - {{ c.phone }}
+        </option>
+      {% endfor %}
+    </select>
+
+    <label>Property</label>
+    <select name="property_id">
+      <option value="">Select property</option>
+      {% for p in properties %}
+        <option value="{{ p.id }}" {% if property is defined and property and property.id == p.id %}selected{% endif %}>
+          {{ p.property_name }} - {{ p.address }}
+        </option>
+      {% endfor %}
+    </select>
+
+    <label>Status</label>
+    <select name="status">
+      <option>Draft</option>
+      <option>Sent</option>
+      <option>Paid</option>
+      <option>Past Due</option>
+    </select>
+
+    <h2>Line Items</h2>
+
+    <div id="items">
+      <div class="invoice-line">
+        <input name="description[]" placeholder="Description" value="{% if job %}{{ job.description }}{% endif %}">
+        <input name="quantity[]" placeholder="Qty" value="1">
+        <input name="unit_price[]" placeholder="Unit Price">
+      </div>
+    </div>
+
+    <button type="button" onclick="addLine()">+ Add Line Item</button>
+
+    <label>Tax Rate %</label>
+    <input name="tax_rate" value="0">
+
+    <label>Notes</label>
+    <textarea name="notes">{% if job and job.work_performed %}{{ job.work_performed }}{% endif %}</textarea>
+
+    <button type="submit">Create Invoice</button>
+  </form>
+</div>
+
+<script>
+function addLine() {
+  const div = document.createElement("div");
+  div.className = "invoice-line";
+  div.innerHTML = `
+    <input name="description[]" placeholder="Description">
+    <input name="quantity[]" placeholder="Qty" value="1">
+    <input name="unit_price[]" placeholder="Unit Price">
+  `;
+  document.getElementById("items").appendChild(div);
+}
+</script>
+
+{% endblock %}

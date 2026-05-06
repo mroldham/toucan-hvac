@@ -1,79 +1,116 @@
 {% extends "base.html" %}
 {% block content %}
-<section class="card">
-  <h2>{{ customer.first_name }} {{ customer.last_name }}</h2>
-  <p><strong>Phone:</strong> {{ customer.phone or "" }}</p>
-  <p><strong>Email:</strong> {{ customer.email or "" }}</p>
 
-  <form method="post" action="{{ url_for('upload_customer_photos', customer_id=customer.id) }}" enctype="multipart/form-data">
-    <input type="file" name="photos" accept="image/*" multiple required>
-    <input type="text" name="caption" placeholder="Optional caption for uploaded photos">
-    <button class="primary-btn" type="submit">Upload Customer Photo(s)</button>
-  </form>
+<div class="card">
+  <h1>{{ customer.first_name }} {{ customer.last_name }}</h1>
 
-  <a class="primary-btn" href="{{ url_for('create_property', customer_id=customer.id) }}">Add Property</a>
-</section>
+  <p><b>Phone:</b> {{ customer.phone }}</p>
+  <p><b>Email:</b> {{ customer.email }}</p>
+  <p><b>Mailing Address:</b> {{ customer.mailing_address if customer.mailing_address is defined else "" }}</p>
 
-<section class="card">
-  <h3>Customer Photo Gallery</h3>
+  <div class="action-bar">
+    <a class="action-btn gold" href="/customers/{{ customer.id }}/edit">Edit Customer</a>
+    <a class="action-btn" href="/customers/{{ customer.id }}/add-property">+ Add Property</a>
+    <a class="action-btn" href="/service-jobs/new">+ Add Job</a>
+    <a class="action-btn" href="/invoice-center/new">+ Create Invoice</a>
+    <a class="action-btn" href="/customers">Back to Customers</a>
+  </div>
+</div>
 
-  {% if photos %}
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:16px;">
-      {% for photo in photos %}
-      <div style="background:#ffffff;border:1px solid #e5e7eb;border-radius:16px;padding:12px;">
-        <a href="{{ url_for('customer_photo_view', photo_id=photo.id) }}" style="text-decoration:none;">
-          <img
-            src="{{ url_for('static', filename='uploads/' + photo.filename) }}"
-            style="width:100%;height:170px;object-fit:cover;border-radius:12px;display:block;"
-          >
-        </a>
-
-        <div style="margin-top:10px;font-size:14px;color:#4b5563;">
-          {{ photo.caption or "No caption" }}
-        </div>
-
-        {% if photo.latitude and photo.longitude %}
-        <div style="margin-top:8px;font-size:13px;">
-          <a href="https://maps.google.com/?q={{ photo.latitude }},{{ photo.longitude }}" target="_blank">Open photo location</a>
-        </div>
-        {% endif %}
-
-        <div style="margin-top:10px;">
-          <a class="primary-btn" href="{{ url_for('customer_photo_view', photo_id=photo.id) }}">View Large</a>
-        </div>
-
-        <form method="post" action="{{ url_for('delete_customer_photo', photo_id=photo.id) }}" style="margin-top:10px;">
-          <button class="primary-btn" type="submit" style="background:#ef4444;">Delete Photo</button>
-        </form>
-      </div>
-      {% endfor %}
+<div class="card">
+  <div class="section-heading-row">
+    <div>
+      <h2>Properties & Equipment</h2>
+      <p class="muted-text">Open a property to view equipment, photos, map links, and service history.</p>
     </div>
-  {% else %}
-    <p>No customer photos yet.</p>
-  {% endif %}
-</section>
+    <a class="action-btn gold" href="/customers/{{ customer.id }}/add-property">+ Add Property</a>
+  </div>
 
-<section class="card">
-  <h3>Properties</h3>
+  <div class="customer-property-grid">
+    {% for prop in properties %}
+      <div class="customer-property-card">
+        <h3>{{ prop.property_name }}</h3>
+        <p><b>Address:</b> {{ prop.address }}</p>
+
+        <div class="property-card-actions">
+          <a class="action-btn" href="/properties/{{ prop.id }}">Open Property</a>
+          <a class="action-btn gold" href="/ui/properties/{{ prop.id }}/equipment/add">+ Add Equipment</a>
+          <a class="action-btn" target="_blank" href="https://www.google.com/maps/search/?api=1&query={{ prop.address | urlencode }}">Map</a>
+        </div>
+
+        <div class="mini-equipment-list">
+          {% for eq in equipment_by_property.get(prop.id, []) %}
+            <div class="mini-equipment-card">
+              <strong>{{ eq.unit_name if eq.unit_name else "Equipment" }}</strong>
+              <span>{{ eq.heat_type if eq.heat_type else "" }}</span>
+              <span>Filter: {{ eq.filter_size if eq.filter_size else "—" }}</span>
+              <a href="/ui/equipment/{{ eq.id }}/edit">Edit</a>
+            </div>
+          {% else %}
+            <p class="muted-text">No equipment for this property yet.</p>
+          {% endfor %}
+        </div>
+      </div>
+    {% else %}
+      <div class="empty-equipment-card">
+        <h3>No properties yet.</h3>
+        <p>Add the customer’s first property, then add equipment under that property.</p>
+        <a class="action-btn gold" href="/customers/{{ customer.id }}/add-property">+ Add First Property</a>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+
+<div class="card">
+  <h2>Jobs / Service History</h2>
+
   <table>
-    <thead>
-      <tr>
-        <th>Property</th>
-        <th>Address</th>
-        <th>Open</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for property in properties %}
-      <tr>
-        <td>{{ property.property_name }}</td>
-        <td>{{ property.address }}</td>
-        <td><a href="{{ url_for('property_detail', property_id=property.id) }}">Open</a></td>
-      </tr>
-      {% else %}
-      <tr><td colspan="3">No properties yet.</td></tr>
-      {% endfor %}
-    </tbody>
+    <tr>
+      <th>Date</th>
+      <th>Job</th>
+      <th>Technician</th>
+      <th>Status</th>
+      <th>Open</th>
+    </tr>
+
+    {% for job in jobs %}
+    <tr>
+      <td>{{ job.scheduled_date }}</td>
+      <td>{{ job.description }}</td>
+      <td>{{ job.technician }}</td>
+      <td>{{ job.status }}</td>
+      <td><a class="action-btn" href="/service-jobs/{{ job.id }}">Open Job</a></td>
+    </tr>
+    {% else %}
+    <tr><td colspan="5">No jobs for this customer yet.</td></tr>
+    {% endfor %}
   </table>
-</section>
+</div>
+
+<div class="card">
+  <h2>Invoices</h2>
+
+  <table>
+    <tr>
+      <th>Invoice #</th>
+      <th>Date</th>
+      <th>Status</th>
+      <th>Total</th>
+      <th>Open</th>
+    </tr>
+
+    {% for invoice in invoices %}
+    <tr>
+      <td>{{ invoice.invoice_number }}</td>
+      <td>{{ invoice.invoice_date }}</td>
+      <td>{{ invoice.status }}</td>
+      <td>${{ "%.2f"|format(invoice.total or 0) }}</td>
+      <td><a class="action-btn" href="/invoice-center/{{ invoice.id }}">Open Invoice</a></td>
+    </tr>
+    {% else %}
+    <tr><td colspan="5">No invoices for this customer yet.</td></tr>
+    {% endfor %}
+  </table>
+</div>
+
 {% endblock %}

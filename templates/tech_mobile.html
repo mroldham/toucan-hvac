@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="mobile-tech-header">
+  <h1>Field Technician Mode</h1>
+  <p>Fast mobile tools for the field.</p>
+</div>
+
+<div class="mobile-quick-grid">
+
+  <a class="mobile-action-card" href="/service-jobs">
+    <div class="mobile-icon">🛠</div>
+    <div>Open Jobs</div>
+  </a>
+
+  <a class="mobile-action-card" href="/customers">
+    <div class="mobile-icon">👤</div>
+    <div>Customers</div>
+  </a>
+
+  <a class="mobile-action-card" href="/properties">
+    <div class="mobile-icon">🏠</div>
+    <div>Properties</div>
+  </a>
+
+  <a class="mobile-action-card" href="/calendar">
+    <div class="mobile-icon">📅</div>
+    <div>Calendar</div>
+  </a>
+
+</div>
+
+<div class="card">
+  <h2>Assigned Jobs</h2>
+
+  <div class="mobile-job-list">
+
+    {% for job in jobs %}
+    <a class="mobile-job-card" href="/service-jobs/{{ job.id }}">
+
+      <div class="mobile-job-top">
+        <strong>{{ job.description or 'Service Call' }}</strong>
+        <span class="mobile-status">{{ job.status }}</span>
+      </div>
+
+      <div class="mobile-job-body">
+        {% if customers.get(job.customer_id) %}
+          <div>👤 {{ customers[job.customer_id].first_name }} {{ customers[job.customer_id].last_name }}</div>
+        {% endif %}
+
+        {% if properties.get(job.property_id) %}
+          <div>📍 {{ properties[job.property_id].address }}</div>
+        {% endif %}
+
+        {% if job.scheduled_date %}
+          <div>📅 {{ job.scheduled_date }}</div>
+        {% endif %}
+      </div>
+
+    </a>
+    {% else %}
+      <p>No jobs assigned.</p>
+    {% endfor %}
+
+  </div>
+</div>
+
+{% endblock %}

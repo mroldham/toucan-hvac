@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="hero-card">
+  <h2>Welcome to Toucan HVAC</h2>
+  <p>Your customer, property, and equipment system.</p>
+</div>
+
+<div class="stats-grid">
+  <div class="stat-card">
+    <h3>Customers</h3>
+    <p>{{ customer_count }}</p>
+  </div>
+  <div class="stat-card">
+    <h3>Properties</h3>
+    <p>{{ property_count }}</p>
+  </div>
+  <div class="stat-card">
+    <h3>Equipment</h3>
+    <p>{{ equipment_count }}</p>
+  </div>
+</div>
+
+<section class="card">
+  <h3>Quick Actions</h3>
+  <div class="quick-actions-grid">
+    <a class="quick-action-btn" href="{{ url_for('customers') }}">Open Customers</a>
+    <a class="quick-action-btn" href="{{ url_for('properties') }}">Open Properties</a>
+    <a class="quick-action-btn" href="{{ url_for('equipment') }}">Open Equipment</a>
+  </div>
+</section>
+
+<section class="card">
+  <h3>Recent Customers</h3>
+  <ul class="simple-list">
+    {% for customer in recent_customers %}
+      <li><a href="{{ url_for('customer_detail', customer_id=customer.id) }}">{{ customer.first_name }} {{ customer.last_name }}</a></li>
+    {% else %}
+      <li>No customers yet.</li>
+    {% endfor %}
+  </ul>
+</section>
+{% endblock %}

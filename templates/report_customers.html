@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="card no-print">
+  <h1>Customer Phone & Address List</h1>
+  <button onclick="window.print()" class="action-btn gold">Print / Save as PDF</button>
+  <a class="action-btn gold" target="_blank" href="/reports/customers/pdf">Open PDF View</a>
+  <a class="action-btn" href="/reports">Back to Reports</a>
+</div>
+
+<div class="card report-print">
+  <h1>Customer Phone & Address List</h1>
+
+  <table>
+    <tr>
+      <th>Name</th>
+      <th>Phone</th>
+      <th>Email</th>
+      <th>Mailing Address</th>
+    </tr>
+
+    {% for c in customers %}
+    <tr>
+      <td>{{ c.first_name }} {{ c.last_name }}</td>
+      <td>{{ c.phone }}</td>
+      <td>{{ c.email }}</td>
+      <td>{{ c.mailing_address if c.mailing_address is defined else "" }}</td>
+    </tr>
+    {% else %}
+    <tr><td colspan="4">No customers found.</td></tr>
+    {% endfor %}
+  </table>
+</div>
+
+{% endblock %}

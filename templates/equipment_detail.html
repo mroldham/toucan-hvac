@@ -1,6 +1,24 @@
 {% extends "base.html" %}
 {% block title %}Equipment - Toucan HVAC{% endblock %}
 {% block content %}
+<div class="action-bar">
+  <a class="action-btn danger" href="/equipment/{{ equipment.id }}/archive" onclick="return confirm('Delete this equipment?')">Delete Equipment</a>
+</div>
+
+<form method="POST" action="/equipment/{{ equipment.id }}/replace" class="inline-replace-form">
+  <h3>Replace This Equipment</h3>
+  <label>Equipment Type</label>
+  <input name="equipment_type" placeholder="Condenser, furnace, air handler, etc.">
+
+  <label>Model</label>
+  <input name="model" placeholder="New model number">
+
+  <label>Serial</label>
+  <input name="serial" placeholder="New serial number">
+
+  <button type="submit">Save Replacement Unit</button>
+</form>
+
 <section class="card">
     <h2>{{ equipment.unit_label or "Equipment" }}</h2>
     <p><strong>Property:</strong> <a href="{{ url_for('property_detail', property_id=equipment.property.id) }}">{{ equipment.property.address }}</a></p>
@@ -47,6 +65,54 @@
         </form>
     </section>
 </div>
+
+
+
+<section class="card">
+
+    <h3>Equipment Photos</h3>
+
+    <form method="POST"
+          action="/equipment/{{ equipment.id }}/photos/upload"
+          enctype="multipart/form-data"
+          class="form-card">
+
+        <label>Upload Equipment Photos</label>
+
+        <input type="file"
+               name="photos"
+               multiple
+               accept="image/*"
+               capture="environment">
+
+        <label>Caption</label>
+        <input name="caption"
+               placeholder="Data plate, condenser, wiring, attic access, filter rack, etc.">
+
+        <button type="submit">Upload Equipment Photos</button>
+
+    </form>
+
+    <div class="photo-grid">
+
+        {% for photo in equipment.photos %}
+            <div class="photo-card">
+
+                <a href="/equipment-photos/{{ photo.id }}">
+                    <img src="/static/uploads/{{ photo.filename }}">
+                </a>
+
+                <p>{{ photo.caption or "No caption" }}</p>
+
+            </div>
+        {% else %}
+            <p>No equipment photos uploaded yet.</p>
+        {% endfor %}
+
+    </div>
+
+</section>
+
 
 <section class="card">
     <h3>Service History</h3>

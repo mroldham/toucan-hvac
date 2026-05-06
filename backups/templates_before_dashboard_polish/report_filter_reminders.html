@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="card no-print">
+  <h1>Filter Reminder Report</h1>
+  <p>Customers due or upcoming for filter changes.</p>
+
+  <div class="action-bar">
+    <button onclick="window.print()" class="action-btn gold">Print / Save as PDF</button>
+    <a class="action-btn" href="/reports">Back to Reports</a>
+  </div>
+</div>
+
+<div class="card report-print">
+  <h1>Filter Reminder Report</h1>
+
+  <table>
+    <tr>
+      <th>Status</th>
+      <th>Next Due</th>
+      <th>Customer</th>
+      <th>Phone</th>
+      <th>Property</th>
+      <th>Unit</th>
+      <th>Filter Size</th>
+      <th>Interval</th>
+      <th class="no-print">Contact</th>
+    </tr>
+
+    {% for row in rows %}
+      {% set eq = row.eq %}
+      {% set prop = eq.property %}
+      {% set customer = prop.customer if prop and prop.customer else None %}
+      <tr>
+        <td><b>{{ row.due_status }}</b></td>
+        <td>{{ row.next_due }}</td>
+        <td>{% if customer %}{{ customer.first_name }} {{ customer.last_name }}{% endif %}</td>
+        <td>{% if customer %}{{ customer.phone }}{% endif %}</td>
+        <td>{% if prop %}{{ prop.property_name }}<br><small>{{ prop.address }}</small>{% endif %}</td>
+        <td>{{ eq.unit_name }}</td>
+        <td>{{ eq.filter_size }}</td>
+        <td>{{ eq.filter_interval_days or 90 }} days</td>
+        <td class="no-print">
+          {% if customer and customer.phone %}
+            <a class="action-btn" href="tel:{{ customer.phone }}">Call</a>
+            <a class="action-btn gold" href="sms:{{ customer.phone }}&body=Hi {{ customer.first_name }}, this is Toucan HVAC. Our records show your {{ eq.filter_size }} filter may be due for replacement. Would you like us to help with that?">Text</a>
+          {% endif %}
+        </td>
+      </tr>
+    {% else %}
+      <tr><td colspan="9">No filter reminder data found.</td></tr>
+    {% endfor %}
+  </table>
+</div>
+
+{% endblock %}

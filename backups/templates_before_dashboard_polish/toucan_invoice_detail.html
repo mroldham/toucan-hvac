@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="action-bar no-print">
+  <button onclick="window.print()" class="action-btn gold">Print Invoice</button>
+  <a class="action-btn gold" target="_blank" href="/invoice-center/{{ invoice.id }}/pdf">Open PDF View</a>
+
+  {% if customer and customer.email %}
+    <a class="action-btn" href="mailto:{{ customer.email }}?subject=Toucan HVAC Invoice {{ invoice.invoice_number }}&body=Invoice {{ invoice.invoice_number }}%0AAmount Due: ${{ '%.2f'|format(invoice.total or 0) }}%0AThank you for your business.%0A%0AToucan HVAC%0A936-334-2944">
+      Email Invoice
+    </a>
+  {% endif %}
+
+  {% if customer and customer.phone %}
+    <a class="action-btn" href="sms:{{ customer.phone }}&body=Toucan HVAC Invoice {{ invoice.invoice_number }} - Amount Due: ${{ '%.2f'|format(invoice.total or 0) }}. Thank you for your business. 936-334-2944">
+      Text Invoice
+    </a>
+  {% endif %}
+
+  <a class="action-btn" href="/invoice-center/{{ invoice.id }}/mark-paid">Mark Paid</a>
+</div>
+
+
+<div class="invoice-page">
+
+  <div class="invoice-header">
+    <div>
+      <img src="/static/logo.png" class="invoice-logo">
+      <h1>Toucan HVAC</h1>
+      <p>936-334-2944</p>
+    </div>
+
+    <div class="invoice-meta">
+      <h2>INVOICE</h2>
+      <p><b>#:</b> {{ invoice.invoice_number }}</p>
+      <p><b>Date:</b> {{ invoice.invoice_date }}</p>
+      <p><b>Status:</b> {{ invoice.status }}</p>
+    </div>
+  </div>
+
+  <div class="invoice-parties">
+    <div>
+      <h3>Bill To</h3>
+      {% if customer %}
+        <p>{{ customer.first_name }} {{ customer.last_name }}</p>
+        <p>{{ customer.phone }}</p>
+        <p>{{ customer.email }}</p>
+      {% endif %}
+    </div>
+
+    <div>
+      <h3>Service Property</h3>
+      {% if property %}
+        <p>{{ property.property_name }}</p>
+        <p>{{ property.address }}</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <table class="invoice-table">
+    <tr>
+      <th>Description</th>
+      <th>Qty</th>
+      <th>Unit Price</th>
+      <th>Total</th>
+    </tr>
+
+    {% for item in items %}
+    <tr>
+      <td>{{ item.description }}</td>
+      <td>{{ item.quantity }}</td>
+      <td>${{ "%.2f"|format(item.unit_price or 0) }}</td>
+      <td>${{ "%.2f"|format(item.line_total or 0) }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+
+  <div class="invoice-totals">
+    <p><b>Subtotal:</b> ${{ "%.2f"|format(invoice.subtotal or 0) }}</p>
+    <p><b>Tax:</b> ${{ "%.2f"|format(invoice.tax or 0) }}</p>
+    <h2>Total: ${{ "%.2f"|format(invoice.total or 0) }}</h2>
+  </div>
+
+  <p class="invoice-notes">{{ invoice.notes }}</p>
+
+  <div class="thank-you-script">Thank You for your business.</div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="card">
+  <h1>Create Invoice</h1>
+  <p>Enter the customer, job location, service lines, and amount.</p>
+
+  <form method="POST" class="form-card">
+
+    <label>Invoice Number</label>
+    <input name="invoice_number" placeholder="9269">
+
+    <label>Invoice Date</label>
+    <input type="date" name="invoice_date">
+
+    <label>Customer</label>
+    <select name="customer_id">
+      <option value="">Select customer</option>
+      {% for c in customers %}
+        <option value="{{ c.id }}" {% if customer is defined and customer and customer.id == c.id %}selected{% endif %}>
+          {{ c.first_name }} {{ c.last_name }} - {{ c.phone }}
+        </option>
+      {% endfor %}
+    </select>
+
+    <label>Job Location / Property</label>
+    <select name="property_id">
+      <option value="">Select property</option>
+      {% for p in properties %}
+        <option value="{{ p.id }}" {% if property is defined and property and property.id == p.id %}selected{% endif %}>
+          {{ p.property_name }} - {{ p.address }}
+        </option>
+      {% endfor %}
+    </select>
+
+    <label>Status</label>
+    <select name="status">
+      <option>Draft</option>
+      <option>Sent</option>
+      <option>Paid</option>
+      <option>Past Due</option>
+    </select>
+
+    <h2>Services</h2>
+
+    <div id="items" class="simple-invoice-lines">
+
+      <div class="simple-invoice-line">
+        <input name="description[]" placeholder="Service / Work Performed" value="{% if job %}{{ job.description }}{% endif %}">
+        <input name="quantity[]" type="hidden" value="1">
+        <input name="unit_price[]" class="amount-input" placeholder="Amount" inputmode="decimal" oninput="updateSimpleTotal()">
+      </div>
+
+    </div>
+
+    <button type="button" class="action-btn" onclick="addLine()">+ Add Service Line</button>
+
+    <input type="hidden" name="tax_rate" value="0">
+
+    <div class="simple-total-box">
+      Total: $<span id="simpleTotal">0.00</span>
+    </div>
+
+    <label>Notes</label>
+    <textarea name="notes" placeholder="Private/internal notes or extra invoice notes">{% if job and job.work_performed %}{{ job.work_performed }}{% endif %}</textarea>
+
+    <button class="action-btn gold" type="submit">Create Invoice</button>
+
+  </form>
+</div>
+
+<script>
+function addLine() {
+  const div = document.createElement("div");
+  div.className = "simple-invoice-line";
+  div.innerHTML = `
+    <input name="description[]" placeholder="Service / Work Performed">
+    <input name="quantity[]" type="hidden" value="1">
+    <input name="unit_price[]" class="amount-input" placeholder="Amount" inputmode="decimal" oninput="updateSimpleTotal()">
+  `;
+  document.getElementById("items").appendChild(div);
+}
+
+function updateSimpleTotal() {
+  let total = 0;
+  document.querySelectorAll(".amount-input").forEach(input => {
+    const value = parseFloat(input.value.replace(/[^0-9.]/g, ""));
+    if (!isNaN(value)) {
+      total += value;
+    }
+  });
+  document.getElementById("simpleTotal").innerText = total.toFixed(2);
+}
+</script>
+
+{% endblock %}

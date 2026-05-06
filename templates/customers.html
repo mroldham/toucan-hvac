@@ -1,43 +1,107 @@
 {% extends "base.html" %}
 {% block content %}
-<section class="card">
-  <h2>Customers</h2>
-  <form method="post" action="{{ url_for('create_customer') }}">
-    <div class="form-grid">
-      <input name="first_name" placeholder="First name" required>
-      <input name="last_name" placeholder="Last name" required>
-      <input name="phone" placeholder="Phone">
-      <input name="email" placeholder="Email">
-    </div>
-    <button class="primary-btn" type="submit">Add Customer</button>
-  </form>
-</section>
 
-<section class="card">
-  <h3>Customer List</h3>
-  <table>
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Phone</th>
-        <th>Email</th>
-        <th>Photos</th>
-        <th>Open</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for customer in customers %}
-      <tr>
-        <td>{{ customer.first_name }} {{ customer.last_name }}</td>
-        <td>{{ customer.phone or "" }}</td>
-        <td>{{ customer.email or "" }}</td>
-        <td>{{ photo_counts.get(customer.id, 0) }}</td>
-        <td><a href="{{ url_for('customer_detail', customer_id=customer.id) }}">Open</a></td>
-      </tr>
-      {% else %}
-      <tr><td colspan="5">No customers yet.</td></tr>
-      {% endfor %}
-    </tbody>
-  </table>
-</section>
+<div class="page-title-row">
+  <div>
+    <h1>Customers</h1>
+    <p>Search, add, and manage customer records.</p>
+  </div>
+
+  <a class="action-btn" href="/customers/archived">Archived Customers</a>
+</div>
+
+<div class="card">
+  <h2>Add New Customer</h2>
+
+  <form method="POST" class="form-card customer-form-grid">
+    <div>
+      <label>First Name</label>
+      <input name="first_name" required>
+    </div>
+
+    <div>
+      <label>Last Name</label>
+      <input name="last_name" required>
+    </div>
+
+    <div>
+      <label>Phone</label>
+      <input name="phone">
+    </div>
+
+    <div>
+      <label>Email</label>
+      <input name="email">
+    </div>
+
+    <div class="full-width">
+      <label>Mailing Address</label>
+      <input name="mailing_address" placeholder="Mailing address for customer">
+    </div>
+
+    <div class="full-width">
+      <button class="action-btn gold" type="submit">+ Add Customer</button>
+    </div>
+  </form>
+</div>
+
+<div class="card">
+  <div class="section-header">
+    <div>
+      <h2>Customer List</h2>
+      <p>Open a customer to view properties, equipment, photos, and jobs.</p>
+    </div>
+  </div>
+
+  <input id="customerSearch"
+         class="search-box"
+         placeholder="Search customers by name, phone, or email..."
+         onkeyup="searchCustomers()">
+
+  <div class="customer-card-list" id="customerTable">
+
+    {% for customer in customer_list %}
+
+    <div class="customer-row customer-list-card">
+
+      <div class="customer-main">
+        <h3>{{ customer.first_name }} {{ customer.last_name }}</h3>
+
+        <p><b>Phone:</b> {{ customer.phone or "—" }}</p>
+        <p><b>Email:</b> {{ customer.email or "—" }}</p>
+        <p><b>Photos:</b> {{ photo_counts.get(customer.id, 0) }}</p>
+      </div>
+
+      <div class="customer-actions">
+        <a class="action-btn" href="/customers/{{ customer.id }}">Open</a>
+        <a class="action-btn gold" href="/customers/{{ customer.id }}/edit">Edit</a>
+        <a class="action-btn danger" href="/customers/{{ customer.id }}/archive">Archive</a>
+      </div>
+
+    </div>
+
+    {% else %}
+
+    <div class="customer-list-card">
+      <h3>No customers yet.</h3>
+      <p>Add your first customer above.</p>
+    </div>
+
+    {% endfor %}
+
+  </div>
+</div>
+
+<script>
+function searchCustomers() {
+  const filter = document.getElementById("customerSearch").value.toLowerCase();
+  const cards = document.querySelectorAll(".customer-row");
+
+  cards.forEach(card => {
+    const text = card.innerText.toLowerCase();
+    card.style.display = text.includes(filter) ? "" : "none";
+  });
+}
+</script>
+
 {% endblock %}

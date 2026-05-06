@@ -1,42 +1,48 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="hero-card">
-  <h2>Welcome to Toucan HVAC</h2>
-  <p>Your customer, property, and equipment system.</p>
+
+<div class="dashboard-hero">
+  <div>
+    <h1>Welcome to Toucan HVAC</h1>
+    <p>Your customer, property, equipment, job tracking, and invoice system.</p>
+
+    <div class="hero-actions">
+      <a class="action-btn" href="/customers">View Customers</a>
+      <a class="action-btn" href="/properties">View Properties</a>
+      <a class="action-btn gold" href="/service-jobs">Open Jobs</a>
+      <a class="action-btn" href="/invoice-center">Invoices</a>
+    </div>
+  </div>
+
+  <img src="{{ url_for('static', filename='logo.png') }}" alt="Toucan HVAC Logo">
 </div>
 
-<div class="stats-grid">
-  <div class="stat-card">
+<div class="dashboard-grid">
+
+  <a class="dash-card" href="/service-jobs">
+    <div class="dash-icon">🛠️</div>
+    <h3>Open Jobs</h3>
+    <p>View and manage current service work.</p>
+  </a>
+
+  <a class="dash-card" href="/invoice-center">
+    <div class="dash-icon">🧾</div>
+    <h3>Invoices</h3>
+    <p>Create, print, email, and text invoices.</p>
+  </a>
+
+  <a class="dash-card" href="/customers">
+    <div class="dash-icon">👥</div>
     <h3>Customers</h3>
-    <p>{{ customer_count }}</p>
-  </div>
-  <div class="stat-card">
-    <h3>Properties</h3>
-    <p>{{ property_count }}</p>
-  </div>
-  <div class="stat-card">
-    <h3>Equipment</h3>
-    <p>{{ equipment_count }}</p>
-  </div>
+    <p>Customer records, phone numbers, and properties.</p>
+  </a>
+
+  <a class="dash-card" href="/reports/filter-reminders">
+    <div class="dash-icon">📅</div>
+    <h3>Filter Reminders</h3>
+    <p>See upcoming filter changes and service reminders.</p>
+  </a>
+
 </div>
 
-<section class="card">
-  <h3>Quick Actions</h3>
-  <div class="quick-actions-grid">
-    <a class="quick-action-btn" href="{{ url_for('customers') }}">Open Customers</a>
-    <a class="quick-action-btn" href="{{ url_for('properties') }}">Open Properties</a>
-    <a class="quick-action-btn" href="{{ url_for('equipment') }}">Open Equipment</a>
-  </div>
-</section>
-
-<section class="card">
-  <h3>Recent Customers</h3>
-  <ul class="simple-list">
-    {% for customer in recent_customers %}
-      <li><a href="{{ url_for('customer_detail', customer_id=customer.id) }}">{{ customer.first_name }} {{ customer.last_name }}</a></li>
-    {% else %}
-      <li>No customers yet.</li>
-    {% endfor %}
-  </ul>
-</section>
 {% endblock %}

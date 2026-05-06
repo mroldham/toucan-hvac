@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="page-title-row">
+  <div>
+    <h1>Open Jobs</h1>
+    <p>Search and manage service jobs.</p>
+  </div>
+
+  <a class="action-btn gold" href="/service-jobs/new">+ Add Job</a>
+</div>
+
+<div class="card">
+  <input id="jobSearch"
+         class="search-box"
+         placeholder="Search jobs by customer, property, status, tech..."
+         onkeyup="searchJobs()">
+
+  <div class="job-card-list">
+
+    {% for job in jobs %}
+      {% set customer = customers.get(job.customer_id) %}
+      {% set property = properties.get(job.property_id) %}
+
+      <div class="job-list-card">
+
+        <div class="job-card-main">
+          <div class="job-card-top">
+            <h3>{{ job.description or "Service Call" }}</h3>
+            <span class="status-pill">{{ job.status or "Scheduled" }}</span>
+          </div>
+
+          <p><b>Date:</b> {{ job.scheduled_date or "—" }}</p>
+
+          {% if customer %}
+            <p><b>Customer:</b> {{ customer.first_name }} {{ customer.last_name }}</p>
+          {% endif %}
+
+          {% if property %}
+            <p><b>Property:</b> {{ property.property_name }} — {{ property.address }}</p>
+          {% endif %}
+
+          <p><b>Technician:</b> {{ job.technician or "—" }}</p>
+        </div>
+
+        <div class="job-card-actions">
+          <a class="action-btn" href="/service-jobs/{{ job.id }}">Open Job</a>
+
+          {% if property %}
+            <a class="action-btn gold"
+               target="_blank"
+               href="https://www.google.com/maps/search/?api=1&query={{ property.address | urlencode }}">
+               Map
+            </a>
+          {% endif %}
+
+          {% if customer and customer.phone %}
+            <a class="action-btn" href="tel:{{ customer.phone }}">Call</a>
+          {% endif %}
+        </div>
+
+      </div>
+
+    {% else %}
+      <p>No jobs yet.</p>
+    {% endfor %}
+
+  </div>
+</div>
+
+<script>
+function searchJobs() {
+  const filter = document.getElementById("jobSearch").value.toLowerCase();
+  const cards = document.querySelectorAll(".job-list-card");
+
+  cards.forEach(card => {
+    const text = card.innerText.toLowerCase();
+    card.style.display = text.includes(filter) ? "" : "none";
+  });
+}
+</script>
+
+{% endblock %}

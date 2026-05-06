@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="card">
+  <h1>{{ property.property_name }}</h1>
+  <p><b>Address:</b> {{ property.address }}</p>
+
+<div class="action-bar">
+  <a class="action-btn" target="_blank"
+     href="https://www.google.com/maps/search/?api=1&query={{ property.address | urlencode }}">
+     📍 Open in Google Maps
+  </a>
+</div>
+
+
+  {% if customer %}
+    <p><b>Customer:</b> {{ customer.first_name }} {{ customer.last_name }}</p>
+    <p><b>Phone:</b> {{ customer.phone }}</p>
+  {% endif %}
+
+  <div class="action-bar">
+    <a class="action-btn gold" href="/ui/properties/{{ property.id }}/equipment/add">+ Add Equipment</a>
+    <a class="action-btn" href="/properties">Back to Properties</a>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Equipment at this Property</h2>
+
+  <table>
+    <tr>
+      <th>Type</th>
+      <th>Heat Type</th>
+      <th>Filter Size</th>
+      <th>Model</th>
+      <th>Serial</th>
+      <th>Notes</th>
+      <th>Actions</th>
+    </tr>
+
+    {% for eq in equipment_list %}
+    <tr>
+      <td>{{ eq.equipment_type if eq.equipment_type is defined else "" }}</td>
+      <td>{{ eq.heating_type if eq.heating_type is defined else "" }}</td>
+      <td>{{ eq.filter_size if eq.filter_size is defined else "" }}</td>
+      <td>
+        {{ eq.model if eq.model is defined else "" }}
+        {{ eq.condenser_model if eq.condenser_model is defined else "" }}
+      </td>
+      <td>
+        {{ eq.serial if eq.serial is defined else "" }}
+        {{ eq.condenser_serial if eq.condenser_serial is defined else "" }}
+      </td>
+      <td>{{ eq.notes if eq.notes is defined else "" }}</td>
+      <td>
+        <a class="action-btn gold" href="/ui/equipment/{{ eq.id }}/edit">Edit</a>
+        <a class="action-btn danger" href="/ui/equipment/{{ eq.id }}/archive" onclick="return confirm('Archive this equipment?')">Archive</a>
+      </td>
+    </tr>
+    {% else %}
+    <tr>
+      <td colspan="7">No equipment added yet.</td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+
+{% endblock %}

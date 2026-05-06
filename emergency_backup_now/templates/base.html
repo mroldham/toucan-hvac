@@ -1,0 +1,24 @@
+<!doctype html>
+<html>
+<head>
+<link rel="stylesheet" href="/static/style.css?v=1777106372">
+<title>Toucan HVAC</title>
+  </head>
+<body>
+  <div class="sidebar">
+    <div class="brand">
+      <img src="/static/logo.png" onerror="this.style.display='none'">
+      <h2>Toucan HVAC</h2>
+      <p>936-334-2944</p>
+    </div>
+    <a href="/">Home</a>
+    <a href="/customers">Customers</a>
+    <a href="/customers/new">Add Customer</a>
+    <a href="/invoices">Invoice</a>
+  </div>
+
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card">
+  <h2>Add Equipment</h2>
+  <p><strong>Customer:</strong> {{ customer.first_name }} {{ customer.last_name }}</p>
+  <p><strong>Property:</strong> {{ property.property_name }}</p>
+
+  <form method="post">
+    <input name="unit_name" placeholder="Unit name" required>
+    <select name="heat_type">
+      <option value="">Select heat type</option>
+      <option value="Gas">Gas</option>
+      <option value="Electric">Electric</option>
+      <option value="Heat Pump">Heat Pump</option>
+    </select>
+    <input name="filter_size" placeholder="Filter size">
+    <input name="model_number" placeholder="Model number">
+    <input name="serial_number" placeholder="Serial number">
+    <textarea name="notes" placeholder="Notes" rows="4"></textarea>
+    <button class="primary-btn" type="submit">Save Equipment</button>
+  </form>
+</section>
+{% endblock %}

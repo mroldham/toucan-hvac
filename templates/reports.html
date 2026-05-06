@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="reports-hero card">
+    <h1>Reports Center</h1>
+    <p>
+        Print, organize, and manage your Toucan HVAC business reports.
+    </p>
+</div>
+
+<div class="report-grid">
+
+    <a class="report-card" href="/reports/customers">
+        <div class="report-icon">📞</div>
+
+        <div class="report-content">
+            <h2>Customer Phone List</h2>
+            <p>
+                Names, phone numbers, email addresses, and mailing addresses.
+            </p>
+        </div>
+    </a>
+
+    <a class="report-card" href="/reports/filters">
+        <div class="report-icon">🧊</div>
+
+        <div class="report-content">
+            <h2>Filter Size Report</h2>
+            <p>
+                View all filter sizes and associated customer equipment.
+            </p>
+        </div>
+    </a>
+
+    <a class="report-card" href="/reports/filter-reminders">
+        <div class="report-icon">📅</div>
+
+        <div class="report-content">
+            <h2>Filter Reminder Report</h2>
+            <p>
+                Customers due for filter replacement or maintenance reminders.
+            </p>
+        </div>
+    </a>
+
+    <a class="report-card" href="/reports/equipment">
+        <div class="report-icon">🏠</div>
+
+        <div class="report-content">
+            <h2>Equipment Report</h2>
+            <p>
+                Equipment inventory, serial numbers, and installation details.
+            </p>
+        </div>
+    </a>
+
+    <a class="report-card" href="/reports/invoices">
+        <div class="report-icon">💰</div>
+
+        <div class="report-content">
+            <h2>Invoice Report</h2>
+            <p>
+                Review paid, unpaid, and past due invoices.
+            </p>
+        </div>
+    </a>
+
+</div>
+
+{% endblock %}

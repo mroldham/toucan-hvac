@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="card">
+  <h1>Edit Technician</h1>
+
+  <form method="POST" class="form-card">
+    <label>Name</label>
+    <input name="name" value="{{ tech.name }}">
+
+    <label>Email / Login</label>
+    <input name="email" value="{{ tech.email }}">
+
+    <label>Phone</label>
+    <input name="phone" value="{{ tech.phone or '' }}">
+
+    <label>Address</label>
+    <input name="address" value="{{ tech.address or '' }}">
+
+    <label>Role</label>
+    <select name="role">
+      <option value="admin" {% if tech.role == "admin" %}selected{% endif %}>Admin</option>
+      <option value="tech" {% if tech.role == "tech" %}selected{% endif %}>Technician</option>
+    </select>
+
+    <label>New Password</label>
+    <input name="password" placeholder="Leave blank to keep current password">
+
+    <button type="submit">Save Technician</button>
+  </form>
+</div>
+
+{% endblock %}

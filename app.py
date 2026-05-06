@@ -81,9 +81,51 @@ class Equipment(db.Model):
     serial_number = db.Column(db.String(120))
     notes = db.Column(db.Text)
 
+    furnace_model = db.Column(db.String(120))
+    furnace_serial = db.Column(db.String(120))
+    evaporator_model = db.Column(db.String(120))
+    evaporator_serial = db.Column(db.String(120))
+    condenser_model = db.Column(db.String(120))
+    condenser_serial = db.Column(db.String(120))
+    air_handler_model = db.Column(db.String(120))
+    air_handler_serial = db.Column(db.String(120))
 
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
+
+class ServiceJob(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+
+    customer_id = db.Column(db.Integer, db.ForeignKey('customer.id'))
+    property_id = db.Column(db.Integer, db.ForeignKey('property.id'))
+
+    description = db.Column(db.Text)
+    scheduled_date = db.Column(db.String(50))
+    status = db.Column(db.String(50), default="Scheduled")
+
+    technician = db.Column(db.String(100))
+
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class FilterProduct(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    size = db.Column(db.String(80), nullable=False)
+    description = db.Column(db.String(200))
+    price = db.Column(db.Float, nullable=False, default=0.0)
+    active = db.Column(db.Boolean, default=True)
+
+
+class FilterOrder(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(150))
+    phone = db.Column(db.String(50))
+    email = db.Column(db.String(150))
+    address = db.Column(db.String(255))
+    filter_size = db.Column(db.String(80))
+    quantity = db.Column(db.String(50))
+    frequency = db.Column(db.String(80))
+    notes = db.Column(db.Text)
 
 
 def current_user():
@@ -92,6 +134,18 @@ def current_user():
         return None
     return db.session.get(User, user_id)
 
+
+
+def admin_required(f):
+    from functools import wraps
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        user = current_user()
+        if user.role != "admin":
+            flash("Access denied")
+            return redirect("/my-jobs")
+        return f(*args, **kwargs)
+    return wrapper
 
 def login_required(f):
     @wraps(f)
@@ -209,7 +263,7 @@ def logout():
     return redirect(url_for("login"))
 
 
-@app.route("/customers")
+@app.route("/customers", methods=["GET", "POST"])
 @login_required
 def customers():
     customer_list = Customer.query.order_by(Customer.last_name.asc(), Customer.first_name.asc()).all()
@@ -250,6 +304,19 @@ def create_customer():
     db.session.commit()
     flash("Customer created.")
     return redirect(url_for("customers"))
+
+@app.route('/service-jobs')
+def service_jobs():
+    jobs = ServiceJob.query.all()
+    customers = {c.id: c for c in Customer.query.all()}
+    properties = {p.id: p for p in Property.query.all()}
+    return render_template(
+        'service_jobs.html',
+        jobs=jobs,
+        customers=customers,
+        properties=properties,
+        user=current_user()
+    )
 
 
 @app.route("/customers/<int:customer_id>")
@@ -367,27 +434,13 @@ def create_property(customer_id):
     return render_template("create_property.html", user=current_user(), customer=customer)
 
 
+
 @app.route("/properties")
+@admin_required
 @login_required
 def properties():
-    property_list = Property.query.order_by(Property.id.desc()).all()
-    rows = []
-    photo_counts = {
-        row.property_id: row.count
-        for row in db.session.query(
-            PropertyPhoto.property_id,
-            db.func.count(PropertyPhoto.id).label("count")
-        ).group_by(PropertyPhoto.property_id).all()
-    }
-
-    for prop in property_list:
-        customer = Customer.query.get(prop.customer_id)
-        rows.append({
-            "property": prop,
-            "customer": customer,
-            "photo_count": photo_counts.get(prop.id, 0)
-        })
-    return render_template("properties.html", user=current_user(), rows=rows)
+    props = Property.query.order_by(Property.id.desc()).all()
+    return render_template("properties.html", properties=props)
 
 
 @app.route("/properties/<int:property_id>")
@@ -524,6 +577,7 @@ def create_equipment(property_id):
 
 
 @app.route("/equipment")
+@admin_required
 @login_required
 def equipment():
     equipment_list = Equipment.query.order_by(Equipment.id.desc()).all()
@@ -553,6 +607,623 @@ def setup_app():
 
 
 setup_app()
+
+
+@app.route("/filter-order", methods=["GET", "POST"])
+def filter_order():
+    db.create_all()
+
+    if request.method == "POST":
+        order = FilterOrder(
+            name=request.form.get("name"),
+            phone=request.form.get("phone"),
+            email=request.form.get("email"),
+            address=request.form.get("address"),
+            filter_size=request.form.get("filter_size"),
+            quantity=request.form.get("quantity"),
+            frequency=request.form.get("frequency"),
+            notes=request.form.get("notes"),
+        )
+        db.session.add(order)
+        db.session.commit()
+        flash("Filter order submitted.")
+        return redirect(url_for("filter_order"))
+
+    products = FilterProduct.query.filter_by(active=True).order_by(FilterProduct.size.asc()).all()
+    return render_template("filter_order.html", products=products)
+
+
+@app.route("/filter-orders")
+@login_required
+def filter_orders():
+    db.create_all()
+    orders = FilterOrder.query.order_by(FilterOrder.id.desc()).all()
+    return render_template("filter_orders.html", orders=orders)
+
+
+
+@app.route("/filter-products", methods=["GET", "POST"])
+@login_required
+def filter_products():
+    db.create_all()
+
+    if request.method == "POST":
+        product = FilterProduct(
+            size=request.form.get("size"),
+            description=request.form.get("description"),
+            price=float(request.form.get("price") or 0),
+            active=True
+        )
+        db.session.add(product)
+        db.session.commit()
+        flash("Filter product added.")
+        return redirect(url_for("filter_products"))
+
+    products = FilterProduct.query.order_by(FilterProduct.size.asc()).all()
+    return render_template("filter_products.html", products=products)
+
+
+@app.route("/filter-products/<int:product_id>/edit", methods=["POST"])
+@login_required
+def edit_filter_product(product_id):
+    product = FilterProduct.query.get_or_404(product_id)
+    product.size = request.form.get("size")
+    product.description = request.form.get("description")
+    product.price = float(request.form.get("price") or 0)
+    product.active = True if request.form.get("active") == "on" else False
+    db.session.commit()
+    flash("Filter product updated.")
+    return redirect(url_for("filter_products"))
+
+
+
+
+# ===== CUSTOMER EDIT =====
+@app.route("/customers/<int:customer_id>/edit", methods=["GET","POST"])
+@login_required
+def edit_customer(customer_id):
+    customer = Customer.query.get_or_404(customer_id)
+
+    if request.method == "POST":
+        customer.first_name = request.form.get("first_name")
+        customer.last_name = request.form.get("last_name")
+        customer.phone = request.form.get("phone")
+        customer.email = request.form.get("email")
+        db.session.commit()
+        flash("Customer updated.")
+        return redirect(url_for("customer_detail", customer_id=customer.id))
+
+    return render_template("edit_customer.html", customer=customer)
+
+
+# ===== CUSTOMER DELETE =====
+@app.route("/customers/<int:customer_id>/delete")
+@login_required
+def delete_customer(customer_id):
+    customer = Customer.query.get_or_404(customer_id)
+    db.session.delete(customer)
+    db.session.commit()
+    flash("Customer deleted.")
+    return redirect(url_for("customers"))
+
+
+# ===== PROPERTY DELETE =====
+@app.route("/properties/<int:property_id>/delete")
+@login_required
+def delete_property(property_id):
+    prop = Property.query.get_or_404(property_id)
+    db.session.delete(prop)
+    db.session.commit()
+    flash("Property deleted.")
+    return redirect(url_for("properties"))
+
+
+# ===== EQUIPMENT DELETE =====
+@app.route("/equipment/<int:equipment_id>/delete")
+@login_required
+def delete_equipment(equipment_id):
+    eq = Equipment.query.get_or_404(equipment_id)
+    db.session.delete(eq)
+    db.session.commit()
+    flash("Equipment deleted.")
+    return redirect(url_for("equipment"))
+
+
+# ===== EQUIPMENT REPLACE =====
+@app.route("/equipment/<int:equipment_id>/replace", methods=["POST"])
+@login_required
+def replace_equipment(equipment_id):
+    eq = Equipment.query.get_or_404(equipment_id)
+
+    # mark old equipment as inactive
+    if hasattr(eq, "active"):
+        eq.active = False
+
+    # create new equipment
+    new_eq = Equipment(
+        property_id=eq.property_id,
+        equipment_type=request.form.get("equipment_type"),
+        model=request.form.get("model"),
+        serial=request.form.get("serial"),
+        notes="Replaced old unit ID " + str(eq.id)
+    )
+
+    db.session.add(new_eq)
+    db.session.commit()
+
+    flash("Equipment replaced successfully.")
+    return redirect(url_for("property_detail", property_id=eq.property_id))
+
+
+
+
+# ===== CLEAN EQUIPMENT UI ROUTES =====
+@app.route("/ui/properties/<int:property_id>/equipment/add", methods=["GET", "POST"])
+@login_required
+def ui_add_equipment(property_id):
+    property = Property.query.get_or_404(property_id)
+
+    if request.method == "POST":
+        eq = Equipment(
+            property_id=property.id,
+            unit_name=request.form.get("unit_name") or "HVAC Unit",
+            heat_type=request.form.get("heat_type"),
+            filter_size=request.form.get("filter_size"),
+            model_number=request.form.get("condenser_model") or request.form.get("furnace_model") or request.form.get("air_handler_model"),
+            serial_number=request.form.get("condenser_serial") or request.form.get("furnace_serial") or request.form.get("air_handler_serial"),
+            furnace_model=request.form.get("furnace_model"),
+            furnace_serial=request.form.get("furnace_serial"),
+            evaporator_model=request.form.get("evaporator_model"),
+            evaporator_serial=request.form.get("evaporator_serial"),
+            condenser_model=request.form.get("condenser_model"),
+            condenser_serial=request.form.get("condenser_serial"),
+            air_handler_model=request.form.get("air_handler_model"),
+            air_handler_serial=request.form.get("air_handler_serial"),
+            notes=request.form.get("notes")
+        )
+
+        db.session.add(eq)
+        db.session.commit()
+        flash("Equipment added.")
+        return redirect(url_for("property_detail", property_id=property.id))
+
+    return render_template("ui_equipment_form.html", property=property, equipment=None, title="Add Equipment")
+
+
+@app.route("/ui/equipment/<int:equipment_id>/edit", methods=["GET", "POST"])
+@login_required
+def ui_edit_equipment(equipment_id):
+    equipment = Equipment.query.get_or_404(equipment_id)
+    property = Property.query.get_or_404(equipment.property_id)
+
+    if request.method == "POST":
+        equipment.unit_name = request.form.get("unit_name") or "HVAC Unit"
+        equipment.heat_type = request.form.get("heat_type")
+        equipment.filter_size = request.form.get("filter_size")
+        equipment.furnace_model = request.form.get("furnace_model")
+        equipment.furnace_serial = request.form.get("furnace_serial")
+        equipment.evaporator_model = request.form.get("evaporator_model")
+        equipment.evaporator_serial = request.form.get("evaporator_serial")
+        equipment.condenser_model = request.form.get("condenser_model")
+        equipment.condenser_serial = request.form.get("condenser_serial")
+        equipment.air_handler_model = request.form.get("air_handler_model")
+        equipment.air_handler_serial = request.form.get("air_handler_serial")
+        equipment.model_number = request.form.get("condenser_model") or request.form.get("furnace_model") or request.form.get("air_handler_model")
+        equipment.serial_number = request.form.get("condenser_serial") or request.form.get("furnace_serial") or request.form.get("air_handler_serial")
+        equipment.notes = request.form.get("notes")
+
+        db.session.commit()
+        flash("Equipment updated.")
+        return redirect(url_for("property_detail", property_id=equipment.property_id))
+
+    return render_template("ui_equipment_form.html", property=property, equipment=equipment, title="Edit Equipment")
+
+
+@app.route("/ui/equipment/<int:equipment_id>/archive")
+@login_required
+def ui_archive_equipment(equipment_id):
+    equipment = Equipment.query.get_or_404(equipment_id)
+
+    if hasattr(equipment, "active"):
+        equipment.active = False
+    elif hasattr(equipment, "notes"):
+        old_notes = equipment.notes or ""
+        if "[ARCHIVED]" not in old_notes:
+            equipment.notes = "[ARCHIVED] " + old_notes
+
+    db.session.commit()
+    flash("Equipment archived.")
+    return redirect(url_for("property_detail", property_id=equipment.property_id))
+
+
+
+
+
+
+@app.route("/service-jobs/new", methods=["GET", "POST"])
+@login_required
+def new_service_job():
+    db.create_all()
+
+    if request.method == "POST":
+        job = ServiceJob(
+            customer_id=request.form.get("customer_id") or None,
+            property_id=request.form.get("property_id") or None,
+            description=request.form.get("description"),
+            scheduled_date=request.form.get("scheduled_date"),
+            status=request.form.get("status") or "Scheduled",
+            technician=request.form.get("technician")
+        )
+        db.session.add(job)
+        db.session.commit()
+        flash("Service job added.")
+        return redirect(url_for("service_jobs"))
+
+    customers = Customer.query.order_by(Customer.last_name.asc(), Customer.first_name.asc()).all()
+    properties = Property.query.order_by(Property.property_name.asc()).all()
+    technicians = User.query.order_by(User.name.asc()).all()
+
+    return render_template(
+        "service_job_form.html",
+        customers=customers,
+        properties=properties,
+        technicians=technicians
+    )
+
+
+
+@app.route("/calendar")
+@login_required
+def calendar_view():
+    jobs = ServiceJob.query.all()
+    return render_template("calendar.html", jobs=jobs)
+
+
+@app.route("/service-jobs/<int:job_id>")
+@login_required
+def service_job_detail(job_id):
+    job = ServiceJob.query.get_or_404(job_id)
+    customer = Customer.query.get(job.customer_id) if job.customer_id else None
+    property = Property.query.get(job.property_id) if job.property_id else None
+    photos = ServiceJobPhoto.query.filter_by(job_id=job.id).order_by(ServiceJobPhoto.id.desc()).all()
+    return render_template("service_job_detail.html", job=job, customer=customer, property=property, photos=photos)
+
+
+@app.route("/service-jobs/<int:job_id>/update", methods=["POST"])
+@login_required
+def update_service_job(job_id):
+    job = ServiceJob.query.get_or_404(job_id)
+    job.status = request.form.get("status")
+    job.technician = request.form.get("technician")
+    if hasattr(job, "work_performed"):
+        job.work_performed = request.form.get("work_performed")
+    db.session.commit()
+    flash("Job updated.")
+    return redirect(url_for("service_job_detail", job_id=job.id))
+
+@app.route("/tech-mobile")
+@login_required
+def tech_mobile():
+    user = current_user()
+
+    if user.role == "admin":
+        jobs = ServiceJob.query.order_by(ServiceJob.scheduled_date.asc()).all()
+    else:
+        jobs = ServiceJob.query.filter_by(
+            technician=user.name
+        ).order_by(ServiceJob.scheduled_date.asc()).all()
+
+    customers = {c.id: c for c in Customer.query.all()}
+    properties = {p.id: p for p in Property.query.all()}
+
+    return render_template(
+        "tech_mobile.html",
+        jobs=jobs,
+        customers=customers,
+        properties=properties,
+        user=user,
+        current_user=current_user
+    )
+
+@app.route("/my-jobs")
+@login_required
+def my_jobs():
+    user = current_user()
+    jobs = ServiceJob.query.filter_by(technician=user.name).all()
+    return render_template(
+        "my_jobs.html",
+        jobs=jobs,
+        user=current_user()
+    )
+
+
+class ServiceJobPhoto(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    job_id = db.Column(db.Integer, db.ForeignKey("service_job.id"), nullable=False)
+    filename = db.Column(db.String(255), nullable=False)
+    caption = db.Column(db.String(255))
+
+
+@app.route("/service-jobs/<int:job_id>/photos", methods=["POST"])
+@login_required
+def add_service_job_photo(job_id):
+    db.create_all()
+    job = ServiceJob.query.get_or_404(job_id)
+
+    file = request.files.get("photo")
+    caption = request.form.get("caption")
+
+    if file and file.filename:
+        upload_dir = os.path.join(app.root_path, "static", "uploads")
+        os.makedirs(upload_dir, exist_ok=True)
+
+        filename = "job_" + str(job.id) + "_" + secure_filename(file.filename)
+        file.save(os.path.join(upload_dir, filename))
+
+        photo = ServiceJobPhoto(
+            job_id=job.id,
+            filename=filename,
+            caption=caption
+        )
+        db.session.add(photo)
+        db.session.commit()
+        flash("Job photo uploaded.")
+
+    return redirect(url_for("service_job_detail", job_id=job.id))
+
+
+class ToucanInvoice(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    customer_id = db.Column(db.Integer, db.ForeignKey("customer.id"))
+    property_id = db.Column(db.Integer, db.ForeignKey("property.id"))
+    job_id = db.Column(db.Integer)
+    invoice_number = db.Column(db.String(50))
+    invoice_date = db.Column(db.String(30))
+    status = db.Column(db.String(50), default="Draft")
+    notes = db.Column(db.Text)
+    subtotal = db.Column(db.Float, default=0)
+    tax = db.Column(db.Float, default=0)
+    total = db.Column(db.Float, default=0)
+
+
+class ToucanInvoiceItem(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    invoice_id = db.Column(db.Integer, db.ForeignKey("toucan_invoice.id"))
+    description = db.Column(db.String(255))
+    quantity = db.Column(db.Float, default=1)
+    unit_price = db.Column(db.Float, default=0)
+    line_total = db.Column(db.Float, default=0)
+
+
+
+@app.route("/invoice-center")
+@login_required
+def invoice_center():
+    db.create_all()
+    invoices = ToucanInvoice.query.order_by(ToucanInvoice.id.desc()).all()
+    customers = {c.id: c for c in Customer.query.all()}
+    properties = {p.id: p for p in Property.query.all()}
+    return render_template("invoice_center.html", invoices=invoices, customers=customers, properties=properties)
+
+
+@app.route("/invoice-center/new", methods=["GET", "POST"])
+@login_required
+def new_toucan_invoice():
+    db.create_all()
+
+    if request.method == "POST":
+        invoice = ToucanInvoice(
+            customer_id=request.form.get("customer_id") or None,
+            property_id=request.form.get("property_id") or None,
+            invoice_number=request.form.get("invoice_number"),
+            invoice_date=request.form.get("invoice_date"),
+            status=request.form.get("status") or "Draft",
+            notes=request.form.get("notes")
+        )
+        db.session.add(invoice)
+        db.session.commit()
+
+        subtotal = 0
+
+        descriptions = request.form.getlist("description[]")
+        quantities = request.form.getlist("quantity[]")
+        prices = request.form.getlist("unit_price[]")
+
+        for desc, qty, price in zip(descriptions, quantities, prices):
+            if not desc.strip():
+                continue
+
+            q = float(qty or 0)
+            p = float(price or 0)
+            line_total = q * p
+            subtotal += line_total
+
+            item = ToucanInvoiceItem(
+                invoice_id=invoice.id,
+                description=desc,
+                quantity=q,
+                unit_price=p,
+                line_total=line_total
+            )
+            db.session.add(item)
+
+        tax_rate = float(request.form.get("tax_rate") or 0)
+        tax = subtotal * (tax_rate / 100)
+        total = subtotal + tax
+
+        invoice.subtotal = subtotal
+        invoice.tax = tax
+        invoice.total = total
+
+        db.session.commit()
+        flash("Invoice created.")
+        return redirect(url_for("toucan_invoice_detail", invoice_id=invoice.id))
+
+    customers = Customer.query.order_by(Customer.last_name.asc(), Customer.first_name.asc()).all()
+    properties = Property.query.order_by(Property.property_name.asc()).all()
+    return render_template("new_toucan_invoice.html", customers=customers, properties=properties, job=None)
+
+
+@app.route("/invoice-center/from-job/<int:job_id>", methods=["GET", "POST"])
+@login_required
+def invoice_from_job(job_id):
+    job = ServiceJob.query.get_or_404(job_id)
+    customer = Customer.query.get(job.customer_id) if job.customer_id else None
+    property = Property.query.get(job.property_id) if job.property_id else None
+
+    customers = Customer.query.order_by(Customer.last_name.asc(), Customer.first_name.asc()).all()
+    properties = Property.query.order_by(Property.property_name.asc()).all()
+    return render_template("new_toucan_invoice.html", customers=customers, properties=properties, job=job, customer=customer, property=property)
+
+
+@app.route("/invoice-center/<int:invoice_id>")
+@login_required
+def toucan_invoice_detail(invoice_id):
+    invoice = ToucanInvoice.query.get_or_404(invoice_id)
+    items = ToucanInvoiceItem.query.filter_by(invoice_id=invoice.id).all()
+    customer = Customer.query.get(invoice.customer_id) if invoice.customer_id else None
+    property = Property.query.get(invoice.property_id) if invoice.property_id else None
+    return render_template("toucan_invoice_detail.html", invoice=invoice, items=items, customer=customer, property=property)
+
+
+
+@app.route("/invoice-center/<int:invoice_id>/mark-paid")
+@login_required
+def mark_invoice_paid(invoice_id):
+    invoice = ToucanInvoice.query.get_or_404(invoice_id)
+    invoice.status = "Paid"
+    db.session.commit()
+    flash("Invoice marked as paid.")
+    return redirect(url_for("toucan_invoice_detail", invoice_id=invoice.id))
+
+
+
+@app.route("/reports")
+@login_required
+@admin_required
+def reports_dashboard():
+    return render_template("reports.html", user=current_user())
+
+
+@app.route("/reports/customers")
+@login_required
+@admin_required
+def report_customers():
+    customers = Customer.query.order_by(Customer.last_name.asc(), Customer.first_name.asc()).all()
+    return render_template("report_customers.html", customers=customers, user=current_user())
+
+
+@app.route("/reports/equipment")
+@login_required
+@admin_required
+def report_equipment():
+    equipment = Equipment.query.order_by(Equipment.id.desc()).all()
+    properties = {p.id: p for p in Property.query.all()}
+    customers = {c.id: c for c in Customer.query.all()}
+    return render_template("report_equipment.html", equipment=equipment, properties=properties, customers=customers, user=current_user())
+
+
+@app.route("/reports/invoices")
+@login_required
+@admin_required
+def report_invoices():
+    invoices = ToucanInvoice.query.order_by(ToucanInvoice.id.desc()).all()
+    customers = {c.id: c for c in Customer.query.all()}
+    properties = {p.id: p for p in Property.query.all()}
+    return render_template("report_invoices.html", invoices=invoices, customers=customers, properties=properties, user=current_user())
+
+
+@app.route("/reports/filter-reminders")
+@login_required
+@admin_required
+def report_filter_reminders():
+    equipment = Equipment.query.order_by(Equipment.id.desc()).all()
+    properties = {p.id: p for p in Property.query.all()}
+    customers = {c.id: c for c in Customer.query.all()}
+    return render_template("report_filter_reminders.html", equipment=equipment, properties=properties, customers=customers, user=current_user())
+
+
+@app.route("/reports/filters")
+@login_required
+@admin_required
+def report_filters():
+    equipment = Equipment.query.order_by(Equipment.filter_size.asc()).all()
+    properties = {p.id: p for p in Property.query.all()}
+    customers = {c.id: c for c in Customer.query.all()}
+    return render_template("report_filters.html", equipment=equipment, properties=properties, customers=customers, user=current_user())
+
+
+
+
+@app.route("/technicians")
+@login_required
+@admin_required
+def technicians():
+    techs = User.query.order_by(User.name.asc()).all()
+
+    return render_template(
+        "technicians.html",
+        technicians=techs,
+        user=current_user()
+    )
+
+
+@app.route("/technicians/new", methods=["GET", "POST"])
+@login_required
+@admin_required
+def new_technician():
+
+    if request.method == "POST":
+
+        user = User(
+            name=request.form.get("name"),
+            email=request.form.get("email"),
+            password=request.form.get("password"),
+            role=request.form.get("role") or "technician"
+        )
+
+        db.session.add(user)
+        db.session.commit()
+
+        flash("Technician added.")
+
+        return redirect(url_for("technicians"))
+
+    return render_template(
+        "new_technician.html",
+        user=current_user()
+    )
+
+
+@app.route("/technicians/<int:user_id>/edit", methods=["GET", "POST"])
+@login_required
+@admin_required
+def edit_technician(user_id):
+
+    technician = User.query.get_or_404(user_id)
+
+    if request.method == "POST":
+
+        technician.name = request.form.get("name")
+        technician.email = request.form.get("email")
+
+        if request.form.get("password"):
+            technician.password = request.form.get("password")
+
+        technician.role = request.form.get("role")
+
+        db.session.commit()
+
+        flash("Technician updated.")
+
+        return redirect(url_for("technicians"))
+
+    return render_template(
+        "edit_technician.html",
+        technician=technician,
+        user=current_user()
+    )
+
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5001))

@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="invoice-actions no-print">
+  <a href="/invoice-center">← Back to Invoices</a>
+
+  <div class="invoice-action-buttons">
+    <button onclick="window.print()">Print Invoice</button>
+
+    {% if customer and customer.email %}
+      <a class="invoice-action-link"
+         href="mailto:{{ customer.email }}?subject=Invoice {{ invoice.invoice_number or invoice.id }}&body=Invoice {{ invoice.invoice_number or invoice.id }}%0AAmount Due: ${{ '%.2f'|format(invoice.total or 0) }}%0A%0AThank you,%0AStephen Oldham%0A936-334-2944">
+         Email Invoice
+      </a>
+    {% endif %}
+
+    {% if customer and customer.phone %}
+      <a class="invoice-action-link"
+         href="sms:{{ customer.phone }}&body=Invoice {{ invoice.invoice_number or invoice.id }} - Amount Due: ${{ '%.2f'|format(invoice.total or 0) }}. Stephen Oldham 936-334-2944">
+         Text Invoice
+      </a>
+    {% endif %}
+
+    <a class="invoice-action-link" href="/invoice-center/{{ invoice.id }}/mark-paid">Mark Paid</a>
+  </div>
+</div>
+
+<div class="match-invoice">
+
+  <div class="match-header">
+    <div class="match-logo">
+      <img src="{{ url_for('static', filename='logo.png') }}" alt="Toucan logo">
+    </div>
+
+    <div class="match-company">
+      <h1>Stephen Oldham</h1>
+      <div>2227 Beaumont Ave. #2, Liberty, Texas, 77575</div>
+      <div>stephen.oldham@me.com</div>
+      <div>936-334-2944</div>
+    </div>
+
+    <div class="match-meta">
+      <div class="invoice-title">INVOICE</div>
+      <div class="invoice-no">9269{% if invoice.id > 1 %}-{{ invoice.id }}{% endif %}</div>
+    </div>
+  </div>
+
+  <div class="match-top-row">
+    <div class="to-area">
+      <div class="label">TO:</div>
+
+      <div class="write-line"></div>
+      <div class="write-line"></div>
+      <div class="write-line"></div>
+
+      <div class="to-fill">
+        <div>{% if customer %}{{ customer.first_name }} {{ customer.last_name }}{% endif %}</div>
+        <div>{% if customer %}{{ customer.phone or "" }}{% endif %}</div>
+        <div>{% if customer %}{{ customer.email or "" }}{% endif %}</div>
+      </div>
+    </div>
+
+    <div class="date-area">
+      <span class="label">DATE:</span>
+      <span class="date-line">{{ invoice.invoice_date or "" }}</span>
+    </div>
+  </div>
+
+  <div class="job-row">
+    <span class="label">JOB LOCATION:</span>
+    <span class="job-line">
+      {% if property %}
+        {{ property.address }}
+      {% endif %}
+    </span>
+  </div>
+
+  <table class="match-table">
+    <thead>
+      <tr>
+        <th class="services-head">SERVICES</th>
+        <th class="amount-head">AMOUNT +/-</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      {% for i in range(1, 18) %}
+      <tr>
+        <td>
+          <span class="num">{{ i }}</span>
+          <span class="service-text">
+            {% if items|length >= i %}
+              {{ items[i-1].description }}
+            {% endif %}
+          </span>
+        </td>
+
+        <td>
+          {% if items|length >= i %}
+            ${{ "%.2f"|format(items[i-1].line_total or 0) }}
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+
+      <tr class="total-line">
+        <td></td>
+        <td><strong>TOTAL</strong> ${{ "%.2f"|format(invoice.total or 0) }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="check-pay">* Make check payable to Stephen Oldham</div>
+
+  <div class="thank-you-fixed">Thank You!</div>
+
+  <div class="sign-row">
+    <div class="sign-block">
+      <span class="label">SIGNATURE</span>
+      <span class="sign-line"></span>
+    </div>
+
+    <div class="sign-block date-sign-block">
+      <span class="label">DATE</span>
+      <span class="sign-line"></span>
+    </div>
+  </div>
+
+</div>
+
+{% endblock %}
