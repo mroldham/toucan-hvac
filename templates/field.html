@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="card">
+  <h1>Field Tech Dashboard</h1>
+  <p class="muted">Fast mobile view for jobs, customers, maps, equipment, notes, and invoices.</p>
+</div>
+
+{% if jobs %}
+  {% for job in jobs %}
+    {% set customer = customers.get(job.customer_id) %}
+    {% set prop = properties.get(job.property_id) %}
+    {% set equipment_list = equipment_by_property.get(job.property_id, []) %}
+
+    <div class="card field-card">
+      <div class="field-header">
+        <div>
+          <h2>{{ job.title or job.job_type or "Service Job" }}</h2>
+          <p><b>Status:</b> {{ job.status or "Open" }}</p>
+          <p><b>Priority:</b> {{ job.priority or "Normal" }}</p>
+        </div>
+        <div>
+          <div class="status-pill">{{ job.status or "Open" }}</div>
+          {% if job.priority == "Emergency" %}
+            <div class="status-pill danger-pill">🚨 Emergency</div>
+          {% elif job.priority == "Urgent" %}
+            <div class="status-pill urgent-pill">⚠️ Urgent</div>
+          {% endif %}
+        </div>
+      </div>
+
+      {% if customer %}
+        <p><b>Customer:</b> {{ customer.first_name }} {{ customer.last_name }}</p>
+        {% if customer.phone %}
+          <a class="action-btn" href="tel:{{ customer.phone }}">📞 Call {{ customer.phone }}</a>
+        {% endif %}
+      {% endif %}
+
+      {% if prop %}
+        <p><b>Job Location:</b> {{ prop.address }}</p>
+        <div class="action-bar">
+          <a class="action-btn" target="_blank"
+             href="https://www.google.com/maps/search/?api=1&query={{ prop.address | urlencode }}">
+            📍 Open Map
+          </a>
+          <a class="action-btn gold" href="/properties/{{ prop.id }}">🏠 Property</a>
+        </div>
+      {% endif %}
+
+      <div class="field-section">
+        <h3>Equipment</h3>
+        {% if equipment_list %}
+          {% for e in equipment_list %}
+            <div class="mini-box">
+              <b>{{ e.name or e.equipment_type or "Equipment" }}</b><br>
+              Heat: {{ e.heat_type or "N/A" }}<br>
+              Filter: {{ e.filter_size or "N/A" }}<br>
+              Model: {{ e.model_number or e.condenser_model or e.furnace_model or e.air_handler_model or "N/A" }}<br>
+              Serial: {{ e.serial_number or e.condenser_serial or e.furnace_serial or e.air_handler_serial or "N/A" }}
+            </div>
+          {% endfor %}
+        {% else %}
+          <p class="muted">No equipment listed for this property yet.</p>
+        {% endif %}
+      </div>
+
+      
+      <div class="action-bar">
+        <form method="post" action="/jobs/{{ job.id }}/quick-update">
+          <input type="hidden" name="status" value="In Progress">
+          <input type="hidden" name="note" value="Arrived on site.">
+          <button class="action-btn" type="submit">🚚 Arrived</button>
+        </form>
+
+        <form method="post" action="/jobs/{{ job.id }}/quick-update">
+          <input type="hidden" name="status" value="Completed">
+          <input type="hidden" name="note" value="Job completed.">
+          <button class="action-btn gold" type="submit">✅ Complete Job</button>
+        </form>
+      </div>
+
+      <div class="field-section">
+        <h3>Job Notes</h3>
+        <p>{{ job.notes or job.description or "No notes yet." }}</p>
+      </div>
+
+      <form method="post" action="/jobs/{{ job.id }}/quick-update" enctype="multipart/form-data" class="field-form">
+        <label>Status</label>
+        <select name="status">
+          <option value="Open" {% if job.status == "Open" %}selected{% endif %}>Open</option>
+          <option value="In Progress" {% if job.status == "In Progress" %}selected{% endif %}>In Progress</option>
+          <option value="Completed" {% if job.status == "Completed" %}selected{% endif %}>Completed</option>
+          <option value="Billed" {% if job.status == "Billed" %}selected{% endif %}>Billed</option>
+        </select>
+
+        <label>Quick Note</label>
+        <textarea name="note" rows="3" placeholder="Add field note..."></textarea>
+
+        <label>Job Photo</label>
+        <input type="file" name="photo" accept="image/*" capture="environment">
+
+        <button class="action-btn" type="submit">✅ Save Update / Upload Photo</button>
+      </form>
+
+      <div class="action-bar">
+        <a class="action-btn" href="/service-jobs/{{ job.id }}">🔎 Job Detail</a>
+        <a class="action-btn gold" href="/invoice-center/from-job/{{ job.id }}">🧾 Create Invoice</a>
+      </div>
+    </div>
+  {% endfor %}
+{% else %}
+  <div class="card">
+    <h2>No assigned jobs</h2>
+    <p class="muted">No jobs are assigned to you right now.</p>
+  </div>
+{% endif %}
+
+{% endblock %}

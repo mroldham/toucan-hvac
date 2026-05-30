@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="card">
+  <h1>Edit Customer</h1>
+
+  <form method="POST" class="form-card">
+    <label>First Name</label>
+    <input name="first_name" value="{{ customer.first_name or '' }}" required>
+
+    <label>Last Name</label>
+    <input name="last_name" value="{{ customer.last_name or '' }}" required>
+
+    <label>Phone</label>
+    <input name="phone" value="{{ customer.phone or '' }}">
+
+    <label>Email</label>
+    <input name="email" value="{{ customer.email or '' }}">
+
+    <label>Mailing Address</label>
+    <textarea name="mailing_address" placeholder="Mailing address">{{ customer.mailing_address or '' }}</textarea>
+
+    <label>Birthday</label>
+    <input type="date" name="birthday" value="{{ customer.birthday or '' }}">
+
+    <button class="action-btn gold" type="submit">Save Customer</button>
+  </form>
+
+  <div class="action-bar">
+    <a class="action-btn" href="/customers/{{ customer.id }}">Back to Customer</a>
+    <a class="action-btn" href="/customers">Back to Customers</a>
+  </div>
+</div>
+
+{% endblock %}
+
+

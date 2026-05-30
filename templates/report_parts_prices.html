@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="card">
+    <h1>Parts Price List</h1>
+    <p>Common HVAC parts and pricing reference sheet.</p>
+
+    <form method="POST" class="form-card">
+
+        <label>Part Name</label>
+        <input name="part_name" required>
+
+        <label>Price</label>
+        <input name="price" type="number" step="0.01">
+
+        <label>Notes</label>
+        <input name="notes">
+
+        <button type="submit">Add Part</button>
+
+    </form>
+</div>
+
+<div class="card">
+
+    <table class="report-table">
+        <tr>
+            <th>Part</th>
+            <th>Price</th>
+            <th>Notes</th>
+        </tr>
+
+        {% for part in parts %}
+        <tr>
+            <td>{{ part.part_name }}</td>
+            <td>${{ "%.2f"|format(part.price or 0) }}</td>
+            <td>{{ part.notes }}</td>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="3">No parts yet.</td>
+        </tr>
+        {% endfor %}
+
+    </table>
+
+</div>
+
+{% endblock %}

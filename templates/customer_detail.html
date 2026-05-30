@@ -10,11 +10,19 @@
 
   <div class="action-bar">
     <a class="action-btn gold" href="/customers/{{ customer.id }}/edit">Edit Customer</a>
+    {% if customer.phone %}
+      <a class="action-btn gold" href="tel:{{ customer.phone }}">Call Customer</a>
+      <a class="action-btn gold" href="sms:{{ customer.phone }}">Text Customer</a>
+    {% endif %}
     <a class="action-btn" href="/customers/{{ customer.id }}/add-property">+ Add Property</a>
     <a class="action-btn" href="/service-jobs/new">+ Add Job</a>
     <a class="action-btn" href="/invoice-center/new">+ Create Invoice</a>
     <a class="action-btn" href="/customers">Back to Customers</a>
-  </div>
+  
+<p><strong>Birthday:</strong>
+{{ customer.birthday or 'Not Set' }}</p>
+
+</div>
 </div>
 
 <div class="card">
@@ -44,6 +52,18 @@
               <strong>{{ eq.unit_name if eq.unit_name else "Equipment" }}</strong>
               <span>{{ eq.heat_type if eq.heat_type else "" }}</span>
               <span>Filter: {{ eq.filter_size if eq.filter_size else "—" }}</span>
+              {% if eq.furnace_model or eq.furnace_serial %}
+                <span>Furnace: {{ eq.furnace_model or "—" }} / {{ eq.furnace_serial or "—" }}</span>
+              {% endif %}
+              {% if eq.evaporator_model or eq.evaporator_serial %}
+                <span>Evap Coil: {{ eq.evaporator_model or "—" }} / {{ eq.evaporator_serial or "—" }}</span>
+              {% endif %}
+              {% if eq.air_handler_model or eq.air_handler_serial %}
+                <span>Air Handler: {{ eq.air_handler_model or "—" }} / {{ eq.air_handler_serial or "—" }}</span>
+              {% endif %}
+              {% if eq.condenser_model or eq.condenser_serial %}
+                <span>Condenser: {{ eq.condenser_model or "—" }} / {{ eq.condenser_serial or "—" }}</span>
+              {% endif %}
               <a href="/ui/equipment/{{ eq.id }}/edit">Edit</a>
             </div>
           {% else %}

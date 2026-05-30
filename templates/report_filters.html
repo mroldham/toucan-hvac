@@ -20,23 +20,13 @@
     </tr>
 
     {% for eq in equipment %}
+    {% set prop = properties.get(eq.property_id) %}
+    {% set cust = customers.get(prop.customer_id) if prop else None %}
     <tr>
       <td>{{ eq.filter_size }}</td>
-      <td>
-        {% if eq.property and eq.property.customer %}
-          {{ eq.property.customer.first_name }} {{ eq.property.customer.last_name }}
-        {% endif %}
-      </td>
-      <td>
-        {% if eq.property %}
-          {{ eq.property.property_name }} - {{ eq.property.address }}
-        {% endif %}
-      </td>
-      <td>
-        {% if eq.property and eq.property.customer %}
-          {{ eq.property.customer.phone }}
-        {% endif %}
-      </td>
+      <td>{% if cust %}{{ cust.first_name }} {{ cust.last_name }}{% endif %}</td>
+      <td>{% if prop %}{{ prop.property_name }} - {{ prop.address }}{% endif %}</td>
+      <td>{% if cust %}{{ cust.phone }}{% endif %}</td>
     </tr>
     {% else %}
     <tr><td colspan="4">No filter sizes found.</td></tr>

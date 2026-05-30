@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="card">
+  <h1>Monitoring Notification Settings</h1>
+  <p>Choose where Toucan HVAC should send monitoring alerts.</p>
+  <p><a class="action-btn" href="/monitoring">← Back to Monitoring</a></p>
+</div>
+
+<div class="card">
+  <form method="POST">
+
+    <h2>Text Message Alerts</h2>
+
+    <p>
+      <label>
+        <input type="checkbox" name="sms_enabled" {% if setting.sms_enabled %}checked{% endif %}>
+        Enable text alerts
+      </label>
+    </p>
+
+    <p>
+      <label>Cell Phone Number</label><br>
+      <input type="text" name="sms_phone_number" value="{{ setting.sms_phone_number or '' }}" placeholder="936-334-2944">
+    </p>
+
+    <hr>
+
+    <h2>Email Alerts</h2>
+
+    <p>
+      <label>
+        <input type="checkbox" name="email_enabled" {% if setting.email_enabled %}checked{% endif %}>
+        Enable email alerts
+      </label>
+    </p>
+
+    <p>
+      <label>Email Address</label><br>
+      <input type="email" name="email_address" value="{{ setting.email_address or '' }}" placeholder="you@example.com">
+    </p>
+
+    <button type="submit" class="action-btn">Save Notification Settings</button>
+
+  </form>
+</div>
+
+<style>
+input[type="text"],
+input[type="email"] {
+  width: 100%;
+  max-width: 420px;
+  padding: 12px;
+  border: 1px solid #b7eee6;
+  border-radius: 12px;
+  font-size: 16px;
+}
+</style>
+
+{% endblock %}

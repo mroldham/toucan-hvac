@@ -1,0 +1,9 @@
+.env
+__pycache__/
+*.pyc
+.DS_Store
+backups/
+static/uploads/
+static/exports/
+instance/*.db
+*.db

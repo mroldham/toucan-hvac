@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="card">
+  <h1>Decode Equipment</h1>
+
+  <p><b>Brand:</b> {{ info.brand or "N/A" }}</p>
+  <p><b>Model:</b> {{ info.model or "N/A" }}</p>
+  <p><b>Serial:</b> {{ info.serial or "N/A" }}</p>
+
+  <hr>
+
+  <h2>Estimated Equipment Info</h2>
+  <p><b>Type:</b> {{ info.equipment_type }}</p>
+  <p><b>Tonnage:</b> {{ info.tonnage }}</p>
+  <p><b>BTU:</b> {{ info.btu }}</p>
+  <p><b>Voltage:</b> {{ info.voltage }}</p>
+  <p><b>Age:</b> {{ info.estimated_age }}</p>
+
+  {% if info.notes %}
+    <div class="notice">
+      {% for note in info.notes %}
+        <p>{{ note }}</p>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <div class="action-bar">
+    <a class="action-btn" target="_blank"
+       href="https://www.google.com/search?q={{ (info.brand ~ ' ' ~ info.model ~ ' ' ~ info.serial ~ ' HVAC') | urlencode }}">
+       Google Model/Serial
+    </a>
+
+    <a class="action-btn" target="_blank"
+       href="{{ info.warranty_url }}">
+       {{ info.warranty_name }}
+    </a>
+
+    <button class="action-btn" onclick="navigator.clipboard.writeText('{{ info.serial }}'); alert('Serial copied: {{ info.serial }}');">
+       Copy Serial #
+    </button>
+
+    <a class="action-btn" target="_blank"
+       href="https://www.google.com/search?q={{ (info.brand ~ ' ' ~ info.model ~ ' manual') | urlencode }}">
+       Find Manual
+    </a>
+
+    <a class="action-btn" href="/equipment/{{ unit.id }}">
+       Back to Equipment
+    </a>
+  </div>
+</div>
+
+{% endblock %}

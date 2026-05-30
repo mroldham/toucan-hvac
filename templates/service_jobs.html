@@ -28,6 +28,13 @@
           <div class="job-card-top">
             <h3>{{ job.description or "Service Call" }}</h3>
             <span class="status-pill">{{ job.status or "Scheduled" }}</span>
+            {% if job.priority == "Emergency" %}
+              <span class="status-pill danger-pill priority-pill">🚨 Emergency</span>
+            {% elif job.priority == "Urgent" %}
+              <span class="status-pill urgent-pill priority-pill">⚠️ Urgent</span>
+            {% else %}
+              <span class="status-pill priority-pill">Normal</span>
+            {% endif %}
           </div>
 
           <p><b>Date:</b> {{ job.scheduled_date or "—" }}</p>

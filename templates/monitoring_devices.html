@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="card">
+  <h1>Monitoring Devices</h1>
+  <p>Manage Toucan HVAC monitoring devices and API keys.</p>
+  <p><a class="action-btn" href="/monitoring">← Back to Monitoring</a></p>
+</div>
+
+<div class="card">
+  {% if devices %}
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Device UID</th>
+          <th>API Key</th>
+          <th>Last Seen</th>
+          <th>Details</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for device in devices %}
+        <tr>
+          <td>{{ device.device_name }}</td>
+          <td><code>{{ device.device_uid }}</code></td>
+          <td><code>{{ device.api_key or "No key yet" }}</code></td>
+          <td>{{ device.last_seen or "Never" }}</td>
+          <td>
+            <a class="action-btn" href="/monitoring/device/{{ device.id }}">Open</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>No monitoring devices yet.</p>
+  {% endif %}
+</div>
+
+<style>
+code {
+  background: #f4fffd;
+  border: 1px solid #b7eee6;
+  padding: 4px 7px;
+  border-radius: 8px;
+  font-size: 13px;
+}
+</style>
+
+{% endblock %}

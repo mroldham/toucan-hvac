@@ -1,0 +1,31 @@
+
+{% extends "base.html" %}
+{% block content %}
+
+<h1>Order Needed Report</h1>
+
+<table style="width:100%;background:white;border-radius:18px;padding:12px;">
+  <tr>
+    <th>Category</th>
+    <th>Part</th>
+    <th>Part #</th>
+    <th>Total Qty</th>
+    <th>Minimum</th>
+    <th>Supplier</th>
+  </tr>
+  {% for item in items %}
+  <tr>
+    <td>{{ item.category }}</td>
+    <td>{{ item.part_name }}</td>
+    <td>{{ item.part_number }}</td>
+    <td>{{ item.total_qty }}</td>
+    <td>{{ item.min_quantity }}</td>
+    <td>{{ item.supplier }}</td>
+  </tr>
+  {% endfor %}
+</table>
+
+<br>
+<a href="/inventory">Back to Inventory</a>
+
+{% endblock %}

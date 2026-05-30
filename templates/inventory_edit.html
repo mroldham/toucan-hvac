@@ -1,0 +1,28 @@
+
+{% extends "base.html" %}
+{% block content %}
+
+<h1>Edit Inventory Item</h1>
+
+<form method="POST" style="background:white;padding:18px;border-radius:18px;box-shadow:0 4px 14px rgba(0,0,0,.08);">
+  <input name="category" value="{{ item.category or '' }}" placeholder="Category"><br><br>
+  <input name="part_name" value="{{ item.part_name or '' }}" placeholder="Part Name" required><br><br>
+  <input name="part_number" value="{{ item.part_number or '' }}" placeholder="Part Number"><br><br>
+  <textarea name="description" placeholder="Description">{{ item.description or '' }}</textarea><br><br>
+  <input name="unit_cost" type="number" step="0.01" value="{{ item.unit_cost or 0 }}" placeholder="Your Cost"><br><br>
+  <input name="sell_price" type="number" step="0.01" value="{{ item.sell_price or 0 }}" placeholder="Sell Price"><br><br>
+  <input name="min_quantity" type="number" value="{{ item.min_quantity or 0 }}" placeholder="Minimum Qty"><br><br>
+  <input name="supplier" value="{{ item.supplier or '' }}" placeholder="Supplier"><br><br>
+
+  <h3>Quantity by Location</h3>
+  {% for loc in locations %}
+    <label>{{ loc.location_name }}</label>
+    <input name="qty_{{ loc.id }}" type="number" value="{{ loc.quantity or 0 }}"><br><br>
+  {% endfor %}
+
+  <textarea name="notes" placeholder="Notes">{{ item.notes or '' }}</textarea><br><br>
+  <button type="submit">Save Changes</button>
+  <a href="/inventory">Cancel</a>
+</form>
+
+{% endblock %}

@@ -132,17 +132,6 @@
 
       <div class="equipment-actions">
 
-      <a class="action-btn" href="/equipment/{{ unit.id }}/decode">
-        Decode Equipment
-      </a>
-
-
-      <a class="action-btn" target="_blank"
-         href="https://explorer.bluon.com/?search={{ unit.model_number | urlencode }}">
-         🔎 Bluon Lookup
-      </a>
-
-
         <a class="action-btn"
            href="/equipment/{{ unit.id }}">
            View

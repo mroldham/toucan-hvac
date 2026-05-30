@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="card">
+  <h1>Property Map</h1>
+  <p>Map of customer properties with saved coordinates.</p>
+
+  <div class="action-bar">
+    <a class="action-btn gold" href="/properties/geocode">Geocode Missing Properties</a>
+    <a class="action-btn" href="/properties">Back to Properties</a>
+  </div>
+
+  <div id="map" style="height: 650px; width: 100%; border-radius: 18px; overflow: hidden;"></div>
+</div>
+
+<link
+  rel="stylesheet"
+  href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+/>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+const map = L.map('map').setView([30.057, -94.795], 10);
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  maxZoom: 19,
+  attribution: '&copy; OpenStreetMap'
+}).addTo(map);
+
+const bounds = [];
+
+{% for prop in properties %}
+  {% if prop.latitude and prop.longitude %}
+    {% set cust = customers.get(prop.customer_id) %}
+    const marker{{ prop.id }} = L.marker([{{ prop.latitude }}, {{ prop.longitude }}]).addTo(map);
+
+    marker{{ prop.id }}.bindPopup(`
+      <div style="min-width:240px">
+        <h3 style="margin:0 0 6px 0;">{{ prop.property_name }}</h3>
+        <p style="margin:4px 0;"><b>Address:</b><br>{{ prop.address }}</p>
+
+        {% if cust %}
+          <p style="margin:4px 0;"><b>Customer:</b> {{ cust.first_name }} {{ cust.last_name }}</p>
+          <p style="margin:4px 0;"><b>Phone:</b> {{ cust.phone or "—" }}</p>
+          <p style="margin:4px 0;"><b>Email:</b> {{ cust.email or "—" }}</p>
+          <p style="margin:4px 0;"><b>Mailing:</b><br>{{ cust.mailing_address or "—" }}</p>
+        {% endif %}
+
+        <hr>
+
+        <p style="margin:6px 0;">
+          <a href="/properties/{{ prop.id }}">Open Property</a>
+        </p>
+
+        {% if cust %}
+          <p style="margin:6px 0;">
+            <a href="/customers/{{ cust.id }}">Open Customer</a>
+          </p>
+        {% endif %}
+
+        <p style="margin:6px 0;">
+          <a target="_blank" href="https://www.google.com/maps/search/?api=1&query={{ prop.address | urlencode }}">Open in Google Maps</a>
+        </p>
+
+        {% if cust and cust.phone %}
+          <p style="margin:6px 0;">
+            <a href="tel:{{ cust.phone }}">Call Customer</a>
+          </p>
+          <p style="margin:6px 0;">
+            <a href="sms:{{ cust.phone }}">Text Customer</a>
+          </p>
+        {% endif %}
+      </div>
+    `);
+
+    bounds.push([{{ prop.latitude }}, {{ prop.longitude }}]);
+  {% endif %}
+{% endfor %}
+
+if (bounds.length > 0) {
+  map.fitBounds(bounds, { padding: [40, 40] });
+}
+</script>
+
+{% endblock %}

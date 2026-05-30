@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="card">
+  <h1>Monitoring Alerts</h1>
+  <p>Saved HVAC monitoring warnings and danger alerts.</p>
+  <p><a class="action-btn" href="/monitoring">← Back to Monitoring</a></p>
+</div>
+
+<div class="card">
+  <h2>Alert History</h2>
+
+  {% if alerts %}
+    <table>
+      <thead>
+        <tr>
+          <th>Time</th>
+          <th>Device ID</th>
+          <th>Severity</th>
+          <th>Type</th>
+          <th>Message</th>
+          <th>Resolved</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for alert in alerts %}
+        <tr>
+          <td>{{ alert.timestamp }}</td>
+          <td>{{ alert.device_id }}</td>
+          <td>
+            {% if alert.severity == "danger" %}
+              <span class="danger-pill">Danger</span>
+            {% else %}
+              <span class="urgent-pill">Warning</span>
+            {% endif %}
+          </td>
+          <td>{{ alert.alert_type }}</td>
+          <td>{{ alert.message }}</td>
+          <td>{{ "Yes" if alert.resolved else "No" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>No alerts recorded yet.</p>
+  {% endif %}
+</div>
+
+<style>
+.urgent-pill {
+  display: inline-block;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: #fff3cd;
+  color: #856404;
+  font-weight: 700;
+}
+
+.danger-pill {
+  display: inline-block;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: #ffe0e0;
+  color: #9b0000;
+  font-weight: 700;
+}
+</style>
+
+{% endblock %}

@@ -1,0 +1,41 @@
+
+{% extends "base.html" %}
+{% block content %}
+
+<h1>Public Website Requests</h1>
+
+<div class="card">
+  <h2>Service Requests</h2>
+  {% for r in requests_list %}
+    <div style="background:white;padding:14px;border-radius:14px;margin:12px 0;box-shadow:0 3px 10px rgba(0,0,0,.08);">
+      <h3>{{ r.name }} — {{ r.phone }}</h3>
+      <p><b>Email:</b> {{ r.email }}</p>
+      <p><b>Address:</b> {{ r.address }}</p>
+      <p><b>Problem:</b> {{ r.problem }}</p>
+      <p><b>Preferred Time:</b> {{ r.preferred_time }}</p>
+      <p><b>Status:</b> {{ r.status }} | <b>Created:</b> {{ r.created_at }}</p>
+    </div>
+  {% else %}
+    <p>No service requests yet.</p>
+  {% endfor %}
+</div>
+
+<div class="card">
+  <h2>Filter Orders</h2>
+  {% for f in filter_orders %}
+    <div style="background:white;padding:14px;border-radius:14px;margin:12px 0;box-shadow:0 3px 10px rgba(0,0,0,.08);">
+      <h3>{{ f.name }} — {{ f.phone }}</h3>
+      <p><b>Email:</b> {{ f.email }}</p>
+      <p><b>Address:</b> {{ f.address }}</p>
+      <p><b>Filter Size:</b> {{ f.filter_size }}</p>
+      <p><b>Qty:</b> {{ f.quantity }}</p>
+      <p><b>Frequency:</b> {{ f.frequency }}</p>
+      <p><b>Notes:</b> {{ f.notes }}</p>
+      <p><b>Status:</b> {{ f.status }} | <b>Created:</b> {{ f.created_at }}</p>
+    </div>
+  {% else %}
+    <p>No filter orders yet.</p>
+  {% endfor %}
+</div>
+
+{% endblock %}

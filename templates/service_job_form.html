@@ -45,6 +45,14 @@
     <label>Scheduled Date</label>
     <input type="date" name="scheduled_date">
 
+    
+    <label>Priority</label>
+    <select name="priority">
+      <option value="Normal" {% if job is defined and job.priority == "Normal" %}selected{% endif %}>Normal</option>
+      <option value="Urgent" {% if job is defined and job.priority == "Urgent" %}selected{% endif %}>Urgent</option>
+      <option value="Emergency" {% if job is defined and job.priority == "Emergency" %}selected{% endif %}>Emergency</option>
+    </select>
+
     <label>Status</label>
     <select name="status">
       <option>Scheduled</option>

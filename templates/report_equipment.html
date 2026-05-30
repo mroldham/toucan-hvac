@@ -26,8 +26,10 @@
 
     {% for eq in equipment %}
     <tr>
-      <td>{% if eq.property and eq.property.customer %}{{ eq.property.customer.first_name }} {{ eq.property.customer.last_name }}{% endif %}</td>
-      <td>{% if eq.property %}{{ eq.property.property_name }}<br>{{ eq.property.address }}{% endif %}</td>
+      {% set prop = properties.get(eq.property_id) %}
+      {% set cust = customers.get(prop.customer_id) if prop else None %}
+      <td>{% if cust %}{{ cust.first_name }} {{ cust.last_name }}{% endif %}</td>
+      <td>{% if prop %}{{ prop.property_name }}<br>{{ prop.address }}{% endif %}</td>
       <td>{{ eq.unit_name }}</td>
       <td>{{ eq.heat_type }}</td>
       <td>{{ eq.filter_size }}</td>

@@ -13,7 +13,7 @@
 <div class="card">
   <h2>Add New Customer</h2>
 
-  <form method="POST" class="form-card customer-form-grid">
+  <form method="POST" action="/customers/new" class="form-card customer-form-grid">
     <div>
       <label>First Name</label>
       <input name="first_name" required>
@@ -37,6 +37,11 @@
     <div class="full-width">
       <label>Mailing Address</label>
       <input name="mailing_address" placeholder="Mailing address for customer">
+    </div>
+
+    <div>
+      <label>Birthday</label>
+      <input type="date" name="birthday">
     </div>
 
     <div class="full-width">

@@ -16,10 +16,13 @@
 
     {% if customer and customer.phone %}
       <a class="invoice-action-link"
-         href="sms:{{ customer.phone }}&body=Invoice {{ invoice.invoice_number or invoice.id }} - Amount Due: ${{ '%.2f'|format(invoice.total or 0) }}. Stephen Oldham 936-334-2944">
-         Text Invoice
+         target="_blank"
+         href="/invoices/{{ invoice.id }}/pdf">
+         Open PDF Invoice
       </a>
     {% endif %}
+
+    <a class="invoice-action-link" href="/invoices/{{ invoice.id }}/jpg">Export JPG</a>
 
     <a class="invoice-action-link" href="/invoice-center/{{ invoice.id }}/mark-paid">Mark Paid</a>
   </div>
@@ -41,7 +44,7 @@
 
     <div class="match-meta">
       <div class="invoice-title">INVOICE</div>
-      <div class="invoice-no">9269{% if invoice.id > 1 %}-{{ invoice.id }}{% endif %}</div>
+      <div class="invoice-no">{{ invoice.invoice_number or invoice.id }}</div>
     </div>
   </div>
 
@@ -66,7 +69,7 @@
     </div>
   </div>
 
-  <div class="job-row">
+  <div class="job-row clean-job-row">
     <span class="label">JOB LOCATION:</span>
     <span class="job-line">
       {% if property %}
@@ -127,5 +130,65 @@
   </div>
 
 </div>
+
+
+
+
+
+<style id="invoice-final-exact-lock">
+  .job-line {
+    display: inline-block !important;
+    width: 76% !important;
+    margin-left: 18px !important;
+    padding-left: 8px !important;
+    border-bottom: 3px solid #222 !important;
+    text-decoration: none !important;
+  }
+
+  .job-line * {
+    text-decoration: none !important;
+  }
+
+  /* kill the extra square border/shadow around the rounded table */
+  .match-table {
+    border-collapse: separate !important;
+    border-spacing: 0 !important;
+    border: 4px solid #111 !important;
+    border-radius: 20px !important;
+    overflow: hidden !important;
+    outline: none !important;
+    box-shadow: none !important;
+    background-clip: padding-box !important;
+  }
+
+  .match-table,
+  .match-table * {
+    outline: none !important;
+  }
+
+  .match-table::before,
+  .match-table::after {
+    display: none !important;
+    content: none !important;
+    border: none !important;
+  }
+
+  .match-table th,
+  .match-table td {
+    border-top: none !important;
+    border-left: none !important;
+    border-right: 2px solid #777 !important;
+    border-bottom: 2px solid #777 !important;
+  }
+
+  .match-table th:last-child,
+  .match-table td:last-child {
+    border-right: none !important;
+  }
+
+  .match-table tbody tr:last-child td {
+    border-bottom: none !important;
+  }
+</style>
 
 {% endblock %}

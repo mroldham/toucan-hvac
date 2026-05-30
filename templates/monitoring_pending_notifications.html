@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="card">
+  <h1>Pending Notifications</h1>
+  <p>Alerts waiting to be sent by text or email.</p>
+  <p><a class="action-btn" href="/monitoring">← Back to Monitoring</a></p>
+</div>
+
+<div class="card">
+  {% if alerts %}
+    <table>
+      <thead>
+        <tr>
+          <th>Time</th>
+          <th>Severity</th>
+          <th>Type</th>
+          <th>Message</th>
+          <th>Text</th>
+          <th>Email</th>
+          <th>Sent?</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for alert in alerts %}
+        <tr>
+          <td>{{ alert.timestamp }}</td>
+          <td>{{ alert.severity }}</td>
+          <td>{{ alert.alert_type }}</td>
+          <td>{{ alert.message }}</td>
+          <td>{{ alert.sms_phone_number if alert.send_sms else "Off" }}</td>
+          <td>{{ alert.email_address if alert.send_email else "Off" }}</td>
+          <td>{{ "Yes" if alert.notification_sent else "No" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>No pending notifications.</p>
+  {% endif %}
+</div>
+
+{% endblock %}

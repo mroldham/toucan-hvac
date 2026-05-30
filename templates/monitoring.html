@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="card">
+  <h1>HVAC Monitoring</h1>
+  <p>Live Toucan HVAC monitor readings from connected devices.</p>
+  <p>
+    <a class="action-btn" href="/monitoring/alerts">View Alert History</a>
+    <a class="action-btn" href="/monitoring/notification-settings">Notification Settings</a>
+    <a class="action-btn" href="/monitoring/devices">Devices / API Keys</a>
+    <a class="action-btn" href="/monitoring/pending-notifications">Pending Notifications</a>
+  </p>
+</div>
+
+{% if devices %}
+  {% for device in devices %}
+    {% set reading = latest_readings.get(device.id) %}
+
+    <div class="card">
+      <h2>{{ device.device_name }}</h2>
+
+      <p><b>Device UID:</b> {{ device.device_uid }}</p>
+      <p><a class="action-btn" href="/monitoring/device/{{ device.id }}">Open Device Details</a></p>
+      <p><b>Last Seen:</b> {{ device.last_seen or "No readings yet" }}</p>
+
+      {% if reading %}
+        <div class="grid-4">
+          <div class="mini-card">
+            <h3>Supply</h3>
+            <p class="big-number">{{ reading.supply_temp }}°F</p>
+          </div>
+
+          <div class="mini-card">
+            <h3>Return</h3>
+            <p class="big-number">{{ reading.return_temp }}°F</p>
+          </div>
+
+          <div class="mini-card">
+            <h3>Temp Split</h3>
+            <p class="big-number">{{ "%.1f"|format(reading.temp_split or 0) }}°F</p>
+          </div>
+
+          <div class="mini-card">
+            <h3>Humidity</h3>
+            <p class="big-number">{{ reading.humidity }}%</p>
+          </div>
+        </div>
+
+        <hr>
+
+        <p>
+          <b>Status:</b>
+          {% if reading.overflow_alert %}
+            <span class="danger-pill">Condensate Overflow Alert</span>
+          {% elif reading.temp_split and reading.temp_split < 14 %}
+            <span class="urgent-pill">Low Cooling Split</span>
+          {% elif reading.temp_split and reading.temp_split > 24 %}
+            <span class="urgent-pill">High Cooling Split</span>
+          {% else %}
+            <span class="success-pill">System Looks Normal</span>
+          {% endif %}
+        </p>
+
+        <p><b>System Running:</b> {{ "Yes" if reading.system_running else "No" }}</p>
+        <p><b>Attic Temp:</b> {{ reading.attic_temp }}°F</p>
+        <p><b>Reading Time:</b> {{ reading.timestamp }}</p>
+
+      {% else %}
+        <p>No readings saved for this device yet.</p>
+      {% endif %}
+    </div>
+  {% endfor %}
+{% else %}
+  <div class="card">
+    <h2>No monitoring devices yet</h2>
+    <p>Once an ESP32 sends data, devices will appear here automatically.</p>
+  </div>
+{% endif %}
+
+<style>
+.grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.mini-card {
+  background: #f4fffd;
+  border: 1px solid #b7eee6;
+  border-radius: 18px;
+  padding: 16px;
+  text-align: center;
+}
+
+.big-number {
+  font-size: 30px;
+  font-weight: 800;
+  margin: 8px 0;
+  color: #127c89;
+}
+
+.success-pill {
+  display: inline-block;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: #d9fff2;
+  color: #08734d;
+  font-weight: 700;
+}
+
+.urgent-pill {
+  display: inline-block;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: #fff3cd;
+  color: #856404;
+  font-weight: 700;
+}
+
+.danger-pill {
+  display: inline-block;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: #ffe0e0;
+  color: #9b0000;
+  font-weight: 700;
+}
+
+@media (max-width: 800px) {
+  .grid-4 {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+</style>
+
+{% endblock %}
