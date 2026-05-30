@@ -14,57 +14,161 @@ footer{text-align:center;padding:28px;color:#456;}
 </style>
 
 <style>
-.toucan-flyer{
+/* Subtle realistic Toucan flight animation */
+.toucan-flight-path{
   position:fixed;
-  left:-120px;
-  top:18%;
-  font-size:64px;
-  z-index:20;
+  top:16%;
+  left:-260px;
+  width:220px;
+  height:130px;
+  z-index:18;
   pointer-events:none;
-  filter:drop-shadow(0 8px 12px rgba(0,0,0,.22));
-  animation:toucanFly 22s ease-in-out infinite;
-  opacity:.92;
+  opacity:0;
+  animation:toucanCross 28s ease-in-out infinite;
+  animation-delay:6s;
+  filter:drop-shadow(0 12px 18px rgba(0,0,0,.22));
 }
-.toucan-helper{
-  position:fixed;
-  right:18px;
-  bottom:18px;
-  background:white;
-  border:2px solid #28c7bd;
-  border-radius:22px;
-  padding:12px 14px;
-  box-shadow:0 6px 20px rgba(0,0,0,.16);
-  z-index:25;
-  display:flex;
-  gap:10px;
-  align-items:center;
+
+.toucan-realistic{
+  position:relative;
+  width:220px;
+  height:120px;
+  transform-origin:center;
 }
-.toucan-helper .bird{
-  font-size:38px;
-  animation:toucanTap 5s ease-in-out infinite;
+
+.toucan-body{
+  position:absolute;
+  left:72px;
+  top:44px;
+  width:78px;
+  height:42px;
+  background:linear-gradient(135deg,#050505,#102026 55%,#1d3340);
+  border-radius:55% 50% 48% 55%;
 }
-.toucan-helper .bubble{
-  font-size:14px;
-  color:#064b4b;
-  max-width:180px;
+
+.toucan-chest{
+  position:absolute;
+  left:126px;
+  top:48px;
+  width:34px;
+  height:38px;
+  background:linear-gradient(#ffe658,#f4cf29);
+  border-radius:60% 45% 45% 60%;
 }
-@keyframes toucanFly{
-  0%,72%{left:-140px;transform:translateY(0) rotate(0deg);}
-  82%{left:35%;transform:translateY(-22px) rotate(4deg);}
-  90%{left:70%;transform:translateY(12px) rotate(-3deg);}
-  100%{left:110%;transform:translateY(0) rotate(0deg);}
+
+.toucan-head{
+  position:absolute;
+  left:142px;
+  top:34px;
+  width:40px;
+  height:40px;
+  background:linear-gradient(#f7e94a,#f0c91d);
+  border-radius:50%;
 }
-@keyframes toucanTap{
-  0%,82%,100%{transform:rotate(0deg) translateY(0);}
-  86%{transform:rotate(-8deg) translateY(2px);}
-  90%{transform:rotate(7deg) translateY(0);}
-  94%{transform:rotate(-5deg) translateY(2px);}
+
+.toucan-eye{
+  position:absolute;
+  left:167px;
+  top:45px;
+  width:7px;
+  height:7px;
+  background:#0b1b20;
+  border-radius:50%;
+  box-shadow:0 0 0 3px #91d9cf;
 }
+
+.toucan-beak{
+  position:absolute;
+  left:174px;
+  top:35px;
+  width:76px;
+  height:30px;
+  background:linear-gradient(90deg,#48c85c 0%,#f0d63b 45%,#f27422 70%,#d71931 100%);
+  border-radius:65% 50% 45% 50%;
+  transform:rotate(-4deg);
+  border-bottom:3px solid rgba(0,0,0,.35);
+}
+
+.toucan-beak-tip{
+  position:absolute;
+  right:-2px;
+  top:9px;
+  width:18px;
+  height:22px;
+  background:#c3182c;
+  border-radius:60%;
+}
+
+.toucan-tail{
+  position:absolute;
+  left:22px;
+  top:58px;
+  width:70px;
+  height:16px;
+  background:#071014;
+  border-radius:80% 20% 20% 80%;
+  transform:rotate(-10deg);
+}
+.toucan-tail::after{
+  content:"";
+  position:absolute;
+  left:6px;
+  top:9px;
+  width:38px;
+  height:8px;
+  background:#a7192d;
+  border-radius:80%;
+}
+
+.wing{
+  position:absolute;
+  left:72px;
+  top:36px;
+  width:88px;
+  height:42px;
+  background:linear-gradient(135deg,#050505,#162b34);
+  border-radius:90% 20% 80% 30%;
+  transform-origin:75px 38px;
+}
+
+.wing-top{
+  animation:wingFlap 1.15s ease-in-out infinite;
+}
+
+.wing-bottom{
+  opacity:.8;
+  transform:rotate(28deg);
+  animation:wingFlapLow 1.15s ease-in-out infinite;
+}
+
+@keyframes wingFlap{
+  0%,100%{transform:rotate(-38deg) translateY(-18px) scaleY(1.05);}
+  50%{transform:rotate(24deg) translateY(12px) scaleY(.88);}
+}
+@keyframes wingFlapLow{
+  0%,100%{transform:rotate(18deg) translateY(8px);}
+  50%{transform:rotate(-18deg) translateY(-6px);}
+}
+@keyframes toucanCross{
+  0%,70%{left:-280px;opacity:0;transform:translateY(0) scale(.9);}
+  74%{opacity:.96;}
+  82%{left:22%;transform:translateY(-20px) scale(1);}
+  90%{left:58%;transform:translateY(10px) scale(.96);}
+  98%{opacity:.96;}
+  100%{left:110%;opacity:0;transform:translateY(-8px) scale(.9);}
+}
+
 @media (max-width:700px){
-  .toucan-flyer{font-size:44px;top:14%;}
-  .toucan-helper{right:10px;bottom:10px;padding:10px;}
-  .toucan-helper .bubble{display:none;}
+  .toucan-flight-path{
+    width:150px;
+    top:12%;
+    transform:scale(.72);
+  }
 }
+</style>
+
+
+<style>
 </style>
 
 
@@ -74,13 +178,6 @@ footer{text-align:center;padding:28px;color:#456;}
   <a href="/order-filters">Order Filters</a>
 </div>
 
-
-<div class="toucan-flyer">🦜</div>
-
-<div class="toucan-helper">
-  <div class="bird">🦜</div>
-  <div class="bubble">Need service or filters? I can point you the right way.</div>
-</div>
 
 <div class="hero">
   <h1>Toucan HVAC</h1>
