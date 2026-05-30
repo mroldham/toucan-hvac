@@ -16,59 +16,62 @@ footer{text-align:center;padding:28px;color:#456;}
 <style>
 .flying-toucan {
   position: fixed;
-  top: 120px;
-  left: -260px;
-  width: 220px;
+  top: 115px;
+  left: -320px;
+  width: 260px;
   z-index: 9999;
   pointer-events: none;
   opacity: 0;
-  animation: toucanFlight 24s ease-in-out infinite;
-  filter: drop-shadow(0 12px 18px rgba(0,0,0,.25));
+  animation: toucanFlight 34s ease-in-out infinite;
 }
 
 .flying-toucan img {
   width: 100%;
-  animation: wingMotion 0.9s ease-in-out infinite;
-  transform-origin: center center;
+  display: block;
+  animation: toucanBob 2.2s ease-in-out infinite;
 }
 
 @keyframes toucanFlight {
-  0%, 68% {
-    left: -280px;
+  0%, 72% {
+    left: -340px;
     opacity: 0;
-    transform: translateY(0) scale(.85);
+    transform: translateY(0) scale(.88);
   }
-  72% {
-    opacity: 1;
+  75% {
+    opacity: .95;
   }
-  82% {
-    left: 30%;
+  84% {
+    left: 32%;
+    opacity: .95;
     transform: translateY(-18px) scale(1);
   }
-  92% {
-    left: 72%;
-    transform: translateY(12px) scale(.95);
+  94% {
+    left: 78%;
+    opacity: .95;
+    transform: translateY(14px) scale(.94);
   }
   100% {
-    left: 110%;
+    left: 115%;
     opacity: 0;
-    transform: translateY(-6px) scale(.85);
+    transform: translateY(-8px) scale(.88);
   }
 }
 
-@keyframes wingMotion {
-  0%,100% { transform: rotate(-3deg) translateY(0) scaleY(1); }
-  35% { transform: rotate(4deg) translateY(-5px) scaleY(.92); }
-  70% { transform: rotate(-1deg) translateY(3px) scaleY(1.04); }
+@keyframes toucanBob {
+  0%,100% { transform: translateY(0) rotate(-1deg); }
+  50% { transform: translateY(-8px) rotate(2deg); }
 }
 
 @media(max-width:700px){
   .flying-toucan {
-    width: 145px;
+    width: 170px;
     top: 95px;
   }
 }
 </style>
+
+
+
 
 
 <style>
@@ -239,10 +242,7 @@ footer{text-align:center;padding:28px;color:#456;}
 
 
 <div class="flying-toucan" aria-hidden="true">
-  <picture>
-    <source srcset="/static/flying_toucan.png">
-    <img src="/static/logo.png" alt="">
-  </picture>
+  <img src="/static/flying_toucan.svg" alt="">
 </div>
 
 <div class="hero">
