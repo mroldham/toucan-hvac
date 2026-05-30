@@ -303,6 +303,10 @@ def google_geocode_address(address):
 
 
 @app.route("/")
+def public_root_home():
+    return render_template("public_home.html")
+
+@app.route("/dashboard")
 @login_required
 def home():
     customer_count = Customer.query.count()
