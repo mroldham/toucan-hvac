@@ -2713,6 +2713,37 @@ def service_requests():
     return render_template("service_requests.html", requests_list=requests_list, filter_orders=filter_orders)
 
 
+
+
+# =========================
+# TEMP EMERGENCY ADMIN CREATE
+# REMOVE AFTER USE
+# =========================
+@app.route("/setup-admin-now")
+def setup_admin_now():
+    secret = request.args.get("secret", "")
+    if secret != os.environ.get("SETUP_ADMIN_SECRET", ""):
+        return "Unauthorized", 403
+
+    email = os.environ.get("SETUP_ADMIN_EMAIL", "admin@toucanhvac.local")
+    password = os.environ.get("SETUP_ADMIN_PASSWORD", "ChangeMeNow123!")
+
+    existing = User.query.filter_by(email=email).first()
+    if existing:
+        existing.password = generate_password_hash(password)
+        existing.role = "admin"
+    else:
+        user = User(
+            email=email,
+            password=generate_password_hash(password),
+            role="admin"
+        )
+        db.session.add(user)
+
+    db.session.commit()
+    return "Admin user created or reset. Remove this route now."
+
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5001))
     app.run(host="0.0.0.0", port=port, debug=True)
