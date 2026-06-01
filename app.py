@@ -2728,16 +2728,25 @@ def setup_admin_now():
     email = os.environ.get("SETUP_ADMIN_EMAIL", "admin@toucanhvac.local")
     password = os.environ.get("SETUP_ADMIN_PASSWORD", "ChangeMeNow123!")
 
+    hashed = generate_password_hash(password)
+
     existing = User.query.filter_by(email=email).first()
     if existing:
-        existing.password = generate_password_hash(password)
+        if hasattr(existing, "password_hash"):
+            existing.password_hash = hashed
+        elif hasattr(existing, "password"):
+            existing.password = hashed
+        elif hasattr(existing, "password_digest"):
+            existing.password_digest = hashed
         existing.role = "admin"
     else:
-        user = User(
-            email=email,
-            password=generate_password_hash(password),
-            role="admin"
-        )
+        user = User(email=email, role="admin")
+        if hasattr(user, "password_hash"):
+            user.password_hash = hashed
+        elif hasattr(user, "password"):
+            user.password = hashed
+        elif hasattr(user, "password_digest"):
+            user.password_digest = hashed
         db.session.add(user)
 
     db.session.commit()
