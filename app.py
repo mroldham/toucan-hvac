@@ -2715,6 +2715,7 @@ def service_requests():
 
 
 
+
 # =========================
 # TEMP EMERGENCY ADMIN CREATE
 # REMOVE AFTER USE
@@ -2727,30 +2728,21 @@ def setup_admin_now():
 
     email = os.environ.get("SETUP_ADMIN_EMAIL", "admin@toucanhvac.local")
     password = os.environ.get("SETUP_ADMIN_PASSWORD", "ChangeMeNow123!")
-
-    hashed = generate_password_hash(password)
+    name = os.environ.get("SETUP_ADMIN_NAME", "Stephen Oldham")
 
     existing = User.query.filter_by(email=email).first()
+
     if existing:
-        if hasattr(existing, "password_hash"):
-            existing.password_hash = hashed
-        elif hasattr(existing, "password"):
-            existing.password = hashed
-        elif hasattr(existing, "password_digest"):
-            existing.password_digest = hashed
+        existing.name = name
         existing.role = "admin"
+        existing.set_password(password)
     else:
-        user = User(email=email, role="admin")
-        if hasattr(user, "password_hash"):
-            user.password_hash = hashed
-        elif hasattr(user, "password"):
-            user.password = hashed
-        elif hasattr(user, "password_digest"):
-            user.password_digest = hashed
+        user = User(name=name, email=email, role="admin")
+        user.set_password(password)
         db.session.add(user)
 
     db.session.commit()
-    return "Admin user created or reset. Remove this route now."
+    return "Admin user created or reset. You can log in now."
 
 
 if __name__ == "__main__":
