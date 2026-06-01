@@ -2745,6 +2745,46 @@ def setup_admin_now():
     return "Admin user created or reset. You can log in now."
 
 
+
+
+# =========================
+# TEMP EMERGENCY DIRECT LOGIN
+# REMOVE AFTER USE
+# =========================
+@app.route("/emergency-login-now")
+def emergency_login_now():
+    secret = request.args.get("secret", "")
+    if secret != os.environ.get("SETUP_ADMIN_SECRET", ""):
+        return "Unauthorized", 403
+
+    email = os.environ.get("SETUP_ADMIN_EMAIL", "admin@toucanhvac.local")
+    password = os.environ.get("SETUP_ADMIN_PASSWORD", "ChangeMeNow123!")
+    name = os.environ.get("SETUP_ADMIN_NAME", "Stephen Oldham")
+
+    user = User.query.filter_by(email=email).first()
+    if not user:
+        user = User(name=name, email=email, role="admin")
+        user.set_password(password)
+        db.session.add(user)
+        db.session.commit()
+    else:
+        user.name = name
+        user.role = "admin"
+        user.set_password(password)
+        db.session.commit()
+
+    session["user_id"] = user.id
+    session["email"] = user.email
+    session["role"] = "admin"
+
+    try:
+        login_user(user)
+    except Exception:
+        pass
+
+    return redirect("/dashboard")
+
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5001))
     app.run(host="0.0.0.0", port=port, debug=True)
