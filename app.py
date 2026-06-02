@@ -2819,6 +2819,47 @@ def admin_users():
     return render_template("admin_users.html", users=users, user=user)
 
 
+
+
+# =========================
+# FORCE ADMIN USER ON STARTUP
+# =========================
+_admin_bootstrap_done = False
+
+@app.before_request
+def force_admin_user_once():
+    global _admin_bootstrap_done
+    if _admin_bootstrap_done:
+        return
+
+    email = os.environ.get("SETUP_ADMIN_EMAIL", "stephen.oldham@icloud.com").strip().lower()
+    password = os.environ.get("SETUP_ADMIN_PASSWORD", "")
+    name = os.environ.get("SETUP_ADMIN_NAME", "Stephen Oldham")
+
+    if not password:
+        _admin_bootstrap_done = True
+        return
+
+    try:
+        db.create_all()
+        user = User.query.filter_by(email=email).first()
+        if not user:
+            user = User(name=name, email=email, role="admin")
+            user.set_password(password)
+            db.session.add(user)
+        else:
+            user.name = name
+            user.role = "admin"
+            user.set_password(password)
+
+        db.session.commit()
+        print("Admin user verified/reset:", email)
+    except Exception as e:
+        print("Admin bootstrap failed:", e)
+
+    _admin_bootstrap_done = True
+
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5001))
     app.run(host="0.0.0.0", port=port, debug=True)
