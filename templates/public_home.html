@@ -1,4 +1,7 @@
 
+<a class="tech-login-pill" href="/login">Technician Login</a>
+
+
 <link rel="icon" type="image/png" href="/static/logo.png">
 <link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
 <link rel="shortcut icon" href="/static/logo.png">
@@ -17,6 +20,36 @@ body{margin:0;font-family:Arial, sans-serif;background:#f5fffd;color:#123;}
 input,textarea,select{width:100%;padding:12px;border-radius:12px;border:1px solid #bbb;margin:7px 0;font-size:16px;}
 footer{text-align:center;padding:28px;color:#456;}
 </style>
+
+<style>
+.tech-login-pill{
+  position:absolute;
+  top:18px;
+  right:18px;
+  background:white;
+  color:#064b4b;
+  border:2px solid #28c7bd;
+  border-radius:999px;
+  padding:10px 16px;
+  font-weight:bold;
+  text-decoration:none;
+  box-shadow:0 4px 14px rgba(0,0,0,.12);
+  z-index:50;
+}
+.tech-login-pill:hover{
+  background:#28c7bd;
+  color:white;
+}
+@media(max-width:700px){
+  .tech-login-pill{
+    top:10px;
+    right:10px;
+    padding:8px 12px;
+    font-size:13px;
+  }
+}
+</style>
+
 
 <style>
 .flying-toucan {
