@@ -336,7 +336,9 @@ def login():
             session["user_role"] = user.role
             session["user_email"] = user.email
             flash("Logged in successfully.")
-            return redirect(url_for("home"))
+            if user.role == "admin":
+                return redirect(url_for("home"))
+            return redirect(url_for("field_dashboard"))
         flash("Invalid email or password.")
     return render_template("login.html")
 
