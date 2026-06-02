@@ -1679,9 +1679,9 @@ def new_technician():
         user = User(
             name=request.form.get("name"),
             email=request.form.get("email"),
-            password=request.form.get("password"),
             role=request.form.get("role") or "technician"
         )
+        user.set_password(request.form.get("password"))
 
         db.session.add(user)
         db.session.commit()
@@ -1709,7 +1709,7 @@ def edit_technician(user_id):
         technician.email = request.form.get("email")
 
         if request.form.get("password"):
-            technician.password = request.form.get("password")
+            technician.set_password(request.form.get("password"))
 
         technician.role = request.form.get("role")
 
