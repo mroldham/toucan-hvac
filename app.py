@@ -2781,6 +2781,44 @@ def emergency_login_now():
     return redirect("/dashboard")
 
 
+
+
+# =========================
+# ADMIN USER MANAGEMENT
+# =========================
+@app.route("/admin/users", methods=["GET", "POST"])
+@login_required
+def admin_users():
+    user = current_user()
+    if not user or user.role != "admin":
+        return "Unauthorized", 403
+
+    if request.method == "POST":
+        email = request.form.get("email", "").strip().lower()
+        name = request.form.get("name", "").strip() or email
+        password = request.form.get("password", "")
+        role = request.form.get("role", "tech")
+
+        if email and password:
+            existing = User.query.filter_by(email=email).first()
+            if existing:
+                existing.name = name
+                existing.role = role
+                existing.set_password(password)
+                flash("User updated and password reset.")
+            else:
+                new_user = User(name=name, email=email, role=role)
+                new_user.set_password(password)
+                db.session.add(new_user)
+                flash("New user created.")
+            db.session.commit()
+
+        return redirect("/admin/users")
+
+    users = User.query.order_by(User.email.asc()).all()
+    return render_template("admin_users.html", users=users, user=user)
+
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5001))
     app.run(host="0.0.0.0", port=port, debug=True)

@@ -1,0 +1,48 @@
+
+{% extends "base.html" %}
+{% block content %}
+
+<h1>Admin User Management</h1>
+
+<div class="card">
+  <h2>Create or Reset User</h2>
+  <form method="POST">
+    <label>Name</label>
+    <input name="name" placeholder="Stephen Oldham">
+
+    <label>Email</label>
+    <input name="email" type="email" placeholder="email@example.com" required>
+
+    <label>Password</label>
+    <input name="password" type="password" placeholder="New password" required>
+
+    <label>Role</label>
+    <select name="role">
+      <option value="admin">Admin</option>
+      <option value="tech">Technician</option>
+    </select>
+
+    <br><br>
+    <button class="action-btn" type="submit">Save User / Reset Password</button>
+  </form>
+</div>
+
+<div class="card">
+  <h2>Existing Users</h2>
+  <table style="width:100%;">
+    <tr>
+      <th>Name</th>
+      <th>Email</th>
+      <th>Role</th>
+    </tr>
+    {% for u in users %}
+    <tr>
+      <td>{{ u.name }}</td>
+      <td>{{ u.email }}</td>
+      <td>{{ u.role }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+
+{% endblock %}
