@@ -1,5 +1,5 @@
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 from functools import wraps
 
 from urllib.parse import quote_plus
@@ -19,6 +19,7 @@ from PIL.ExifTags import TAGS, GPSTAGS
 
 
 app = Flask(__name__)
+app.permanent_session_lifetime = timedelta(hours=8)
 
 geolocator = Nominatim(user_agent="toucan_hvac")
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "toucan-secret-key")
@@ -330,7 +331,10 @@ def login():
         password = request.form.get("password", "")
         user = User.query.filter_by(email=email).first()
         if user and user.check_password(password):
+            session.permanent = True
             session["user_id"] = user.id
+            session["user_role"] = user.role
+            session["user_email"] = user.email
             flash("Logged in successfully.")
             return redirect(url_for("home"))
         flash("Invalid email or password.")
