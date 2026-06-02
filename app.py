@@ -2716,9 +2716,7 @@ def service_requests():
 
 
 
-# =========================
-# TEMP EMERGENCY ADMIN CREATE
-# REMOVE AFTER USE
+
 # =========================
 @app.route("/setup-admin-now")
 def setup_admin_now():
@@ -2747,9 +2745,7 @@ def setup_admin_now():
 
 
 
-# =========================
-# TEMP EMERGENCY DIRECT LOGIN
-# REMOVE AFTER USE
+
 # =========================
 @app.route("/emergency-login-now")
 def emergency_login_now():
