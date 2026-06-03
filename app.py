@@ -2688,6 +2688,26 @@ def send_toucan_notification(subject, body):
 
 
 
+
+
+def tracking_link_for(number):
+    n = (number or "").strip()
+    if not n:
+        return ""
+
+    upper = n.upper()
+
+    if upper.startswith("1Z"):
+        return "https://www.ups.com/track?tracknum=" + n
+
+    if len(n) in [12, 15, 20, 22] and n.isdigit():
+        return "https://www.fedex.com/fedextrack/?trknbr=" + n
+
+    if len(n) >= 20 and n.isdigit():
+        return "https://tools.usps.com/go/TrackConfirmAction?tLabels=" + n
+
+    return "https://www.google.com/search?q=track+" + n
+
 def send_customer_email(to_email, subject, body):
     if not to_email:
         return
@@ -3030,6 +3050,7 @@ Your Toucan HVAC filter order has shipped.
 Filter Size: {filter_size}
 Quantity: {qty}
 Tracking Number: {tracking or "Not provided yet"}
+Tracking Link: {tracking_link_for(tracking) if tracking else "Not provided yet"}
 
 Thank you,
 Toucan HVAC"""
