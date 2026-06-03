@@ -78,4 +78,21 @@
 
 </div>
 
+
+<div class="card">
+  <h2>🔁 Filter Subscription Alerts</h2>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;">
+    <div>
+      <h3>{{ subscription_due_soon or 0 }}</h3>
+      <p>Due This Week</p>
+    </div>
+    <div>
+      <h3>{{ subscription_overdue or 0 }}</h3>
+      <p>Overdue</p>
+    </div>
+  </div>
+  <br>
+  <a class="action-btn" href="/filter-subscriptions">Open Subscriptions</a>
+</div>
+
 {% endblock %}
