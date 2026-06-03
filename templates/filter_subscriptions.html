@@ -51,6 +51,11 @@
       <p><b>Status:</b> {{ s.fulfillment_status or "New" }}</p>
       <p><b>Supplier:</b> {{ s.supplier or "Glasfloss" }}</p>
       <p><b>Created:</b> {{ s.created_at }}</p>
+
+      <form method="POST" action="/filter-subscriptions/{{ s.id }}/renew" style="margin-top:10px;">
+        <button class="action-btn" type="submit">Create Renewal Order</button>
+      </form>
+
     </div>
   {% else %}
     <p>No recurring filter subscriptions yet.</p>

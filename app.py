@@ -3410,6 +3410,50 @@ def filter_subscriptions():
     )
 
 
+
+
+@app.route("/filter-subscriptions/<int:order_id>/renew", methods=["POST"])
+@login_required
+def create_filter_renewal_order(order_id):
+    init_public_tables()
+    upgrade_filter_order_workflow()
+
+    conn = sqlite3.connect(public_db_path())
+    conn.row_factory = sqlite3.Row
+    cur = conn.cursor()
+
+    original = cur.execute("SELECT * FROM public_filter_orders WHERE id=?", (order_id,)).fetchone()
+    if not original:
+        conn.close()
+        flash("Original subscription not found.")
+        return redirect("/filter-subscriptions")
+
+    cur.execute("""
+        INSERT INTO public_filter_orders
+        (name, phone, email, address, filter_size, quantity, frequency, notes,
+         payment_status, fulfillment_status, supplier, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+    """, (
+        original["name"],
+        original["phone"],
+        original["email"],
+        original["address"],
+        original["filter_size"],
+        original["quantity"],
+        original["frequency"],
+        "Renewal order created from subscription #" + str(order_id),
+        "Unpaid",
+        "New",
+        original["supplier"] or "Glasfloss"
+    ))
+
+    conn.commit()
+    conn.close()
+
+    flash("Renewal filter order created.")
+    return redirect("/service-requests")
+
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5001))
     app.run(host="0.0.0.0", port=port, debug=True)
