@@ -45,6 +45,9 @@
         <input name="supplier" value="{{ f.supplier or 'Glasfloss' }}" placeholder="Supplier" style="padding:9px;border-radius:10px;border:1px solid #bbb;margin:4px;">
         <input name="tracking_number" value="{{ f.tracking_number or '' }}" placeholder="Tracking number" style="padding:9px;border-radius:10px;border:1px solid #bbb;margin:4px;">
 
+        
+        <a class="action-btn" href="/filter-orders/{{ f.id }}/pay">Send to Payment</a>
+
         <button class="action-btn" name="fulfillment_status" value="Paid" type="submit">Mark Paid</button>
         <button class="action-btn" name="fulfillment_status" value="Ordered" type="submit">Mark Ordered</button>
         <button class="action-btn" name="fulfillment_status" value="Shipped" type="submit">Mark Shipped</button>
