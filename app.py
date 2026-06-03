@@ -3383,8 +3383,24 @@ def filter_subscriptions():
 
         next_due = base + timedelta(days=days)
 
+        today = datetime.today()
+        days_until = (next_due - today).days
+
         item = dict(r)
         item["next_due"] = next_due.strftime("%Y-%m-%d")
+        item["days_until_due"] = days_until
+
+        if days_until < 0:
+            item["due_status"] = "Overdue"
+        elif days_until == 0:
+            item["due_status"] = "Due Today"
+        elif days_until <= 7:
+            item["due_status"] = "Due This Week"
+        elif days_until <= 30:
+            item["due_status"] = "Due This Month"
+        else:
+            item["due_status"] = "Future"
+
         enriched.append(item)
 
     return render_template(

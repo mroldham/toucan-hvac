@@ -2,6 +2,22 @@
 {% extends "base.html" %}
 {% block content %}
 
+<style>
+.sub-status{
+  display:inline-block;
+  padding:6px 12px;
+  border-radius:999px;
+  font-weight:bold;
+  margin:4px 0;
+}
+.sub-overdue{background:#ffe0e0;color:#8a0000;}
+.sub-today{background:#fff0c2;color:#7a5200;}
+.sub-week{background:#e9fffb;color:#064b4b;}
+.sub-month{background:#eef1ff;color:#263a8a;}
+.sub-future{background:#f2f2f2;color:#555;}
+</style>
+
+
 <h1>🔁 Filter Subscriptions</h1>
 
 <div class="card">
@@ -20,6 +36,18 @@
       <p><b>Filter Size:</b> {{ s.filter_size }} | <b>Qty:</b> {{ s.quantity }}</p>
       <p><b>Frequency:</b> {{ s.frequency }}</p>
       <p><b>Next Shipment Due:</b> {{ s.next_due }}</p>
+
+      {% if s.due_status == "Overdue" %}
+        <span class="sub-status sub-overdue">⚠ Overdue by {{ -s.days_until_due }} days</span>
+      {% elif s.due_status == "Due Today" %}
+        <span class="sub-status sub-today">⚠ Due Today</span>
+      {% elif s.due_status == "Due This Week" %}
+        <span class="sub-status sub-week">Due This Week</span>
+      {% elif s.due_status == "Due This Month" %}
+        <span class="sub-status sub-month">Due This Month</span>
+      {% else %}
+        <span class="sub-status sub-future">Future</span>
+      {% endif %}
       <p><b>Status:</b> {{ s.fulfillment_status or "New" }}</p>
       <p><b>Supplier:</b> {{ s.supplier or "Glasfloss" }}</p>
       <p><b>Created:</b> {{ s.created_at }}</p>
