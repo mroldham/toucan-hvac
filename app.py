@@ -993,11 +993,112 @@ def new_service_job():
 
 
 
+
 @app.route("/calendar")
 @login_required
 def calendar_view():
-    jobs = ServiceJob.query.all()
-    return render_template("calendar.html", jobs=jobs)
+    import calendar as pycal
+    from datetime import datetime, date
+
+    user = current_user()
+    today = date.today()
+
+    month = request.args.get("month", default=today.month, type=int)
+    year = request.args.get("year", default=today.year, type=int)
+
+    if month < 1:
+        month = 12
+        year -= 1
+    if month > 12:
+        month = 1
+        year += 1
+
+    prev_month = month - 1
+    prev_year = year
+    if prev_month < 1:
+        prev_month = 12
+        prev_year -= 1
+
+    next_month = month + 1
+    next_year = year
+    if next_month > 12:
+        next_month = 1
+        next_year += 1
+
+    cal = pycal.Calendar(firstweekday=6)
+    weeks = cal.monthdayscalendar(year, month)
+    events = {day: [] for week in weeks for day in week if day}
+
+    def parse_date(value):
+        if not value:
+            return None
+        if isinstance(value, datetime):
+            return value.date()
+        if isinstance(value, date):
+            return value
+        value = str(value).strip()
+        for fmt in ("%Y-%m-%d", "%m/%d/%Y", "%m-%d-%Y", "%Y-%m-%d %H:%M:%S"):
+            try:
+                return datetime.strptime(value[:19], fmt).date()
+            except Exception:
+                pass
+        return None
+
+    try:
+        jobs = ServiceJob.query.all()
+        for job in jobs:
+            job_date = None
+            for field in ["scheduled_date", "date", "service_date", "created_at"]:
+                job_date = parse_date(getattr(job, field, None))
+                if job_date:
+                    break
+
+            if job_date and job_date.year == year and job_date.month == month:
+                title = (
+                    getattr(job, "title", None)
+                    or getattr(job, "job_name", None)
+                    or getattr(job, "service_type", None)
+                    or getattr(job, "problem", None)
+                    or "Service Job"
+                )
+                events.setdefault(job_date.day, []).append({
+                    "type": "job",
+                    "label": "🔧 " + str(title),
+                    "link": "/service-jobs/" + str(job.id)
+                })
+    except Exception as e:
+        print("Calendar jobs error:", e)
+
+    try:
+        for c in Customer.query.all():
+            bday = parse_date(getattr(c, "birthday", None))
+            if bday and bday.month == month:
+                name = (str(getattr(c, "first_name", "") or "") + " " + str(getattr(c, "last_name", "") or "")).strip()
+                events.setdefault(bday.day, []).append({
+                    "type": "birthday",
+                    "label": "🎂 " + name,
+                    "link": "/customers/" + str(c.id)
+                })
+    except Exception as e:
+        print("Calendar birthday error:", e)
+
+    month_name = pycal.month_name[month]
+
+    return render_template(
+        "calendar.html",
+        user=user,
+        current_user=user,
+        weeks=weeks,
+        events=events,
+        month=month,
+        year=year,
+        month_name=month_name,
+        today=today,
+        prev_month=prev_month,
+        prev_year=prev_year,
+        next_month=next_month,
+        next_year=next_year
+    )
 
 
 @app.route("/service-jobs/<int:job_id>")
