@@ -2791,46 +2791,94 @@ def public_order_filters():
     init_public_tables()
 
     if request.method == "POST":
+        name = request.form.get("name", "")
+        phone = request.form.get("phone", "")
+        email = request.form.get("email", "")
+        address = request.form.get("address", "")
+        filter_size = request.form.get("filter_size", "")
+        quantity = int(request.form.get("quantity") or 1)
+        frequency = request.form.get("frequency", "")
+        notes = request.form.get("notes", "")
+
         conn = sqlite3.connect(public_db_path())
         cur = conn.cursor()
         cur.execute("""
             INSERT INTO public_filter_orders
             (name, phone, email, address, filter_size, quantity, frequency, notes)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        """, (
-            request.form.get("name", ""),
-            request.form.get("phone", ""),
-            request.form.get("email", ""),
-            request.form.get("address", ""),
-            request.form.get("filter_size", ""),
-            int(request.form.get("quantity") or 1),
-            request.form.get("frequency", ""),
-            request.form.get("notes", "")
-        ))
+        """, (name, phone, email, address, filter_size, quantity, frequency, notes))
+        order_id = cur.lastrowid
         conn.commit()
         conn.close()
 
         send_toucan_notification(
-            "New Toucan HVAC Filter Order",
-            f"""New filter order from Toucan HVAC website.
+            "New Toucan HVAC Filter Order Started",
+            f"""New filter order started from Toucan HVAC website.
 
-Name: {request.form.get('name', '')}
-Phone: {request.form.get('phone', '')}
-Email: {request.form.get('email', '')}
-Address: {request.form.get('address', '')}
+Order ID: {order_id}
+Name: {name}
+Phone: {phone}
+Email: {email}
+Address: {address}
 
-Filter Size: {request.form.get('filter_size', '')}
-Quantity: {request.form.get('quantity', '')}
-Frequency: {request.form.get('frequency', '')}
+Filter Size: {filter_size}
+Quantity: {quantity}
+Frequency: {frequency}
 
 Notes:
-{request.form.get('notes', '')}
+{notes}
 """
         )
 
-        return render_template("public_thank_you.html", message="Your filter order request has been sent to Toucan HVAC.")
+        stripe.api_key = os.environ.get("STRIPE_SECRET_KEY", "")
+        if not stripe.api_key:
+            return render_template("public_thank_you.html", message="Filter order saved, but payment is not configured yet.")
+
+        unit_amount = int(os.environ.get("FILTER_PRICE_CENTS", "1200"))
+        domain = os.environ.get("PUBLIC_SITE_URL", "https://toucanhvac.com")
+
+        try:
+            checkout_session = stripe.checkout.Session.create(
+                mode="payment",
+                customer_email=email or None,
+                line_items=[{
+                    "price_data": {
+                        "currency": "usd",
+                        "product_data": {
+                            "name": f"Toucan HVAC Filter {filter_size}",
+                            "description": f"Quantity: {quantity} | Frequency: {frequency}"
+                        },
+                        "unit_amount": unit_amount,
+                    },
+                    "quantity": quantity,
+                }],
+                metadata={
+                    "order_id": str(order_id),
+                    "filter_size": filter_size,
+                    "customer_name": name,
+                    "phone": phone,
+                    "address": address,
+                    "frequency": frequency,
+                },
+                success_url=domain + "/filter-payment-success?order_id=" + str(order_id),
+                cancel_url=domain + "/order-filters?cancelled=1",
+            )
+            return redirect(checkout_session.url, code=303)
+        except Exception as e:
+            return "Stripe checkout failed: " + str(e), 500
 
     return render_template("public_order_filters.html")
+
+
+
+@app.route("/filter-payment-success")
+def filter_payment_success():
+    order_id = request.args.get("order_id", "")
+    send_toucan_notification(
+        "Toucan HVAC Filter Payment Completed",
+        f"Filter payment completed. Order ID: {order_id}"
+    )
+    return render_template("public_thank_you.html", message="Payment received. Your filter order has been submitted to Toucan HVAC.")
 
 @app.route("/service-requests")
 def service_requests():
