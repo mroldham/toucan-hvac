@@ -1092,6 +1092,7 @@ def calendar_view():
             SELECT * FROM calendar_notes
             WHERE substr(note_date, 1, 4) = ?
             AND substr(note_date, 6, 2) = ?
+            AND COALESCE(completed, 0) = 0
             ORDER BY note_date, id
         """, (str(year), str(month).zfill(2))).fetchall()
         conn.close()
@@ -1104,6 +1105,8 @@ def calendar_view():
                 icon = "👤"
             elif ntype == "business":
                 icon = "💼"
+            elif ntype == "crap":
+                icon = "💩"
 
             events.setdefault(note_day, []).append({
                 "type": ntype,
@@ -3012,6 +3015,7 @@ def init_calendar_notes_table():
             note_type TEXT DEFAULT 'quick',
             details TEXT,
             private_note INTEGER DEFAULT 0,
+            completed INTEGER DEFAULT 0,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """)
@@ -3045,6 +3049,21 @@ def add_calendar_note():
     flash("Calendar note added.")
     y, m, d = note_date.split("-")
     return redirect(f"/calendar?month={int(m)}&year={int(y)}")
+
+
+
+
+@app.route("/calendar/notes/<int:note_id>/done", methods=["POST"])
+@login_required
+def complete_calendar_note(note_id):
+    init_calendar_notes_table()
+    conn = sqlite3.connect("instance/hvac.db")
+    cur = conn.cursor()
+    cur.execute("UPDATE calendar_notes SET completed = 1 WHERE id = ?", (note_id,))
+    conn.commit()
+    conn.close()
+    flash("Calendar note completed.")
+    return redirect(request.referrer or "/calendar")
 
 
 if __name__ == "__main__":
