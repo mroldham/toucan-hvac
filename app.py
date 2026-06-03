@@ -3337,6 +3337,36 @@ def stripe_test():
         return "Stripe connection failed: " + str(e), 500
 
 
+
+
+@app.route("/filter-subscriptions")
+@login_required
+def filter_subscriptions():
+    init_public_tables()
+    upgrade_filter_order_workflow()
+
+    conn = sqlite3.connect(public_db_path())
+    conn.row_factory = sqlite3.Row
+    cur = conn.cursor()
+
+    rows = cur.execute("""
+        SELECT *
+        FROM public_filter_orders
+        WHERE lower(frequency) NOT LIKE '%one%'
+        AND frequency IS NOT NULL
+        AND trim(frequency) != ''
+        ORDER BY created_at DESC
+    """).fetchall()
+
+    conn.close()
+
+    return render_template(
+        "filter_subscriptions.html",
+        subscriptions=rows,
+        user=current_user()
+    )
+
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5001))
     app.run(host="0.0.0.0", port=port, debug=True)

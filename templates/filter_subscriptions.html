@@ -1,0 +1,31 @@
+
+{% extends "base.html" %}
+{% block content %}
+
+<h1>🔁 Filter Subscriptions</h1>
+
+<div class="card">
+  <p>Recurring filter customers and future repeat orders.</p>
+  <a class="action-btn" href="/service-requests">Back to Filter Orders</a>
+</div>
+
+<div class="card">
+  <h2>Recurring Customers</h2>
+
+  {% for s in subscriptions %}
+    <div style="background:white;padding:16px;border-radius:16px;margin:14px 0;box-shadow:0 3px 12px rgba(0,0,0,.09);border-left:6px solid #28c7bd;">
+      <h3>{{ s.name }} — {{ s.phone }}</h3>
+      <p><b>Email:</b> {{ s.email }}</p>
+      <p><b>Address:</b> {{ s.address }}</p>
+      <p><b>Filter Size:</b> {{ s.filter_size }} | <b>Qty:</b> {{ s.quantity }}</p>
+      <p><b>Frequency:</b> {{ s.frequency }}</p>
+      <p><b>Status:</b> {{ s.fulfillment_status or "New" }}</p>
+      <p><b>Supplier:</b> {{ s.supplier or "Glasfloss" }}</p>
+      <p><b>Created:</b> {{ s.created_at }}</p>
+    </div>
+  {% else %}
+    <p>No recurring filter subscriptions yet.</p>
+  {% endfor %}
+</div>
+
+{% endblock %}
