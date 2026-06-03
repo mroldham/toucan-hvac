@@ -61,4 +61,18 @@
   <a class="action-btn" href="/inventory">Open Inventory</a>
 </div>
 
+
+<div class="card">
+  <h2>📦 Filter Order Command Center</h2>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;">
+    <div><h3>{{ filter_new or 0 }}</h3><p>New Orders</p></div>
+    <div><h3>{{ filter_paid or 0 }}</h3><p>Paid</p></div>
+    <div><h3>{{ filter_shipped or 0 }}</h3><p>Shipped</p></div>
+    <div><h3>{{ filter_completed or 0 }}</h3><p>Completed</p></div>
+    <div><h3>${{ "%.2f"|format(filter_revenue or 0) }}</h3><p>Estimated Filter Revenue</p></div>
+  </div>
+  <br>
+  <a class="action-btn" href="/service-requests">Open Filter Orders</a>
+</div>
+
 {% endblock %}
