@@ -2686,6 +2686,36 @@ def send_toucan_notification(subject, body):
         print("Toucan notification failed:", e)
 
 
+
+
+def send_customer_email(to_email, subject, body):
+    if not to_email:
+        return
+
+    smtp_server = os.environ.get("TOUCAN_SMTP_SERVER") or os.environ.get("SMTP_SERVER", "")
+    smtp_port = int(os.environ.get("TOUCAN_SMTP_PORT") or os.environ.get("SMTP_PORT", "587"))
+    smtp_user = os.environ.get("TOUCAN_SMTP_USER") or os.environ.get("SMTP_USERNAME", "")
+    smtp_password = os.environ.get("TOUCAN_SMTP_PASSWORD") or os.environ.get("SMTP_PASSWORD", "")
+
+    if not smtp_server or not smtp_user or not smtp_password:
+        print("Customer email skipped: SMTP settings missing.")
+        return
+
+    msg = EmailMessage()
+    msg["From"] = smtp_user
+    msg["To"] = to_email
+    msg["Subject"] = subject
+    msg.set_content(body)
+
+    try:
+        with smtplib.SMTP(smtp_server, smtp_port) as server:
+            server.starttls()
+            server.login(smtp_user, smtp_password)
+            server.send_message(msg)
+        print("Customer email sent:", to_email)
+    except Exception as e:
+        print("Customer email failed:", e)
+
 # =========================
 # TOUCAN HVAC PUBLIC WEBSITE
 # =========================
@@ -2949,7 +2979,9 @@ def update_filter_order_status(order_id):
         timestamp_field = ", completed_at=CURRENT_TIMESTAMP"
 
     conn = sqlite3.connect(public_db_path())
+    conn.row_factory = sqlite3.Row
     cur = conn.cursor()
+
     cur.execute(f"""
         UPDATE public_filter_orders
         SET fulfillment_status=?,
@@ -2959,8 +2991,75 @@ def update_filter_order_status(order_id):
             {timestamp_field}
         WHERE id=?
     """, (status, supplier, tracking, order_id))
+
+    order = cur.execute("SELECT * FROM public_filter_orders WHERE id=?", (order_id,)).fetchone()
     conn.commit()
     conn.close()
+
+    if order and order["email"]:
+        customer_name = order["name"] or "there"
+        filter_size = order["filter_size"] or "your filter"
+        qty = order["quantity"] or 1
+
+        if status == "Ordered":
+            send_customer_email(
+                order["email"],
+                "Your Toucan HVAC filter order has been ordered",
+                f"""Hello {customer_name},
+
+Your Toucan HVAC filter order has been placed with our supplier.
+
+Filter Size: {filter_size}
+Quantity: {qty}
+Supplier: {supplier}
+
+We will update you when it ships.
+
+Thank you,
+Toucan HVAC"""
+            )
+
+        elif status == "Shipped":
+            send_customer_email(
+                order["email"],
+                "Your Toucan HVAC filter order has shipped",
+                f"""Hello {customer_name},
+
+Your Toucan HVAC filter order has shipped.
+
+Filter Size: {filter_size}
+Quantity: {qty}
+Tracking Number: {tracking or "Not provided yet"}
+
+Thank you,
+Toucan HVAC"""
+            )
+
+        elif status == "Delivered":
+            send_customer_email(
+                order["email"],
+                "Your Toucan HVAC filter order has been delivered",
+                f"""Hello {customer_name},
+
+Your Toucan HVAC filter order has been marked delivered.
+
+Thank you for choosing Toucan HVAC.
+
+Toucan HVAC"""
+            )
+
+        elif status == "Completed":
+            send_customer_email(
+                order["email"],
+                "Your Toucan HVAC filter order is complete",
+                f"""Hello {customer_name},
+
+Your Toucan HVAC filter order is complete.
+
+Thank you for your business.
+
+Toucan HVAC"""
+            )
 
     flash("Filter order updated.")
     return redirect("/service-requests")
