@@ -3506,6 +3506,69 @@ def filter_order_pay(order_id):
     return redirect(checkout_session.url, code=303)
 
 
+
+
+@app.route("/filter-orders/<int:order_id>/email-payment", methods=["POST"])
+@login_required
+def email_filter_payment_link(order_id):
+    upgrade_filter_order_workflow()
+
+    conn = sqlite3.connect(public_db_path())
+    conn.row_factory = sqlite3.Row
+    cur = conn.cursor()
+    order = cur.execute("SELECT * FROM public_filter_orders WHERE id=?", (order_id,)).fetchone()
+    conn.close()
+
+    if not order:
+        return "Order not found", 404
+
+    stripe.api_key = os.environ.get("STRIPE_SECRET_KEY", "")
+    if not stripe.api_key:
+        flash("Stripe is not configured.")
+        return redirect("/service-requests")
+
+    unit_amount = int(os.environ.get("FILTER_PRICE_CENTS", "1200"))
+    domain = os.environ.get("PUBLIC_SITE_URL", "https://toucanhvac.com")
+
+    checkout_session = stripe.checkout.Session.create(
+        mode="payment",
+        customer_email=order["email"] or None,
+        line_items=[{
+            "price_data": {
+                "currency": "usd",
+                "product_data": {
+                    "name": f"Toucan HVAC Filter {order['filter_size']}",
+                    "description": f"Quantity: {order['quantity']} | Frequency: {order['frequency']}"
+                },
+                "unit_amount": unit_amount,
+            },
+            "quantity": int(order["quantity"] or 1),
+        }],
+        metadata={"order_id": str(order_id)},
+        success_url=domain + "/filter-payment-success?order_id=" + str(order_id),
+        cancel_url=domain + "/order-filters",
+    )
+
+    send_customer_email(
+        order["email"],
+        "Payment link for your Toucan HVAC filter order",
+        f"""Hello {order['name'] or 'there'},
+
+Here is your secure payment link for your Toucan HVAC filter order:
+
+{checkout_session.url}
+
+Filter Size: {order['filter_size']}
+Quantity: {order['quantity']}
+
+Thank you,
+Toucan HVAC"""
+    )
+
+    flash("Payment link emailed to customer.")
+    return redirect("/service-requests")
+
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5001))
     app.run(host="0.0.0.0", port=port, debug=True)

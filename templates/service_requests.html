@@ -46,7 +46,10 @@
         <input name="tracking_number" value="{{ f.tracking_number or '' }}" placeholder="Tracking number" style="padding:9px;border-radius:10px;border:1px solid #bbb;margin:4px;">
 
         
-        <a class="action-btn" href="/filter-orders/{{ f.id }}/pay">Send to Payment</a>
+        <a class="action-btn" href="/filter-orders/{{ f.id }}/pay">Open Payment</a>
+
+        <button class="action-btn" formaction="/filter-orders/{{ f.id }}/email-payment" formmethod="POST" type="submit">Email Payment Link</button>
+
 
         <button class="action-btn" name="fulfillment_status" value="Paid" type="submit">Mark Paid</button>
         <button class="action-btn" name="fulfillment_status" value="Ordered" type="submit">Mark Ordered</button>
