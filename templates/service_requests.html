@@ -22,16 +22,36 @@
 
 <div class="card">
   <h2>Filter Orders</h2>
+
   {% for f in filter_orders %}
-    <div style="background:white;padding:14px;border-radius:14px;margin:12px 0;box-shadow:0 3px 10px rgba(0,0,0,.08);">
+    <div style="background:white;padding:16px;border-radius:16px;margin:14px 0;box-shadow:0 3px 12px rgba(0,0,0,.09);border-left:6px solid #28c7bd;">
       <h3>{{ f.name }} — {{ f.phone }}</h3>
+
+      <p>
+        <b>Payment:</b> {{ f.payment_status or "Unpaid" }} |
+        <b>Fulfillment:</b> {{ f.fulfillment_status or "New" }}
+      </p>
+
       <p><b>Email:</b> {{ f.email }}</p>
       <p><b>Address:</b> {{ f.address }}</p>
-      <p><b>Filter Size:</b> {{ f.filter_size }}</p>
-      <p><b>Qty:</b> {{ f.quantity }}</p>
+      <p><b>Filter Size:</b> {{ f.filter_size }} | <b>Qty:</b> {{ f.quantity }}</p>
       <p><b>Frequency:</b> {{ f.frequency }}</p>
+      <p><b>Supplier:</b> {{ f.supplier or "Glasfloss" }}</p>
+      <p><b>Tracking:</b> {{ f.tracking_number or "Not added yet" }}</p>
       <p><b>Notes:</b> {{ f.notes }}</p>
-      <p><b>Status:</b> {{ f.status }} | <b>Created:</b> {{ f.created_at }}</p>
+      <p><b>Created:</b> {{ f.created_at }} | <b>Updated:</b> {{ f.updated_at or "" }}</p>
+
+      <form method="POST" action="/filter-orders/{{ f.id }}/status" style="margin-top:12px;">
+        <input name="supplier" value="{{ f.supplier or 'Glasfloss' }}" placeholder="Supplier" style="padding:9px;border-radius:10px;border:1px solid #bbb;margin:4px;">
+        <input name="tracking_number" value="{{ f.tracking_number or '' }}" placeholder="Tracking number" style="padding:9px;border-radius:10px;border:1px solid #bbb;margin:4px;">
+
+        <button class="action-btn" name="fulfillment_status" value="Paid" type="submit">Mark Paid</button>
+        <button class="action-btn" name="fulfillment_status" value="Ordered" type="submit">Mark Ordered</button>
+        <button class="action-btn" name="fulfillment_status" value="Shipped" type="submit">Mark Shipped</button>
+        <button class="action-btn" name="fulfillment_status" value="Delivered" type="submit">Mark Delivered</button>
+        <button class="action-btn" name="fulfillment_status" value="Completed" type="submit">Complete</button>
+        <button class="action-btn" name="fulfillment_status" value="Cancelled" type="submit">Cancel</button>
+      </form>
     </div>
   {% else %}
     <p>No filter orders yet.</p>

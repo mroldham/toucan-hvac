@@ -2702,6 +2702,31 @@ def public_db_path():
             return c
     return Path("instance/hvac.db")
 
+
+def upgrade_filter_order_workflow():
+    conn = sqlite3.connect(public_db_path())
+    cur = conn.cursor()
+
+    cols = [row[1] for row in cur.execute("PRAGMA table_info(public_filter_orders)").fetchall()]
+
+    def add_col(name, sql):
+        if name not in cols:
+            cur.execute(sql)
+
+    add_col("payment_status", "ALTER TABLE public_filter_orders ADD COLUMN payment_status TEXT DEFAULT 'Unpaid'")
+    add_col("fulfillment_status", "ALTER TABLE public_filter_orders ADD COLUMN fulfillment_status TEXT DEFAULT 'New'")
+    add_col("supplier", "ALTER TABLE public_filter_orders ADD COLUMN supplier TEXT DEFAULT 'Glasfloss'")
+    add_col("tracking_number", "ALTER TABLE public_filter_orders ADD COLUMN tracking_number TEXT")
+    add_col("ordered_at", "ALTER TABLE public_filter_orders ADD COLUMN ordered_at TEXT")
+    add_col("shipped_at", "ALTER TABLE public_filter_orders ADD COLUMN shipped_at TEXT")
+    add_col("delivered_at", "ALTER TABLE public_filter_orders ADD COLUMN delivered_at TEXT")
+    add_col("completed_at", "ALTER TABLE public_filter_orders ADD COLUMN completed_at TEXT")
+    add_col("updated_at", "ALTER TABLE public_filter_orders ADD COLUMN updated_at TEXT")
+
+    conn.commit()
+    conn.close()
+
+
 def init_public_tables():
     db = public_db_path()
     db.parent.mkdir(exist_ok=True)
@@ -2789,6 +2814,7 @@ Problem:
 @app.route("/order-filters", methods=["GET", "POST"])
 def public_order_filters():
     init_public_tables()
+    upgrade_filter_order_workflow()
 
     if request.method == "POST":
         name = request.form.get("name", "")
@@ -2874,15 +2900,75 @@ Notes:
 @app.route("/filter-payment-success")
 def filter_payment_success():
     order_id = request.args.get("order_id", "")
+
+    try:
+        upgrade_filter_order_workflow()
+        conn = sqlite3.connect(public_db_path())
+        cur = conn.cursor()
+        cur.execute("""
+            UPDATE public_filter_orders
+            SET payment_status='Paid',
+                fulfillment_status='Paid',
+                updated_at=CURRENT_TIMESTAMP
+            WHERE id=?
+        """, (order_id,))
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        print("Filter paid update failed:", e)
+
     send_toucan_notification(
         "Toucan HVAC Filter Payment Completed",
         f"Filter payment completed. Order ID: {order_id}"
     )
     return render_template("public_thank_you.html", message="Payment received. Your filter order has been submitted to Toucan HVAC.")
 
+
+
+@app.route("/filter-orders/<int:order_id>/status", methods=["POST"])
+@login_required
+def update_filter_order_status(order_id):
+    upgrade_filter_order_workflow()
+
+    status = request.form.get("fulfillment_status", "New")
+    tracking = request.form.get("tracking_number", "").strip()
+    supplier = request.form.get("supplier", "Glasfloss").strip() or "Glasfloss"
+
+    allowed = ["New", "Paid", "Ordered", "Shipped", "Delivered", "Completed", "Cancelled"]
+    if status not in allowed:
+        status = "New"
+
+    timestamp_field = ""
+    if status == "Ordered":
+        timestamp_field = ", ordered_at=CURRENT_TIMESTAMP"
+    elif status == "Shipped":
+        timestamp_field = ", shipped_at=CURRENT_TIMESTAMP"
+    elif status == "Delivered":
+        timestamp_field = ", delivered_at=CURRENT_TIMESTAMP"
+    elif status == "Completed":
+        timestamp_field = ", completed_at=CURRENT_TIMESTAMP"
+
+    conn = sqlite3.connect(public_db_path())
+    cur = conn.cursor()
+    cur.execute(f"""
+        UPDATE public_filter_orders
+        SET fulfillment_status=?,
+            supplier=?,
+            tracking_number=?,
+            updated_at=CURRENT_TIMESTAMP
+            {timestamp_field}
+        WHERE id=?
+    """, (status, supplier, tracking, order_id))
+    conn.commit()
+    conn.close()
+
+    flash("Filter order updated.")
+    return redirect("/service-requests")
+
 @app.route("/service-requests")
 def service_requests():
     init_public_tables()
+    upgrade_filter_order_workflow()
     conn = sqlite3.connect(public_db_path())
     conn.row_factory = sqlite3.Row
     cur = conn.cursor()
