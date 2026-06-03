@@ -3360,9 +3360,36 @@ def filter_subscriptions():
 
     conn.close()
 
+    from datetime import datetime, timedelta
+
+    enriched = []
+    for r in rows:
+        created = r["created_at"] or ""
+        try:
+            base = datetime.strptime(created[:10], "%Y-%m-%d")
+        except Exception:
+            base = datetime.today()
+
+        freq = (r["frequency"] or "").lower()
+        days = 90
+        if "month" in freq and "2" not in freq and "3" not in freq and "6" not in freq:
+            days = 30
+        elif "2" in freq:
+            days = 60
+        elif "3" in freq:
+            days = 90
+        elif "6" in freq:
+            days = 180
+
+        next_due = base + timedelta(days=days)
+
+        item = dict(r)
+        item["next_due"] = next_due.strftime("%Y-%m-%d")
+        enriched.append(item)
+
     return render_template(
         "filter_subscriptions.html",
-        subscriptions=rows,
+        subscriptions=enriched,
         user=current_user()
     )
 
