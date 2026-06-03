@@ -1,4 +1,5 @@
 import os
+import stripe
 from datetime import datetime, timedelta
 from functools import wraps
 
@@ -3064,6 +3065,22 @@ def complete_calendar_note(note_id):
     conn.close()
     flash("Calendar note completed.")
     return redirect(request.referrer or "/calendar")
+
+
+
+
+@app.route("/stripe-test")
+@login_required
+def stripe_test():
+    stripe.api_key = os.environ.get("STRIPE_SECRET_KEY", "")
+    if not stripe.api_key:
+        return "STRIPE_SECRET_KEY missing.", 500
+
+    try:
+        account = stripe.Account.retrieve()
+        return "Stripe connection works. Account ID: " + account.id
+    except Exception as e:
+        return "Stripe connection failed: " + str(e), 500
 
 
 if __name__ == "__main__":
