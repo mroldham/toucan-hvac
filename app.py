@@ -1082,6 +1082,37 @@ def calendar_view():
     except Exception as e:
         print("Calendar birthday error:", e)
 
+    # Quick notes / personal reminders / business tasks
+    try:
+        init_calendar_notes_table()
+        conn = sqlite3.connect("instance/hvac.db")
+        conn.row_factory = sqlite3.Row
+        cur = conn.cursor()
+        notes = cur.execute("""
+            SELECT * FROM calendar_notes
+            WHERE substr(note_date, 1, 4) = ?
+            AND substr(note_date, 6, 2) = ?
+            ORDER BY note_date, id
+        """, (str(year), str(month).zfill(2))).fetchall()
+        conn.close()
+
+        for n in notes:
+            note_day = int(str(n["note_date"])[8:10])
+            ntype = n["note_type"] or "quick"
+            icon = "📝"
+            if ntype == "personal":
+                icon = "👤"
+            elif ntype == "business":
+                icon = "💼"
+
+            events.setdefault(note_day, []).append({
+                "type": ntype,
+                "label": icon + " " + n["title"],
+                "link": "#"
+            })
+    except Exception as e:
+        print("Calendar notes error:", e)
+
     month_name = pycal.month_name[month]
 
     return render_template(
@@ -2963,6 +2994,57 @@ def force_admin_user_once():
         print("Admin bootstrap failed:", e)
 
     _admin_bootstrap_done = True
+
+
+
+
+# =========================
+# CALENDAR QUICK NOTES / TASKS
+# =========================
+def init_calendar_notes_table():
+    conn = sqlite3.connect("instance/hvac.db")
+    cur = conn.cursor()
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS calendar_notes (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            note_date TEXT NOT NULL,
+            title TEXT NOT NULL,
+            note_type TEXT DEFAULT 'quick',
+            details TEXT,
+            private_note INTEGER DEFAULT 0,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+    conn.commit()
+    conn.close()
+
+@app.route("/calendar/notes/add", methods=["POST"])
+@login_required
+def add_calendar_note():
+    init_calendar_notes_table()
+
+    note_date = request.form.get("note_date", "").strip()
+    title = request.form.get("title", "").strip()
+    note_type = request.form.get("note_type", "quick").strip()
+    details = request.form.get("details", "").strip()
+    private_note = 1 if request.form.get("private_note") else 0
+
+    if not note_date or not title:
+        flash("Date and title are required.")
+        return redirect("/calendar")
+
+    conn = sqlite3.connect("instance/hvac.db")
+    cur = conn.cursor()
+    cur.execute("""
+        INSERT INTO calendar_notes (note_date, title, note_type, details, private_note)
+        VALUES (?, ?, ?, ?, ?)
+    """, (note_date, title, note_type, details, private_note))
+    conn.commit()
+    conn.close()
+
+    flash("Calendar note added.")
+    y, m, d = note_date.split("-")
+    return redirect(f"/calendar?month={int(m)}&year={int(y)}")
 
 
 if __name__ == "__main__":

@@ -6,7 +6,10 @@
 .calendar-wrap{background:linear-gradient(135deg,#f7fffd,#e9fffb);border:3px solid #28c7bd;border-radius:28px;padding:22px;box-shadow:0 10px 28px rgba(0,0,0,.12);}
 .calendar-header{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px;}
 .calendar-title{font-size:34px;font-weight:800;color:#064b4b;margin:0;}
-.calendar-nav a{background:#28c7bd;color:white;text-decoration:none;border-radius:999px;padding:10px 16px;font-weight:bold;display:inline-block;margin:3px;}
+.calendar-nav a,.quick-btn,button{background:#28c7bd;color:white;text-decoration:none;border:0;border-radius:999px;padding:10px 16px;font-weight:bold;display:inline-block;margin:3px;}
+.note-card{background:white;border-radius:22px;padding:16px;margin-bottom:18px;box-shadow:0 5px 16px rgba(0,0,0,.08);}
+.note-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;}
+input,select,textarea{width:100%;padding:10px;border-radius:12px;border:1px solid #bbb;}
 .calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:10px;}
 .day-name{text-align:center;font-weight:bold;color:#064b4b;padding:10px;}
 .calendar-day{min-height:120px;background:white;border-radius:18px;padding:10px;box-shadow:0 4px 12px rgba(0,0,0,.07);border:1px solid rgba(40,199,189,.25);}
@@ -16,6 +19,9 @@
 .event{display:block;text-decoration:none;color:#123;border-radius:12px;padding:6px 8px;font-size:13px;margin-bottom:6px;line-height:1.25;}
 .event.job{background:#e9fffb;border-left:5px solid #28c7bd;}
 .event.birthday{background:#fff4d8;border-left:5px solid #e0a800;}
+.event.quick{background:#fffbe6;border-left:5px solid #f4c542;}
+.event.personal{background:#eef1ff;border-left:5px solid #667eea;}
+.event.business{background:#f4e9ff;border-left:5px solid #9b5de5;}
 .legend{margin-top:16px;display:flex;gap:10px;flex-wrap:wrap;}
 .legend span{background:white;padding:8px 12px;border-radius:999px;box-shadow:0 3px 10px rgba(0,0,0,.06);}
 @media(max-width:800px){.calendar-grid{gap:5px}.calendar-day{min-height:95px;padding:7px}.calendar-title{font-size:26px}.event{font-size:11px;padding:5px}}
@@ -29,6 +35,25 @@
       <a href="/calendar">Today</a>
       <a href="/calendar?month={{ next_month }}&year={{ next_year }}">Next →</a>
     </div>
+  </div>
+
+  <div class="note-card">
+    <h2>+ Quick Calendar Note</h2>
+    <form method="POST" action="/calendar/notes/add">
+      <div class="note-grid">
+        <input type="date" name="note_date" required>
+        <input name="title" placeholder="Example: Call Mrs. Smith" required>
+        <select name="note_type">
+          <option value="quick">Quick Note</option>
+          <option value="personal">Personal Reminder</option>
+          <option value="business">Business Task</option>
+        </select>
+      </div>
+      <br>
+      <textarea name="details" placeholder="Details / notes"></textarea>
+      <br><br>
+      <button type="submit">Add to Calendar</button>
+    </form>
   </div>
 
   <div class="calendar-grid">
@@ -59,6 +84,9 @@
   <div class="legend">
     <span>🔧 Jobs</span>
     <span>🎂 Birthdays</span>
+    <span>📝 Quick Notes</span>
+    <span>👤 Personal</span>
+    <span>💼 Business Tasks</span>
   </div>
 </div>
 
