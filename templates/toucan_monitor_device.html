@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="card">
+  <h1>Monitor Detail</h1>
+  <p><b>Device:</b> {{ device.device_name if device else device_uid }}</p>
+  <p><b>UID:</b> {{ device_uid }}</p>
+  <p><a class="action-btn" href="/monitoring/platform">← Back to Toucan Monitor Platform</a></p>
+</div>
+
+<div class="card">
+  <h2>Reading History</h2>
+
+  {% if readings %}
+    <table>
+      <tr>
+        <th>Time</th>
+        <th>Supply</th>
+        <th>Return</th>
+        <th>Delta-T</th>
+        <th>Humidity</th>
+        <th>Pressure</th>
+        <th>Status</th>
+      </tr>
+      {% for r in readings %}
+      <tr>
+        <td>{{ r.created_at }}</td>
+        <td>{{ r.supply_temp or "—" }}°</td>
+        <td>{{ r.return_temp or "—" }}°</td>
+        <td>{{ r.delta_t or "—" }}°</td>
+        <td>{{ r.humidity or "—" }}%</td>
+        <td>{{ r.barometric_pressure or "—" }}</td>
+        <td>{{ r.health_status or "—" }}</td>
+      </tr>
+      {% endfor %}
+    </table>
+  {% else %}
+    <p>No readings yet.</p>
+  {% endif %}
+</div>
+
+<div class="card">
+  <h2>Alerts</h2>
+  {% if alerts %}
+    {% for a in alerts %}
+      <p>
+        {% if a.alert_level == "red" %}🔴{% else %}🟡{% endif %}
+        <b>{{ a.alert_title }}</b><br>
+        {{ a.alert_message }}<br>
+        <small>{{ a.created_at }}</small>
+      </p>
+      <hr>
+    {% endfor %}
+  {% else %}
+    <p>No alerts for this device.</p>
+  {% endif %}
+</div>
+
+{% endblock %}

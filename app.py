@@ -3569,6 +3569,277 @@ Toucan HVAC"""
     return redirect("/service-requests")
 
 
+
+
+# ============================================================
+# TOUCAN MONITOR INFRASTRUCTURE UPGRADE
+# ============================================================
+
+import sqlite3
+from pathlib import Path
+from flask import request, jsonify, render_template
+
+def toucan_monitor_db_path():
+    uri = app.config.get("SQLALCHEMY_DATABASE_URI", "sqlite:///hvac.db")
+    if uri.startswith("sqlite:///"):
+        raw = uri.replace("sqlite:///", "", 1)
+        return raw if raw.startswith("/") else str(Path(raw))
+    return "hvac.db"
+
+def toucan_monitor_conn():
+    conn = sqlite3.connect(toucan_monitor_db_path())
+    conn.row_factory = sqlite3.Row
+    return conn
+
+def toucan_monitor_ensure():
+    conn = toucan_monitor_conn()
+    cur = conn.cursor()
+
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS toucan_monitor_devices (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        device_uid TEXT UNIQUE NOT NULL,
+        device_name TEXT,
+        customer_id INTEGER,
+        property_id INTEGER,
+        equipment_id INTEGER,
+        location_name TEXT,
+        install_status TEXT DEFAULT 'Testing',
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP
+    )
+    """)
+
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS toucan_monitor_readings (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        device_uid TEXT NOT NULL,
+        supply_temp REAL,
+        return_temp REAL,
+        delta_t REAL,
+        box_temp REAL,
+        humidity REAL,
+        barometric_pressure REAL,
+        wifi_rssi REAL,
+        system_running INTEGER DEFAULT 0,
+        health_status TEXT,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP
+    )
+    """)
+
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS toucan_monitor_alerts (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        device_uid TEXT NOT NULL,
+        alert_level TEXT,
+        alert_title TEXT,
+        alert_message TEXT,
+        is_resolved INTEGER DEFAULT 0,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP
+    )
+    """)
+
+    conn.commit()
+    conn.close()
+
+def toucan_monitor_health(delta_t, running=True):
+    if delta_t is None:
+        return "Unknown"
+    if not running:
+        return "Standby"
+    if 16 <= delta_t <= 24:
+        return "Healthy"
+    if 12 <= delta_t < 16:
+        return "Watch"
+    if delta_t < 12:
+        return "Service Recommended"
+    return "Check System"
+
+def toucan_monitor_alerts_for_reading(device_uid, delta_t, humidity):
+    conn = toucan_monitor_conn()
+
+    if delta_t is not None and delta_t < 12:
+        conn.execute("""
+            INSERT INTO toucan_monitor_alerts
+            (device_uid, alert_level, alert_title, alert_message)
+            VALUES (?, ?, ?, ?)
+        """, (
+            device_uid,
+            "red",
+            "Low Delta-T",
+            f"Delta-T is {delta_t:.1f}°. System may need service."
+        ))
+
+    if humidity is not None and humidity >= 70:
+        conn.execute("""
+            INSERT INTO toucan_monitor_alerts
+            (device_uid, alert_level, alert_title, alert_message)
+            VALUES (?, ?, ?, ?)
+        """, (
+            device_uid,
+            "yellow",
+            "High Humidity",
+            f"Indoor humidity is {humidity:.0f}%. Comfort or drainage issue possible."
+        ))
+
+    conn.commit()
+    conn.close()
+
+toucan_monitor_ensure()
+
+@app.route("/api/monitoring/upload", methods=["POST"])
+def api_toucan_monitor_upload():
+    toucan_monitor_ensure()
+
+    data = request.get_json(silent=True) or {}
+
+    device_uid = data.get("device_uid") or "toucan-test-001"
+    device_name = data.get("device_name") or "Toucan Test Monitor"
+
+    supply = data.get("supply_temp")
+    ret = data.get("return_temp")
+    humidity = data.get("humidity")
+    box_temp = data.get("box_temp")
+    baro = data.get("barometric_pressure")
+    wifi_rssi = data.get("wifi_rssi")
+    running = 1 if data.get("system_running") in [True, 1, "1", "true", "True"] else 0
+
+    delta_t = data.get("delta_t")
+
+    try:
+        if delta_t is None and supply is not None and ret is not None:
+            delta_t = round(float(ret) - float(supply), 1)
+    except Exception:
+        delta_t = None
+
+    try:
+        health = toucan_monitor_health(float(delta_t) if delta_t is not None else None, running)
+    except Exception:
+        health = "Unknown"
+
+    conn = toucan_monitor_conn()
+
+    conn.execute("""
+        INSERT OR IGNORE INTO toucan_monitor_devices
+        (device_uid, device_name, install_status)
+        VALUES (?, ?, ?)
+    """, (device_uid, device_name, "Testing"))
+
+    conn.execute("""
+        UPDATE toucan_monitor_devices
+        SET device_name = ?
+        WHERE device_uid = ?
+    """, (device_name, device_uid))
+
+    conn.execute("""
+        INSERT INTO toucan_monitor_readings
+        (device_uid, supply_temp, return_temp, delta_t, box_temp, humidity,
+         barometric_pressure, wifi_rssi, system_running, health_status)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, (
+        device_uid,
+        supply,
+        ret,
+        delta_t,
+        box_temp,
+        humidity,
+        baro,
+        wifi_rssi,
+        running,
+        health
+    ))
+
+    conn.commit()
+    conn.close()
+
+    try:
+        toucan_monitor_alerts_for_reading(
+            device_uid,
+            float(delta_t) if delta_t is not None else None,
+            float(humidity) if humidity is not None else None
+        )
+    except Exception:
+        pass
+
+    return jsonify({
+        "ok": True,
+        "device_uid": device_uid,
+        "delta_t": delta_t,
+        "health_status": health
+    })
+
+@app.route("/monitoring/platform")
+def toucan_monitor_platform():
+    toucan_monitor_ensure()
+    conn = toucan_monitor_conn()
+
+    devices = conn.execute("""
+        SELECT d.*,
+               r.supply_temp,
+               r.return_temp,
+               r.delta_t,
+               r.box_temp,
+               r.humidity,
+               r.barometric_pressure,
+               r.wifi_rssi,
+               r.health_status,
+               r.created_at AS last_seen
+        FROM toucan_monitor_devices d
+        LEFT JOIN toucan_monitor_readings r
+          ON r.id = (
+            SELECT id FROM toucan_monitor_readings
+            WHERE device_uid = d.device_uid
+            ORDER BY created_at DESC
+            LIMIT 1
+          )
+        ORDER BY d.created_at DESC
+    """).fetchall()
+
+    alerts = conn.execute("""
+        SELECT * FROM toucan_monitor_alerts
+        WHERE is_resolved = 0
+        ORDER BY created_at DESC
+        LIMIT 25
+    """).fetchall()
+
+    conn.close()
+
+    return render_template("toucan_monitor_platform.html", devices=devices, alerts=alerts)
+
+@app.route("/monitoring/platform/device/<device_uid>")
+def toucan_monitor_platform_device(device_uid):
+    toucan_monitor_ensure()
+    conn = toucan_monitor_conn()
+
+    device = conn.execute("""
+        SELECT * FROM toucan_monitor_devices
+        WHERE device_uid = ?
+    """, (device_uid,)).fetchone()
+
+    readings = conn.execute("""
+        SELECT * FROM toucan_monitor_readings
+        WHERE device_uid = ?
+        ORDER BY created_at DESC
+        LIMIT 100
+    """, (device_uid,)).fetchall()
+
+    alerts = conn.execute("""
+        SELECT * FROM toucan_monitor_alerts
+        WHERE device_uid = ?
+        ORDER BY created_at DESC
+        LIMIT 50
+    """, (device_uid,)).fetchall()
+
+    conn.close()
+
+    return render_template(
+        "toucan_monitor_device.html",
+        device=device,
+        readings=readings,
+        alerts=alerts,
+        device_uid=device_uid
+    )
+
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5001))
     app.run(host="0.0.0.0", port=port, debug=True)

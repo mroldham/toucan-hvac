@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="card">
+  <h1>🦜 Toucan Monitor Platform</h1>
+  <p>Live HVAC health monitoring, Delta-T tracking, humidity, pressure, and connected device status.</p>
+</div>
+
+<div class="card">
+  <h2>Active Devices</h2>
+
+  {% if devices %}
+    {% for d in devices %}
+      <div style="border:1px solid #dceeee;border-radius:18px;padding:18px;margin:16px 0;background:#fff;">
+        <h3 style="margin-top:0;">
+          <a href="/monitoring/platform/device/{{ d.device_uid }}">
+            {{ d.device_name or d.device_uid }}
+          </a>
+        </h3>
+
+        <p>
+          <b>Status:</b>
+          {% if d.health_status == "Healthy" %}
+            🟢 Healthy
+          {% elif d.health_status == "Watch" %}
+            🟡 Watch
+          {% elif d.health_status == "Service Recommended" %}
+            🔴 Service Recommended
+          {% else %}
+            ⚪ {{ d.health_status or "Unknown" }}
+          {% endif %}
+        </p>
+
+        <p>
+          <b>Supply:</b> {{ d.supply_temp or "—" }}° |
+          <b>Return:</b> {{ d.return_temp or "—" }}° |
+          <b>Delta-T:</b> {{ d.delta_t or "—" }}° |
+          <b>Humidity:</b> {{ d.humidity or "—" }}%
+        </p>
+
+        <p>
+          <b>Box Temp:</b> {{ d.box_temp or "—" }}° |
+          <b>Pressure:</b> {{ d.barometric_pressure or "—" }} hPa |
+          <b>WiFi RSSI:</b> {{ d.wifi_rssi or "—" }}
+        </p>
+
+        <p style="font-size:13px;color:#777;">Last Seen: {{ d.last_seen or "No readings yet" }}</p>
+      </div>
+    {% endfor %}
+  {% else %}
+    <p>No devices have reported yet.</p>
+  {% endif %}
+</div>
+
+<div class="card">
+  <h2>Open Alerts</h2>
+  {% if alerts %}
+    {% for a in alerts %}
+      <p>
+        {% if a.alert_level == "red" %}🔴{% else %}🟡{% endif %}
+        <b>{{ a.alert_title }}</b><br>
+        {{ a.alert_message }}<br>
+        <small>{{ a.device_uid }} • {{ a.created_at }}</small>
+      </p>
+      <hr>
+    {% endfor %}
+  {% else %}
+    <p>No open alerts.</p>
+  {% endif %}
+</div>
+
+{% endblock %}
