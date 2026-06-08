@@ -2165,11 +2165,26 @@ def upload_monitoring_data():
 
     device = MonitoringDevice.query.filter_by(device_uid=device_uid).first()
 
-    if not device:
-        return {"ok": False, "error": "Unknown device"}, 404
+    env_key = os.environ.get("TOUCAN_MONITOR_API_KEY")
 
-    if not device.api_key or device.api_key != api_key:
-        return {"ok": False, "error": "Invalid api_key"}, 403
+    if env_key and api_key == env_key:
+        if not device:
+            device = MonitoringDevice(
+                device_uid=device_uid,
+                device_name=data.get("device_name") or device_uid,
+                api_key=api_key
+            )
+            db.session.add(device)
+            db.session.commit()
+        elif not device.api_key:
+            device.api_key = api_key
+            db.session.commit()
+    else:
+        if not device:
+            return {"ok": False, "error": "Unknown device"}, 404
+
+        if not device.api_key or device.api_key != api_key:
+            return {"ok": False, "error": "Invalid api_key"}, 403
 
     supply_temp = data.get("supply_temp")
     return_temp = data.get("return_temp")
