@@ -3827,6 +3827,24 @@ def toucan_monitor_platform():
 
 
 
+
+
+@app.route("/monitoring/platform/device/<device_uid>")
+def toucan_monitor_platform_device(device_uid):
+    device = MonitoringDevice.query.filter_by(device_uid=device_uid).first_or_404()
+
+    readings = SensorReading.query.filter_by(device_id=device.id).order_by(SensorReading.timestamp.desc()).limit(100).all()
+
+    alerts = MonitoringAlert.query.filter_by(device_id=device.id).order_by(MonitoringAlert.id.desc()).limit(50).all()
+
+    return render_template(
+        "toucan_monitor_device.html",
+        device=device,
+        readings=readings,
+        alerts=alerts
+    )
+
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5001))
     app.run(host="0.0.0.0", port=port, debug=True)
