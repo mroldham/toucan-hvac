@@ -130,7 +130,28 @@
 {% endif %}
 
 
+  
   <div class="panel">
+    <h2>Plain-English System Summary</h2>
+
+    {% if latest.temp_split and latest.temp_split >= 16 and latest.temp_split <= 24 %}
+      <p>🟢 <b>Cooling performance looks healthy.</b> The system is producing a normal temperature split.</p>
+    {% elif latest.temp_split and latest.temp_split < 12 %}
+      <p>🔴 <b>Cooling performance may need service.</b> The Delta-T is lower than expected for a running cooling system.</p>
+    {% else %}
+      <p>🟡 <b>System is being watched.</b> Current readings are outside the ideal range or the system may not be fully running.</p>
+    {% endif %}
+
+    {% if latest.humidity and latest.humidity > 70 %}
+      <p>🟡 <b>Humidity is high.</b> This could affect comfort and may indicate airflow, runtime, or drainage concerns.</p>
+    {% else %}
+      <p>🟢 <b>Humidity looks acceptable.</b></p>
+    {% endif %}
+
+    <p style="color:#667;">Toucan Monitor is building a history of this system so future alerts can compare against this unit's normal behavior.</p>
+  </div>
+
+<div class="panel">
     <h2>Maintenance Forecast</h2>
     <div class="metric-row">
       <div class="metric"><b>Filter</b><span>Good</span></div>
