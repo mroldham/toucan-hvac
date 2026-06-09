@@ -133,4 +133,76 @@
   </table>
 </div>
 
+
+<div class="card">
+  <h2>🦜 Customer Value & Filter Club</h2>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin:16px 0;">
+    <div style="background:#f8ffff;border:1px solid #dceeee;border-radius:16px;padding:14px;">
+      <b>Filter Club</b><br>
+      {% if customer.filter_club_member %}
+        <span style="font-size:24px;font-weight:900;color:#087a3c;">Active</span>
+      {% else %}
+        <span style="font-size:24px;font-weight:900;color:#777;">Not Joined</span>
+      {% endif %}
+    </div>
+
+    <div style="background:#f8ffff;border:1px solid #dceeee;border-radius:16px;padding:14px;">
+      <b>Filter Size</b><br>
+      <span style="font-size:24px;font-weight:900;">{{ customer.filter_size or "—" }}</span>
+    </div>
+
+    <div style="background:#f8ffff;border:1px solid #dceeee;border-radius:16px;padding:14px;">
+      <b>Frequency</b><br>
+      <span style="font-size:24px;font-weight:900;">{{ customer.filter_frequency_days or "—" }} days</span>
+    </div>
+
+    <div style="background:#f8ffff;border:1px solid #dceeee;border-radius:16px;padding:14px;">
+      <b>Monthly Value</b><br>
+      <span style="font-size:24px;font-weight:900;">${{ "%.2f"|format(customer.filter_monthly_price or 0) }}</span>
+    </div>
+
+    <div style="background:#f8ffff;border:1px solid #dceeee;border-radius:16px;padding:14px;">
+      <b>Next Due</b><br>
+      <span style="font-size:18px;font-weight:900;">{{ customer.filter_next_due or "Not set" }}</span>
+    </div>
+  </div>
+
+  <form method="POST" action="/customer/{{ customer.id }}/filter-club">
+    <label style="font-weight:800;">
+      <input type="checkbox" name="filter_club_member" {% if customer.filter_club_member %}checked{% endif %}>
+      Filter Club Member
+    </label>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin-top:14px;">
+      <div>
+        <label><b>Filter Size</b></label>
+        <input name="filter_size" value="{{ customer.filter_size or '' }}" placeholder="20x20x1">
+      </div>
+
+      <div>
+        <label><b>Frequency Days</b></label>
+        <select name="filter_frequency_days">
+          {% for days in [30,60,90,180] %}
+            <option value="{{ days }}" {% if customer.filter_frequency_days == days %}selected{% endif %}>{{ days }} Days</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div>
+        <label><b>Monthly Price</b></label>
+        <input name="filter_monthly_price" value="{{ customer.filter_monthly_price or '' }}" placeholder="14.99">
+      </div>
+
+      <div>
+        <label><b>Last Filter Date</b></label>
+        <input type="date" name="filter_last_service">
+      </div>
+    </div>
+
+    <button class="action-btn" type="submit" style="margin-top:14px;">Save Filter Club</button>
+    <a class="action-btn" href="/reports/filter-club">Open Filter Club Report</a>
+  </form>
+</div>
+
 {% endblock %}
