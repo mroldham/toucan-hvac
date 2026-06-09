@@ -134,6 +134,47 @@
 </div>
 
 
+
+<div class="card">
+  <h2>⭐ VIP Customer Score</h2>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin:16px 0;">
+    <div style="background:#f8ffff;border:1px solid #dceeee;border-radius:16px;padding:14px;">
+      <b>VIP Score</b><br>
+      <span style="font-size:30px;font-weight:900;color:#073b3b;">{{ vip.score }}/100</span>
+    </div>
+
+    <div style="background:#f8ffff;border:1px solid #dceeee;border-radius:16px;padding:14px;">
+      <b>Tier</b><br>
+      <span style="font-size:30px;font-weight:900;color:{% if vip.tier == 'VIP' %}#087a3c{% else %}#073b3b{% endif %};">{{ vip.tier }}</span>
+    </div>
+
+    <div style="background:#f8ffff;border:1px solid #dceeee;border-radius:16px;padding:14px;">
+      <b>Lifetime Revenue</b><br>
+      <span style="font-size:24px;font-weight:900;">${{ "%.2f"|format(vip.invoice_total) }}</span>
+    </div>
+
+    <div style="background:#f8ffff;border:1px solid #dceeee;border-radius:16px;padding:14px;">
+      <b>Invoices</b><br>
+      <span style="font-size:24px;font-weight:900;">{{ vip.invoice_count }}</span>
+    </div>
+
+    <div style="background:#f8ffff;border:1px solid #dceeee;border-radius:16px;padding:14px;">
+      <b>Filter Monthly</b><br>
+      <span style="font-size:24px;font-weight:900;">${{ "%.2f"|format(vip.filter_monthly) }}</span>
+    </div>
+
+    <div style="background:#f8ffff;border:1px solid #dceeee;border-radius:16px;padding:14px;">
+      <b>Years Active</b><br>
+      <span style="font-size:24px;font-weight:900;">{{ "%.1f"|format(vip.years_active) }}</span>
+    </div>
+  </div>
+
+  <p style="color:#667;">
+    VIP Score helps identify your best customers based on revenue, invoice history, Filter Club membership, and customer age.
+  </p>
+</div>
+
 <div class="card">
   <h2>🦜 Customer Value & Filter Club</h2>
 

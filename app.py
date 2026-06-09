@@ -556,6 +556,7 @@ def customer_detail(customer_id):
 
     return render_template(
         "customer_detail.html",
+        vip=vip_customer_summary(customer),
         user=current_user(),
         customer=customer,
         properties=properties,
