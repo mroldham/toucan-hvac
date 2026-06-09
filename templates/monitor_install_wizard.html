@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="card">
+
+<h1>🦜 Toucan Monitor Install Wizard</h1>
+
+<p>
+Assign a monitor to a customer, property, and equipment.
+</p>
+
+<form method="POST">
+
+<p>
+<b>Customer</b><br>
+<select name="customer_id">
+<option value="">Select Customer</option>
+{% for c in customers %}
+<option value="{{ c.id }}">
+{{ c.last_name }}, {{ c.first_name }}
+</option>
+{% endfor %}
+</select>
+</p>
+
+<p>
+<b>Property</b><br>
+<select name="property_id">
+<option value="">Select Property</option>
+{% for p in properties %}
+<option value="{{ p.id }}">
+{{ p.property_name }}
+</option>
+{% endfor %}
+</select>
+</p>
+
+<p>
+<b>Equipment</b><br>
+<select name="equipment_id">
+<option value="">Select Equipment</option>
+{% for e in equipment %}
+<option value="{{ e.id }}">
+{{ e.id }}
+</option>
+{% endfor %}
+</select>
+</p>
+
+<p>
+<b>Device UID</b><br>
+<input
+type="text"
+name="device_uid"
+placeholder="toucan-test-001"
+required>
+</p>
+
+<p>
+<b>Device Name</b><br>
+<input
+type="text"
+name="device_name"
+placeholder="Shop Unit">
+</p>
+
+<p>
+<button class="action-btn">
+Assign Monitor
+</button>
+</p>
+
+</form>
+
+</div>
+
+{% endblock %}
