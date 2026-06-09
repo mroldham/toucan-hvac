@@ -17,6 +17,16 @@
         <p><b>Filter:</b> {{ s.filter_size or "—" }} | <b>Frequency:</b> {{ s.frequency_days or "—" }} days</p>
         <p><b>Status:</b> {{ s.status }} | <b>Created:</b> {{ s.created_at }}</p>
         {% if s.notes %}<p><b>Notes:</b> {{ s.notes }}</p>{% endif %}
+
+        {% if s.status != "Converted" %}
+          <form method="POST" action="/reports/filter-club/signups/{{ s.id }}/convert">
+            <label><b>Monthly Price</b></label>
+            <input name="monthly_price" value="14.99" style="max-width:160px;">
+            <button class="action-btn" type="submit">Convert to Customer + Filter Club</button>
+          </form>
+        {% else %}
+          <p style="color:#087a3c;font-weight:900;">✅ Converted to customer</p>
+        {% endif %}
       </div>
     {% endfor %}
   {% else %}

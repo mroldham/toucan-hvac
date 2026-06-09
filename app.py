@@ -2488,6 +2488,36 @@ def public_filter_club_thanks():
     return render_template("public_filter_club_thanks.html")
 
 
+
+
+@app.route("/reports/filter-club/signups/<int:signup_id>/convert", methods=["POST"])
+def convert_filter_club_signup(signup_id):
+    ensure_filter_club_columns()
+
+    signup = FilterClubSignup.query.get_or_404(signup_id)
+
+    customer = Customer(
+        first_name=signup.first_name,
+        last_name=signup.last_name,
+        phone=signup.phone,
+        email=signup.email,
+        mailing_address=signup.address,
+        filter_club_member=True,
+        filter_size=signup.filter_size,
+        filter_frequency_days=signup.frequency_days or 90,
+        filter_monthly_price=float(request.form.get("monthly_price") or 14.99),
+        filter_last_service=datetime.utcnow(),
+        filter_next_due=datetime.utcnow() + timedelta(days=signup.frequency_days or 90),
+        customer_since=datetime.utcnow()
+    )
+
+    db.session.add(customer)
+    signup.status = "Converted"
+    db.session.commit()
+
+    return redirect(url_for("customer_detail", customer_id=customer.id))
+
+
 @app.route("/reports/filter-club/signups")
 def filter_club_signups():
     signups = FilterClubSignup.query.order_by(FilterClubSignup.created_at.desc()).all()
