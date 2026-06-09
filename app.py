@@ -136,6 +136,25 @@ class SensorReading(db.Model):
 
     raw_json = db.Column(db.Text, nullable=True)
 
+
+
+class MonitorBaseline(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    device_id = db.Column(db.Integer, db.ForeignKey("monitoring_device.id"), nullable=False)
+
+    avg_delta_t = db.Column(db.Float, nullable=True)
+    avg_humidity = db.Column(db.Float, nullable=True)
+    avg_compressor_amps = db.Column(db.Float, nullable=True)
+    avg_blower_amps = db.Column(db.Float, nullable=True)
+    avg_vibration_rms = db.Column(db.Float, nullable=True)
+    avg_superheat = db.Column(db.Float, nullable=True)
+    avg_subcooling = db.Column(db.Float, nullable=True)
+
+    sample_count = db.Column(db.Integer, default=0)
+    established_at = db.Column(db.DateTime, default=datetime.utcnow)
+    notes = db.Column(db.Text, nullable=True)
+
+
 class PropertyPhoto(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     property_id = db.Column(db.Integer, db.ForeignKey("property.id"), nullable=False)
@@ -3956,6 +3975,15 @@ def toucan_monitor_install():
     )
 
 
+
+
+def ensure_monitor_baseline_table():
+    try:
+        db.create_all()
+    except Exception as e:
+        print("Baseline table check skipped:", e)
+
+
 @app.route("/monitoring/platform")
 def toucan_monitor_platform():
     from datetime import datetime, timedelta
@@ -4006,6 +4034,44 @@ def toucan_monitor_platform():
 
 
 
+
+
+
+
+@app.route("/monitoring/platform/device/<device_uid>/baseline", methods=["POST"])
+def toucan_monitor_create_baseline(device_uid):
+    ensure_monitor_amp_columns()
+    ensure_monitor_baseline_table()
+
+    device = MonitoringDevice.query.filter_by(device_uid=device_uid).first_or_404()
+
+    readings = SensorReading.query.filter_by(device_id=device.id).order_by(SensorReading.timestamp.desc()).limit(50).all()
+
+    if not readings:
+        return redirect(f"/monitoring/platform/device/{device_uid}")
+
+    def avg(values):
+        vals = [v for v in values if v is not None]
+        return sum(vals) / len(vals) if vals else None
+
+    baseline = MonitorBaseline.query.filter_by(device_id=device.id).first()
+    if not baseline:
+        baseline = MonitorBaseline(device_id=device.id)
+        db.session.add(baseline)
+
+    baseline.avg_delta_t = avg([r.temp_split for r in readings])
+    baseline.avg_humidity = avg([r.humidity for r in readings])
+    baseline.avg_compressor_amps = avg([getattr(r, "compressor_amps", None) for r in readings])
+    baseline.avg_blower_amps = avg([getattr(r, "blower_amps", None) for r in readings])
+    baseline.avg_vibration_rms = avg([getattr(r, "vibration_rms", None) for r in readings])
+    baseline.avg_superheat = avg([getattr(r, "superheat", None) for r in readings])
+    baseline.avg_subcooling = avg([getattr(r, "subcooling", None) for r in readings])
+    baseline.sample_count = len(readings)
+    baseline.established_at = datetime.utcnow()
+
+    db.session.commit()
+
+    return redirect(f"/monitoring/platform/device/{device_uid}")
 
 
 @app.route("/monitoring/platform/device/<device_uid>")
