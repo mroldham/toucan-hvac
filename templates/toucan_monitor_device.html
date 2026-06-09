@@ -1,18 +1,78 @@
 {% extends "base.html" %}
 {% block content %}
 
-<div class="card">
-  <h1>Monitor Detail</h1>
-  <p><b>Device:</b> {{ device.device_name if device else device_uid }}</p>
+<style>
+.device-hero {
+  background: linear-gradient(135deg, #e9fffc, #fff);
+  border: 1px solid rgba(64,224,208,.45);
+  border-radius: 24px;
+  padding: 26px;
+  box-shadow: 0 14px 36px rgba(0,80,80,.12);
+}
+.metric-row {
+  display:grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap:12px;
+  margin-top:16px;
+}
+.metric {
+  background:#fff;
+  border:1px solid #dceeee;
+  border-radius:16px;
+  padding:14px;
+}
+.metric b {
+  display:block;
+  font-size:12px;
+  color:#667;
+  text-transform:uppercase;
+  letter-spacing:.05em;
+}
+.metric span {
+  display:block;
+  font-size:24px;
+  font-weight:900;
+  color:#073b3b;
+  margin-top:4px;
+}
+.history-table {
+  width:100%;
+  border-collapse:collapse;
+}
+.history-table th {
+  text-align:left;
+  background:#e9fffc;
+  padding:10px;
+}
+.history-table td {
+  padding:10px;
+  border-bottom:1px solid #edf3f3;
+}
+</style>
+
+<div class="device-hero">
+  <h1>🦜 {{ device.device_name if device else device_uid }}</h1>
   <p><b>UID:</b> {{ device_uid }}</p>
   <p><a class="action-btn" href="/monitoring/platform">← Back to Toucan Monitor Platform</a></p>
 </div>
+
+{% if readings %}
+  {% set latest = readings[0] %}
+  <div class="metric-row">
+    <div class="metric"><b>Supply</b><span>{{ latest.supply_temp or "—" }}°</span></div>
+    <div class="metric"><b>Return</b><span>{{ latest.return_temp or "—" }}°</span></div>
+    <div class="metric"><b>Delta-T</b><span>{{ latest.delta_t or "—" }}°</span></div>
+    <div class="metric"><b>Humidity</b><span>{{ latest.humidity or "—" }}%</span></div>
+    <div class="metric"><b>Pressure</b><span>{{ latest.barometric_pressure or "—" }}</span></div>
+    <div class="metric"><b>Status</b><span>{{ latest.health_status or "—" }}</span></div>
+  </div>
+{% endif %}
 
 <div class="card">
   <h2>Reading History</h2>
 
   {% if readings %}
-    <table>
+    <table class="history-table">
       <tr>
         <th>Time</th>
         <th>Supply</th>
