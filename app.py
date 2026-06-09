@@ -3988,31 +3988,42 @@ def ensure_monitor_baseline_table():
 def toucan_monitor_platform():
     from datetime import datetime, timedelta
 
+    ensure_monitor_amp_columns()
+    try:
+        ensure_monitor_baseline_table()
+    except Exception:
+        pass
+
     devices = MonitoringDevice.query.order_by(MonitoringDevice.id.desc()).all()
     device_cards = []
+    scores = []
+
+    today_start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+    readings_today = SensorReading.query.filter(SensorReading.timestamp >= today_start).count()
 
     for device in devices:
         latest = SensorReading.query.filter_by(device_id=device.id).order_by(SensorReading.timestamp.desc()).first()
-
-        is_online = False
-        if device.last_seen:
-            is_online = (datetime.utcnow() - device.last_seen) < timedelta(minutes=5)
-
-        health_status = "Unknown"
-        if latest and latest.temp_split is not None:
-            if not latest.system_running:
-                health_status = "Standby"
-            elif 16 <= latest.temp_split <= 24:
-                health_status = "Healthy"
-            elif 12 <= latest.temp_split < 16:
-                health_status = "Watch"
-            elif latest.temp_split < 12:
-                health_status = "Service Recommended"
-            else:
-                health_status = "Check System"
+        is_online = bool(device.last_seen and (datetime.utcnow() - device.last_seen) < timedelta(minutes=5))
 
         alert_count = MonitoringAlert.query.filter_by(device_id=device.id).count()
         health_score = toucan_health_score(latest, is_online, alert_count)
+        scores.append(health_score)
+
+        if health_score >= 90:
+            health_status = "Healthy"
+        elif health_score >= 75:
+            health_status = "Watch"
+        else:
+            health_status = "Service Recommended"
+
+        prop = Property.query.get(device.property_id) if device.property_id else None
+        equip = Equipment.query.get(device.equipment_id) if device.equipment_id else None
+
+        baseline = None
+        try:
+            baseline = MonitorBaseline.query.filter_by(device_id=device.id).first()
+        except Exception:
+            baseline = None
 
         device_cards.append({
             "device": device,
@@ -4020,22 +4031,46 @@ def toucan_monitor_platform():
             "is_online": is_online,
             "health_status": health_status,
             "health_score": health_score,
-            "alert_count": alert_count
+            "alert_count": alert_count,
+            "property": prop,
+            "equipment": equip,
+            "baseline": baseline
         })
 
     alerts = MonitoringAlert.query.order_by(MonitoringAlert.id.desc()).limit(25).all()
+    recent_readings = SensorReading.query.order_by(SensorReading.timestamp.desc()).limit(8).all()
+
+    avg_score = round(sum(scores) / len(scores)) if scores else 0
+    online_count = sum(1 for c in device_cards if c["is_online"])
+    offline_count = len(device_cards) - online_count
+
+    activity = []
+    for r in recent_readings:
+        dev = MonitoringDevice.query.get(r.device_id)
+        activity.append({
+            "time": r.timestamp,
+            "title": "Reading uploaded",
+            "message": f"{dev.device_name if dev else 'Monitor'} reported Delta-T {r.temp_split:.1f}°" if r.temp_split is not None else "Monitor uploaded data"
+        })
+
+    for a in alerts[:5]:
+        dev = MonitoringDevice.query.get(a.device_id)
+        activity.append({
+            "time": getattr(a, "created_at", None),
+            "title": "Alert created",
+            "message": f"{dev.device_name if dev else 'Monitor'}: {a.message}"
+        })
 
     return render_template(
         "toucan_monitor_platform.html",
         device_cards=device_cards,
-        alerts=alerts
+        alerts=alerts,
+        activity=activity[:10],
+        avg_score=avg_score,
+        online_count=online_count,
+        offline_count=offline_count,
+        readings_today=readings_today
     )
-
-
-
-
-
-
 
 
 @app.route("/monitoring/platform/device/<device_uid>/baseline", methods=["POST"])
