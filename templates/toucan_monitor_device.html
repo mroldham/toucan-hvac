@@ -2,9 +2,16 @@
 {% block content %}
 
 <style>
+.device-hero {
+  background: linear-gradient(135deg, #e9fffc, #ffffff);
+  border: 1px solid rgba(64,224,208,.45);
+  border-radius: 28px;
+  padding: 30px;
+  box-shadow: 0 18px 45px rgba(0,80,80,.14);
+}
 .metric-row {
   display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(130px,1fr));
+  grid-template-columns:repeat(auto-fit,minmax(135px,1fr));
   gap:12px;
   margin:18px 0;
 }
@@ -25,6 +32,15 @@
   display:block;
   font-size:24px;
   font-weight:900;
+  color:#073b3b;
+}
+.panel {
+  background:#fff;
+  border:1px solid #dceeee;
+  border-radius:22px;
+  padding:20px;
+  margin:18px 0;
+  box-shadow:0 10px 28px rgba(0,0,0,.06);
 }
 .history-table {
   width:100%;
@@ -41,18 +57,23 @@
 }
 </style>
 
-<div class="card">
+<div class="device-hero">
   <h1>🦜 {{ device.device_name }}</h1>
   <p><b>UID:</b> {{ device.device_uid }}</p>
   <p><b>Last Seen:</b> {{ device.last_seen or "Never" }}</p>
-  <p><a class="action-btn" href="/monitoring/platform">← Back to Toucan Monitor Platform</a></p>
+  <p>
+    <a class="action-btn" href="/monitoring/platform">← Back</a>
+    <form method="POST" action="/monitoring/platform/device/{{ device.device_uid }}/baseline" style="display:inline;">
+      <button class="action-btn" type="submit">🧠 Establish Baseline</button>
+    </form>
+  </p>
 </div>
 
 {% if readings %}
   {% set latest = readings[0] %}
 
-  <div class="card">
-    <h2>HVAC Airside</h2>
+  <div class="panel">
+    <h2>Airside Diagnostics</h2>
     <div class="metric-row">
       <div class="metric"><b>Supply</b><span>{{ "%.1f"|format(latest.supply_temp or 0) }}°</span></div>
       <div class="metric"><b>Return</b><span>{{ "%.1f"|format(latest.return_temp or 0) }}°</span></div>
@@ -62,20 +83,43 @@
     </div>
   </div>
 
-  <div class="card">
-    <h2>Electrical / Amp Clamp Ready</h2>
+  <div class="panel">
+    <h2>Electrical Diagnostics</h2>
     <div class="metric-row">
       <div class="metric"><b>Compressor</b><span>{{ "%.1f"|format(latest.compressor_amps or 0) }}A</span></div>
       <div class="metric"><b>Blower</b><span>{{ "%.1f"|format(latest.blower_amps or 0) }}A</span></div>
       <div class="metric"><b>Condenser Fan</b><span>{{ "%.1f"|format(latest.condenser_fan_amps or 0) }}A</span></div>
-      <div class="metric"><b>Total Amps</b><span>{{ "%.1f"|format(latest.total_amps or 0) }}A</span></div>
+      <div class="metric"><b>Total</b><span>{{ "%.1f"|format(latest.total_amps or 0) }}A</span></div>
       <div class="metric"><b>Runtime</b><span>{{ "%.0f"|format(latest.runtime_minutes or 0) }}m</span></div>
       <div class="metric"><b>Voltage</b><span>{{ "%.0f"|format(latest.voltage or 0) }}V</span></div>
     </div>
   </div>
+
+  <div class="panel">
+    <h2>Refrigeration Diagnostics</h2>
+    <div class="metric-row">
+      <div class="metric"><b>Suction PSI</b><span>{{ "%.0f"|format(latest.suction_pressure or 0) }}</span></div>
+      <div class="metric"><b>Liquid PSI</b><span>{{ "%.0f"|format(latest.liquid_pressure or 0) }}</span></div>
+      <div class="metric"><b>Suction Temp</b><span>{{ "%.1f"|format(latest.suction_line_temp or 0) }}°</span></div>
+      <div class="metric"><b>Liquid Temp</b><span>{{ "%.1f"|format(latest.liquid_line_temp or 0) }}°</span></div>
+      <div class="metric"><b>Superheat</b><span>{{ "%.1f"|format(latest.superheat or 0) }}°</span></div>
+      <div class="metric"><b>Subcooling</b><span>{{ "%.1f"|format(latest.subcooling or 0) }}°</span></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Vibration Diagnostics</h2>
+    <div class="metric-row">
+      <div class="metric"><b>X Axis</b><span>{{ "%.2f"|format(latest.vibration_x or 0) }}</span></div>
+      <div class="metric"><b>Y Axis</b><span>{{ "%.2f"|format(latest.vibration_y or 0) }}</span></div>
+      <div class="metric"><b>Z Axis</b><span>{{ "%.2f"|format(latest.vibration_z or 0) }}</span></div>
+      <div class="metric"><b>RMS</b><span>{{ "%.2f"|format(latest.vibration_rms or 0) }}</span></div>
+      <div class="metric"><b>Peak</b><span>{{ "%.2f"|format(latest.vibration_peak or 0) }}</span></div>
+    </div>
+  </div>
 {% endif %}
 
-<div class="card">
+<div class="panel">
   <h2>Reading History</h2>
   {% if readings %}
     <table class="history-table">
@@ -83,11 +127,11 @@
         <th>Time</th>
         <th>Supply</th>
         <th>Return</th>
-        <th>Delta-T</th>
+        <th>ΔT</th>
         <th>Humidity</th>
         <th>Comp A</th>
-        <th>Blower A</th>
-        <th>Running</th>
+        <th>Superheat</th>
+        <th>Subcool</th>
       </tr>
       {% for r in readings %}
       <tr>
@@ -97,8 +141,8 @@
         <td>{{ "%.1f"|format(r.temp_split or 0) }}°</td>
         <td>{{ "%.0f"|format(r.humidity or 0) }}%</td>
         <td>{{ "%.1f"|format(r.compressor_amps or 0) }}</td>
-        <td>{{ "%.1f"|format(r.blower_amps or 0) }}</td>
-        <td>{% if r.system_running %}Yes{% else %}No{% endif %}</td>
+        <td>{{ "%.1f"|format(r.superheat or 0) }}</td>
+        <td>{{ "%.1f"|format(r.subcooling or 0) }}</td>
       </tr>
       {% endfor %}
     </table>
@@ -107,7 +151,7 @@
   {% endif %}
 </div>
 
-<div class="card">
+<div class="panel">
   <h2>Alerts</h2>
   {% if alerts %}
     {% for a in alerts %}
