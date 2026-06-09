@@ -3061,3 +3061,14 @@ textarea:focus {
   background:#f4a300 !important;
   margin-top:8px;
 }
+
+/* TOUCAN BEAK ACCENT — subtle, reversible */
+body:not(.login-page) a.action-btn:not([href*="login"]),
+body:not(.login-page) button.action-btn,
+body:not(.login-page) .nav-pill:not([href*="login"]) {
+  border: 1px solid rgba(255, 132, 0, 0.20) !important;
+  box-shadow:
+    0 0 0 1px rgba(255, 132, 0, 0.045),
+    0 6px 16px rgba(255, 132, 0, 0.055) !important;
+}
+
