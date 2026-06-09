@@ -185,6 +185,25 @@
   {% endif %}
 </div>
 
+
+  <div class="panel">
+    <h2>Technician Recommendation</h2>
+
+    {% if latest.temp_split and latest.temp_split < 12 and latest.system_running %}
+      <p>🔴 <b>Recommended Action:</b> Schedule a cooling performance inspection.</p>
+      <p>Possible causes may include low refrigerant charge, airflow restriction, dirty coil, weak compressor, or metering issue.</p>
+    {% elif latest.temp_split and latest.temp_split >= 12 and latest.temp_split < 16 and latest.system_running %}
+      <p>🟡 <b>Recommended Action:</b> Watch this system and compare against future readings.</p>
+      <p>Delta-T is slightly low. If it continues dropping, inspect airflow, filter condition, coil cleanliness, and refrigerant performance.</p>
+    {% elif latest.temp_split and latest.temp_split >= 16 and latest.temp_split <= 24 %}
+      <p>🟢 <b>Recommended Action:</b> No immediate cooling issue detected.</p>
+      <p>System appears to be producing a healthy temperature split based on the latest reading.</p>
+    {% else %}
+      <p>⚪ <b>Recommended Action:</b> Continue monitoring.</p>
+      <p>The system may be off, idle, or not producing enough data yet for a strong recommendation.</p>
+    {% endif %}
+  </div>
+
 <div class="panel">
   <h2>Reading History</h2>
   {% if readings %}
