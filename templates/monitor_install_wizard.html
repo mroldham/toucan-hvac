@@ -1,76 +1,139 @@
 {% extends "base.html" %}
 {% block content %}
 
-<div class="card">
+<style>
+.install-hero {
+  background: linear-gradient(135deg, #e9fffc, #ffffff);
+  border: 1px solid rgba(64,224,208,.45);
+  border-radius: 28px;
+  padding: 30px;
+  box-shadow: 0 18px 45px rgba(0,80,80,.14);
+}
+.install-grid {
+  display:grid;
+  grid-template-columns: 1.2fr .8fr;
+  gap:18px;
+}
+@media (max-width: 900px) {
+  .install-grid { grid-template-columns:1fr; }
+}
+.install-field {
+  margin-bottom:14px;
+}
+.install-field label {
+  display:block;
+  font-weight:900;
+  color:#073b3b;
+  margin-bottom:6px;
+}
+.install-field input,
+.install-field select,
+.install-field textarea {
+  width:100%;
+  padding:12px;
+  border:1px solid #dceeee;
+  border-radius:14px;
+  font-size:16px;
+}
+.side-box {
+  background:#f8ffff;
+  border:1px solid #dceeee;
+  border-radius:20px;
+  padding:18px;
+  margin-bottom:16px;
+}
+.check-row {
+  padding:8px 0;
+  border-bottom:1px solid #e7f4f2;
+}
+.uid-pill {
+  display:inline-block;
+  background:#e9fffc;
+  border:1px solid #dceeee;
+  border-radius:999px;
+  padding:7px 12px;
+  margin:4px;
+  font-weight:800;
+}
+</style>
 
-<h1>🦜 Toucan Monitor Install Wizard</h1>
+<div class="install-hero">
+  <h1>🦜 Toucan Monitor Install Wizard</h1>
+  <p>Link a monitor to the customer’s property and equipment so every reading belongs to the right HVAC system.</p>
+  <p><a class="action-btn" href="/monitoring/platform">← Back to Command Center</a></p>
+</div>
 
-<p>
-Assign a monitor to a customer, property, and equipment.
-</p>
+<div class="install-grid">
 
-<form method="POST">
+  <div class="card">
+    <h2>Assign Monitor</h2>
 
-<p>
-<b>Customer</b><br>
-<select name="customer_id">
-<option value="">Select Customer</option>
-{% for c in customers %}
-<option value="{{ c.id }}">
-{{ c.last_name }}, {{ c.first_name }}
-</option>
-{% endfor %}
-</select>
-</p>
+    <form method="POST">
 
-<p>
-<b>Property</b><br>
-<select name="property_id">
-<option value="">Select Property</option>
-{% for p in properties %}
-<option value="{{ p.id }}">
-{{ p.property_name }}
-</option>
-{% endfor %}
-</select>
-</p>
+      <div class="install-field">
+        <label>Device UID</label>
+        <input type="text" name="device_uid" value="{{ prefill_uid or 'toucan-test-001' }}" required>
+      </div>
 
-<p>
-<b>Equipment</b><br>
-<select name="equipment_id">
-<option value="">Select Equipment</option>
-{% for e in equipment %}
-<option value="{{ e.id }}">
-{{ e.id }}
-</option>
-{% endfor %}
-</select>
-</p>
+      <div class="install-field">
+        <label>Device Name</label>
+        <input type="text" name="device_name" placeholder="Smith Upstairs Unit / Shop Test Monitor">
+      </div>
 
-<p>
-<b>Device UID</b><br>
-<input
-type="text"
-name="device_uid"
-placeholder="toucan-test-001"
-required>
-</p>
+      <div class="install-field">
+        <label>Property</label>
+        <select name="property_id">
+          <option value="">Select Property</option>
+          {% for p in properties %}
+            <option value="{{ p.id }}">{{ p.property_name }} — {{ p.address }}</option>
+          {% endfor %}
+        </select>
+      </div>
 
-<p>
-<b>Device Name</b><br>
-<input
-type="text"
-name="device_name"
-placeholder="Shop Unit">
-</p>
+      <div class="install-field">
+        <label>Equipment</label>
+        <select name="equipment_id">
+          <option value="">Select Equipment</option>
+          {% for e in equipment %}
+            <option value="{{ e.id }}">
+              Equipment #{{ e.id }} — {{ e.unit_name or e.equipment_type or "HVAC System" }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
 
-<p>
-<button class="action-btn">
-Assign Monitor
-</button>
-</p>
+      <button class="action-btn" type="submit">Assign Monitor</button>
+    </form>
+  </div>
 
-</form>
+  <div>
+    <div class="side-box">
+      <h3>Field Install Checklist</h3>
+      <div class="check-row">☐ Mount enclosure securely</div>
+      <div class="check-row">☐ Confirm WiFi signal</div>
+      <div class="check-row">☐ Verify supply probe</div>
+      <div class="check-row">☐ Verify return probe</div>
+      <div class="check-row">☐ Confirm cloud upload code 200</div>
+      <div class="check-row">☐ Link monitor to equipment</div>
+      <div class="check-row">☐ Establish baseline after stable readings</div>
+    </div>
+
+    <div class="side-box">
+      <h3>Unassigned Devices</h3>
+      {% if unassigned_devices %}
+        {% for d in unassigned_devices %}
+          <a class="uid-pill" href="/monitoring/platform/install?uid={{ d.device_uid }}">{{ d.device_uid }}</a>
+        {% endfor %}
+      {% else %}
+        <p>No unassigned monitors.</p>
+      {% endif %}
+    </div>
+
+    <div class="side-box">
+      <h3>Future QR Install</h3>
+      <p style="color:#667;">Soon each monitor will have a QR code. Scan it, select the equipment, and this UID will fill automatically.</p>
+    </div>
+  </div>
 
 </div>
 

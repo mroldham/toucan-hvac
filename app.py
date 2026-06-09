@@ -4229,3 +4229,53 @@ def toucan_monitor_platform_device(device_uid):
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5001))
     app.run(host="0.0.0.0", port=port, debug=True)
+
+
+@app.route("/monitoring/platform/install", methods=["GET","POST"])
+def monitoring_install_wizard():
+
+    if request.method == "POST":
+
+        property_id = request.form.get("property_id")
+        equipment_id = request.form.get("equipment_id")
+
+        device_uid = request.form.get("device_uid","").strip()
+        device_name = request.form.get("device_name","").strip()
+
+        if not device_uid:
+            flash("Device UID required.")
+            return redirect("/monitoring/platform/install")
+
+        device = MonitoringDevice.query.filter_by(device_uid=device_uid).first()
+
+        if not device:
+            device = MonitoringDevice(
+                device_uid=device_uid,
+                device_name=device_name or device_uid
+            )
+            db.session.add(device)
+
+        device.device_name = device_name or device.device_name or device_uid
+        device.property_id = int(property_id) if property_id else None
+        device.equipment_id = int(equipment_id) if equipment_id else None
+
+        db.session.commit()
+
+        flash("Monitor linked successfully.")
+        return redirect(f"/monitoring/platform/device/{device.device_uid}")
+
+    customers = Customer.query.order_by(Customer.last_name.asc()).all()
+    properties = Property.query.order_by(Property.property_name.asc()).all()
+    equipment = Equipment.query.order_by(Equipment.id.desc()).all()
+    devices = MonitoringDevice.query.order_by(MonitoringDevice.id.desc()).all()
+    unassigned_devices = [d for d in devices if not d.property_id and not d.equipment_id]
+
+    return render_template(
+        "monitor_install_wizard.html",
+        customers=customers,
+        properties=properties,
+        equipment=equipment,
+        devices=devices,
+        unassigned_devices=unassigned_devices,
+        prefill_uid=request.args.get("uid","")
+    )
