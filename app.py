@@ -1,3 +1,51 @@
+
+def vip_customer_summary(customer):
+    invoice_total = 0
+    invoice_count = 0
+
+    try:
+        invoices = ToucanInvoice.query.filter_by(customer_id=customer.id).all()
+        invoice_count = len(invoices)
+        for inv in invoices:
+            invoice_total += float(getattr(inv, "total", 0) or getattr(inv, "amount", 0) or 0)
+    except Exception:
+        pass
+
+    filter_monthly = float(getattr(customer, "filter_monthly_price", 0) or 0)
+
+    years_active = 0
+    try:
+        since = getattr(customer, "customer_since", None)
+        if since:
+            years_active = max(0, (datetime.utcnow() - since).days / 365)
+    except Exception:
+        pass
+
+    score = 0
+    score += min(40, invoice_total / 250)
+    score += min(20, invoice_count * 2)
+    score += 20 if getattr(customer, "filter_club_member", False) else 0
+    score += min(20, years_active * 5)
+
+    if score >= 85:
+        tier = "VIP"
+    elif score >= 60:
+        tier = "Strong"
+    elif score >= 35:
+        tier = "Growing"
+    else:
+        tier = "New"
+
+    return {
+        "invoice_total": invoice_total,
+        "invoice_count": invoice_count,
+        "filter_monthly": filter_monthly,
+        "filter_annual": filter_monthly * 12,
+        "years_active": years_active,
+        "score": int(min(score, 100)),
+        "tier": tier
+    }
+
 import os
 import stripe
 from datetime import datetime, timedelta
