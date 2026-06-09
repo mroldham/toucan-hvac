@@ -132,6 +132,7 @@
 
         {% if r %}
           <div class="metric-row">
+            <div class="metric"><b>Health Score</b><span>{{ card.health_score }}/100</span></div>
             <div class="metric"><b>Supply</b><span>{{ "%.1f"|format(r.supply_temp or 0) }}°</span></div>
             <div class="metric"><b>Return</b><span>{{ "%.1f"|format(r.return_temp or 0) }}°</span></div>
             <div class="metric"><b>Delta-T</b><span>{{ "%.1f"|format(r.temp_split or 0) }}°</span></div>
