@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+.install-hero {
+  background: linear-gradient(135deg, #e9fffc, #ffffff);
+  border: 1px solid rgba(64,224,208,.45);
+  border-radius: 24px;
+  padding: 28px;
+  box-shadow: 0 14px 36px rgba(0,80,80,.12);
+}
+.form-grid {
+  display:grid;
+  grid-template-columns: repeat(auto-fit,minmax(260px,1fr));
+  gap:16px;
+}
+.install-field {
+  margin-bottom:14px;
+}
+.install-field label {
+  display:block;
+  font-weight:800;
+  margin-bottom:6px;
+  color:#073b3b;
+}
+.install-field input,
+.install-field select,
+.install-field textarea {
+  width:100%;
+  padding:12px;
+  border:1px solid #dceeee;
+  border-radius:12px;
+  font-size:16px;
+}
+.future-box {
+  border:1px solid #dceeee;
+  border-radius:18px;
+  padding:18px;
+  background:#f8ffff;
+}
+</style>
+
+<div class="install-hero">
+  <h1>🦜 Install Toucan Monitor</h1>
+  <p>Link a monitor to a property, equipment record, and future diagnostic profile.</p>
+</div>
+
+<div class="card">
+  <form method="POST">
+    <div class="form-grid">
+      <div>
+        <div class="install-field">
+          <label>Device UID</label>
+          <input name="device_uid" value="toucan-test-001" required>
+        </div>
+
+        <div class="install-field">
+          <label>Device Name</label>
+          <input name="device_name" value="Shop Test Monitor">
+        </div>
+
+        <div class="install-field">
+          <label>Property</label>
+          <select name="property_id">
+            <option value="">Not linked yet</option>
+            {% for p in properties %}
+              <option value="{{ p.id }}">{{ p.property_name }} — {{ p.address }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="install-field">
+          <label>Equipment</label>
+          <select name="equipment_id">
+            <option value="">Not linked yet</option>
+            {% for e in equipment %}
+              <option value="{{ e.id }}">Equipment #{{ e.id }} — {{ e.unit_name or e.equipment_type or "HVAC System" }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <div class="future-box">
+          <h3>Future Diagnostic Profile</h3>
+          <p>This monitor is ready for:</p>
+          <p>⚡ Compressor / blower amp clamps</p>
+          <p>🌡 Line-set temperature probes</p>
+          <p>🧊 Suction & liquid pressure transducers</p>
+          <p>📳 Compressor vibration monitoring</p>
+          <p>🧠 Health Score and baseline learning</p>
+        </div>
+
+        <div class="install-field" style="margin-top:16px;">
+          <label>Install Notes</label>
+          <textarea name="notes" rows="6" placeholder="Installed in attic, return plenum, supply plenum, condenser leg, etc."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <button class="action-btn" type="submit">Save Monitor Install</button>
+    <a class="action-btn" href="/monitoring/platform">Cancel</a>
+  </form>
+</div>
+
+{% endblock %}

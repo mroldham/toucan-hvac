@@ -120,6 +120,20 @@ class SensorReading(db.Model):
     runtime_minutes = db.Column(db.Float, nullable=True)
     voltage = db.Column(db.Float, nullable=True)
 
+    suction_pressure = db.Column(db.Float, nullable=True)
+    liquid_pressure = db.Column(db.Float, nullable=True)
+    suction_line_temp = db.Column(db.Float, nullable=True)
+    liquid_line_temp = db.Column(db.Float, nullable=True)
+    superheat = db.Column(db.Float, nullable=True)
+    subcooling = db.Column(db.Float, nullable=True)
+    refrigerant_type = db.Column(db.String(30), nullable=True)
+
+    vibration_x = db.Column(db.Float, nullable=True)
+    vibration_y = db.Column(db.Float, nullable=True)
+    vibration_z = db.Column(db.Float, nullable=True)
+    vibration_rms = db.Column(db.Float, nullable=True)
+    vibration_peak = db.Column(db.Float, nullable=True)
+
     raw_json = db.Column(db.Text, nullable=True)
 
 class PropertyPhoto(db.Model):
@@ -2177,7 +2191,19 @@ def ensure_monitor_amp_columns():
             "compressor_running": "BOOLEAN DEFAULT 0",
             "blower_running": "BOOLEAN DEFAULT 0",
             "runtime_minutes": "FLOAT",
-            "voltage": "FLOAT"
+            "voltage": "FLOAT",
+            "suction_pressure": "FLOAT",
+            "liquid_pressure": "FLOAT",
+            "suction_line_temp": "FLOAT",
+            "liquid_line_temp": "FLOAT",
+            "superheat": "FLOAT",
+            "subcooling": "FLOAT",
+            "refrigerant_type": "VARCHAR(30)",
+            "vibration_x": "FLOAT",
+            "vibration_y": "FLOAT",
+            "vibration_z": "FLOAT",
+            "vibration_rms": "FLOAT",
+            "vibration_peak": "FLOAT"
         }
 
         with db.engine.begin() as conn:
@@ -2252,6 +2278,20 @@ def upload_monitoring_data():
 
         runtime_minutes=data.get("runtime_minutes"),
         voltage=data.get("voltage"),
+
+        suction_pressure=data.get("suction_pressure"),
+        liquid_pressure=data.get("liquid_pressure"),
+        suction_line_temp=data.get("suction_line_temp"),
+        liquid_line_temp=data.get("liquid_line_temp"),
+        superheat=data.get("superheat"),
+        subcooling=data.get("subcooling"),
+        refrigerant_type=data.get("refrigerant_type"),
+
+        vibration_x=data.get("vibration_x"),
+        vibration_y=data.get("vibration_y"),
+        vibration_z=data.get("vibration_z"),
+        vibration_rms=data.get("vibration_rms"),
+        vibration_peak=data.get("vibration_peak"),
 
         raw_json=str(data)
     )
@@ -3871,6 +3911,49 @@ def toucan_health_score(latest, is_online=True, alert_count=0):
         score += 20
 
     return min(score, 100)
+
+
+
+
+@app.route("/monitoring/platform/install", methods=["GET", "POST"])
+def toucan_monitor_install():
+    ensure_monitor_amp_columns()
+
+    if request.method == "POST":
+        device_uid = request.form.get("device_uid")
+        device_name = request.form.get("device_name") or "Toucan Monitor"
+        property_id = request.form.get("property_id") or None
+        equipment_id = request.form.get("equipment_id") or None
+        notes = request.form.get("notes")
+
+        device = MonitoringDevice.query.filter_by(device_uid=device_uid).first()
+
+        if not device:
+            device = MonitoringDevice(
+                device_uid=device_uid,
+                device_name=device_name
+            )
+            db.session.add(device)
+
+        device.device_name = device_name
+        device.property_id = int(property_id) if property_id else None
+        device.equipment_id = int(equipment_id) if equipment_id else None
+        device.notes = notes
+
+        db.session.commit()
+
+        return redirect(f"/monitoring/platform/device/{device.device_uid}")
+
+    properties = Property.query.order_by(Property.property_name.asc()).all()
+    equipment = Equipment.query.order_by(Equipment.id.desc()).all()
+    devices = MonitoringDevice.query.order_by(MonitoringDevice.id.desc()).all()
+
+    return render_template(
+        "toucan_monitor_install.html",
+        properties=properties,
+        equipment=equipment,
+        devices=devices
+    )
 
 
 @app.route("/monitoring/platform")
