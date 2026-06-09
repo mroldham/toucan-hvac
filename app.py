@@ -3833,6 +3833,46 @@ def api_toucan_monitor_upload():
         "health_status": health
     })
 
+
+
+def toucan_health_score(latest, is_online=True, alert_count=0):
+    score = 0
+
+    # Delta-T: 40 points
+    if latest and latest.temp_split is not None and latest.system_running:
+        if 16 <= latest.temp_split <= 24:
+            score += 40
+        elif 12 <= latest.temp_split < 16:
+            score += 25
+        elif latest.temp_split < 12:
+            score += 10
+        else:
+            score += 20
+    elif latest and not latest.system_running:
+        score += 30
+
+    # Humidity: 20 points
+    if latest and latest.humidity is not None:
+        if 40 <= latest.humidity <= 60:
+            score += 20
+        elif 60 < latest.humidity <= 70:
+            score += 15
+        else:
+            score += 5
+
+    # Alerts: 20 points
+    if alert_count == 0:
+        score += 20
+    elif alert_count <= 2:
+        score += 10
+
+    # Connectivity: 20 points
+    if is_online:
+        score += 20
+
+    return min(score, 100)
+
+
 @app.route("/monitoring/platform")
 def toucan_monitor_platform():
     from datetime import datetime, timedelta
@@ -3860,11 +3900,16 @@ def toucan_monitor_platform():
             else:
                 health_status = "Check System"
 
+        alert_count = MonitoringAlert.query.filter_by(device_id=device.id).count()
+        health_score = toucan_health_score(latest, is_online, alert_count)
+
         device_cards.append({
             "device": device,
             "latest": latest,
             "is_online": is_online,
-            "health_status": health_status
+            "health_status": health_status,
+            "health_score": health_score,
+            "alert_count": alert_count
         })
 
     alerts = MonitoringAlert.query.order_by(MonitoringAlert.id.desc()).limit(25).all()
