@@ -3784,75 +3784,47 @@ def api_toucan_monitor_upload():
 
 @app.route("/monitoring/platform")
 def toucan_monitor_platform():
-    toucan_monitor_ensure()
-    conn = toucan_monitor_conn()
+    from datetime import datetime, timedelta
 
-    devices = conn.execute("""
-        SELECT d.*,
-               r.supply_temp,
-               r.return_temp,
-               r.delta_t,
-               r.box_temp,
-               r.humidity,
-               r.barometric_pressure,
-               r.wifi_rssi,
-               r.health_status,
-               r.created_at AS last_seen
-        FROM toucan_monitor_devices d
-        LEFT JOIN toucan_monitor_readings r
-          ON r.id = (
-            SELECT id FROM toucan_monitor_readings
-            WHERE device_uid = d.device_uid
-            ORDER BY created_at DESC
-            LIMIT 1
-          )
-        ORDER BY d.created_at DESC
-    """).fetchall()
+    devices = MonitoringDevice.query.order_by(MonitoringDevice.id.desc()).all()
+    device_cards = []
 
-    alerts = conn.execute("""
-        SELECT * FROM toucan_monitor_alerts
-        WHERE is_resolved = 0
-        ORDER BY created_at DESC
-        LIMIT 25
-    """).fetchall()
+    for device in devices:
+        latest = SensorReading.query.filter_by(device_id=device.id).order_by(SensorReading.timestamp.desc()).first()
 
-    conn.close()
+        is_online = False
+        if device.last_seen:
+            is_online = (datetime.utcnow() - device.last_seen) < timedelta(minutes=5)
 
-    return render_template("toucan_monitor_platform.html", devices=devices, alerts=alerts)
+        health_status = "Unknown"
+        if latest and latest.temp_split is not None:
+            if not latest.system_running:
+                health_status = "Standby"
+            elif 16 <= latest.temp_split <= 24:
+                health_status = "Healthy"
+            elif 12 <= latest.temp_split < 16:
+                health_status = "Watch"
+            elif latest.temp_split < 12:
+                health_status = "Service Recommended"
+            else:
+                health_status = "Check System"
 
-@app.route("/monitoring/platform/device/<device_uid>")
-def toucan_monitor_platform_device(device_uid):
-    toucan_monitor_ensure()
-    conn = toucan_monitor_conn()
+        device_cards.append({
+            "device": device,
+            "latest": latest,
+            "is_online": is_online,
+            "health_status": health_status
+        })
 
-    device = conn.execute("""
-        SELECT * FROM toucan_monitor_devices
-        WHERE device_uid = ?
-    """, (device_uid,)).fetchone()
-
-    readings = conn.execute("""
-        SELECT * FROM toucan_monitor_readings
-        WHERE device_uid = ?
-        ORDER BY created_at DESC
-        LIMIT 100
-    """, (device_uid,)).fetchall()
-
-    alerts = conn.execute("""
-        SELECT * FROM toucan_monitor_alerts
-        WHERE device_uid = ?
-        ORDER BY created_at DESC
-        LIMIT 50
-    """, (device_uid,)).fetchall()
-
-    conn.close()
+    alerts = MonitoringAlert.query.order_by(MonitoringAlert.id.desc()).limit(25).all()
 
     return render_template(
-        "toucan_monitor_device.html",
-        device=device,
-        readings=readings,
-        alerts=alerts,
-        device_uid=device_uid
+        "toucan_monitor_platform.html",
+        device_cards=device_cards,
+        alerts=alerts
     )
+
+
 
 
 if __name__ == "__main__":

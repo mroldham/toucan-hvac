@@ -2,46 +2,37 @@
 {% block content %}
 
 <style>
-.device-hero {
-  background: linear-gradient(135deg, #e9fffc, #fff);
-  border: 1px solid rgba(64,224,208,.45);
-  border-radius: 24px;
-  padding: 26px;
-  box-shadow: 0 14px 36px rgba(0,80,80,.12);
-}
 .metric-row {
   display:grid;
-  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  grid-template-columns:repeat(auto-fit,minmax(130px,1fr));
   gap:12px;
-  margin-top:16px;
+  margin:18px 0;
 }
 .metric {
   background:#fff;
   border:1px solid #dceeee;
   border-radius:16px;
   padding:14px;
+  box-shadow:0 8px 22px rgba(0,0,0,.05);
 }
 .metric b {
   display:block;
   font-size:12px;
   color:#667;
   text-transform:uppercase;
-  letter-spacing:.05em;
 }
 .metric span {
   display:block;
   font-size:24px;
   font-weight:900;
-  color:#073b3b;
-  margin-top:4px;
 }
 .history-table {
   width:100%;
   border-collapse:collapse;
 }
 .history-table th {
-  text-align:left;
   background:#e9fffc;
+  text-align:left;
   padding:10px;
 }
 .history-table td {
@@ -50,27 +41,26 @@
 }
 </style>
 
-<div class="device-hero">
-  <h1>🦜 {{ device.device_name if device else device_uid }}</h1>
-  <p><b>UID:</b> {{ device_uid }}</p>
+<div class="card">
+  <h1>🦜 {{ device.device_name }}</h1>
+  <p><b>UID:</b> {{ device.device_uid }}</p>
+  <p><b>Last Seen:</b> {{ device.last_seen or "Never" }}</p>
   <p><a class="action-btn" href="/monitoring/platform">← Back to Toucan Monitor Platform</a></p>
 </div>
 
 {% if readings %}
   {% set latest = readings[0] %}
   <div class="metric-row">
-    <div class="metric"><b>Supply</b><span>{{ latest.supply_temp or "—" }}°</span></div>
-    <div class="metric"><b>Return</b><span>{{ latest.return_temp or "—" }}°</span></div>
-    <div class="metric"><b>Delta-T</b><span>{{ latest.delta_t or "—" }}°</span></div>
-    <div class="metric"><b>Humidity</b><span>{{ latest.humidity or "—" }}%</span></div>
-    <div class="metric"><b>Pressure</b><span>{{ latest.barometric_pressure or "—" }}</span></div>
-    <div class="metric"><b>Status</b><span>{{ latest.health_status or "—" }}</span></div>
+    <div class="metric"><b>Supply</b><span>{{ "%.1f"|format(latest.supply_temp or 0) }}°</span></div>
+    <div class="metric"><b>Return</b><span>{{ "%.1f"|format(latest.return_temp or 0) }}°</span></div>
+    <div class="metric"><b>Delta-T</b><span>{{ "%.1f"|format(latest.temp_split or 0) }}°</span></div>
+    <div class="metric"><b>Humidity</b><span>{{ "%.0f"|format(latest.humidity or 0) }}%</span></div>
+    <div class="metric"><b>Running</b><span>{% if latest.system_running %}Yes{% else %}No{% endif %}</span></div>
   </div>
 {% endif %}
 
 <div class="card">
   <h2>Reading History</h2>
-
   {% if readings %}
     <table class="history-table">
       <tr>
@@ -79,18 +69,16 @@
         <th>Return</th>
         <th>Delta-T</th>
         <th>Humidity</th>
-        <th>Pressure</th>
-        <th>Status</th>
+        <th>Running</th>
       </tr>
       {% for r in readings %}
       <tr>
-        <td>{{ r.created_at }}</td>
-        <td>{{ r.supply_temp or "—" }}°</td>
-        <td>{{ r.return_temp or "—" }}°</td>
-        <td>{{ r.delta_t or "—" }}°</td>
-        <td>{{ r.humidity or "—" }}%</td>
-        <td>{{ r.barometric_pressure or "—" }}</td>
-        <td>{{ r.health_status or "—" }}</td>
+        <td>{{ r.timestamp }}</td>
+        <td>{{ "%.1f"|format(r.supply_temp or 0) }}°</td>
+        <td>{{ "%.1f"|format(r.return_temp or 0) }}°</td>
+        <td>{{ "%.1f"|format(r.temp_split or 0) }}°</td>
+        <td>{{ "%.0f"|format(r.humidity or 0) }}%</td>
+        <td>{% if r.system_running %}Yes{% else %}No{% endif %}</td>
       </tr>
       {% endfor %}
     </table>
@@ -103,12 +91,7 @@
   <h2>Alerts</h2>
   {% if alerts %}
     {% for a in alerts %}
-      <p>
-        {% if a.alert_level == "red" %}🔴{% else %}🟡{% endif %}
-        <b>{{ a.alert_title }}</b><br>
-        {{ a.alert_message }}<br>
-        <small>{{ a.created_at }}</small>
-      </p>
+      <p>{% if a.severity == "danger" %}🔴{% else %}🟡{% endif %} <b>{{ a.alert_type }}</b><br>{{ a.message }}</p>
       <hr>
     {% endfor %}
   {% else %}

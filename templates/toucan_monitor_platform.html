@@ -6,63 +6,54 @@
   background: linear-gradient(135deg, #e9fffc, #ffffff);
   border: 1px solid rgba(64,224,208,.45);
   border-radius: 24px;
-  padding: 26px;
+  padding: 28px;
   box-shadow: 0 14px 36px rgba(0,80,80,.12);
 }
 .monitor-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-  gap: 16px;
-  margin: 18px 0;
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:16px;
+  margin:20px 0;
 }
-.monitor-stat {
-  background: #fff;
-  border: 1px solid #dceeee;
-  border-radius: 18px;
-  padding: 18px;
-  box-shadow: 0 8px 22px rgba(0,0,0,.05);
+.big-card, .device-card {
+  background:white;
+  border:1px solid #dceeee;
+  border-radius:22px;
+  padding:20px;
+  box-shadow:0 10px 28px rgba(0,0,0,.06);
 }
-.monitor-stat .label {
-  color: #667;
-  font-size: 13px;
-  text-transform: uppercase;
-  letter-spacing: .06em;
+.big-card .label {
+  color:#667;
+  font-size:13px;
+  font-weight:800;
+  text-transform:uppercase;
 }
-.monitor-stat .value {
-  font-size: 30px;
-  font-weight: 900;
-  color: #063d3d;
-  margin-top: 6px;
-}
-.device-card {
-  background: white;
-  border: 1px solid #dceeee;
-  border-radius: 22px;
-  padding: 20px;
-  margin: 18px 0;
-  box-shadow: 0 10px 28px rgba(0,0,0,.06);
+.big-card .value {
+  font-size:34px;
+  font-weight:900;
+  color:#063d3d;
 }
 .device-top {
   display:flex;
   justify-content:space-between;
   gap:12px;
-  align-items:flex-start;
   flex-wrap:wrap;
 }
-.status-pill {
-  display:inline-block;
+.pill {
   padding:7px 12px;
   border-radius:999px;
-  font-weight:800;
+  font-weight:900;
   font-size:13px;
 }
-.status-healthy { background:#eafff4; color:#087a3c; }
-.status-watch { background:#fff8df; color:#9a6a00; }
-.status-service { background:#ffecec; color:#b00020; }
-.status-unknown { background:#eef2f5; color:#456; }
+.online { background:#eafff4;color:#087a3c; }
+.offline { background:#ffecec;color:#b00020; }
+.healthy { background:#eafff4;color:#087a3c; }
+.watch { background:#fff8df;color:#9a6a00; }
+.service { background:#ffecec;color:#b00020; }
+.unknown { background:#eef2f5;color:#456; }
 .metric-row {
   display:grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  grid-template-columns:repeat(auto-fit,minmax(125px,1fr));
   gap:12px;
   margin-top:16px;
 }
@@ -77,47 +68,31 @@
   font-size:12px;
   color:#667;
   text-transform:uppercase;
-  letter-spacing:.05em;
 }
 .metric span {
   display:block;
-  font-size:22px;
+  font-size:23px;
   font-weight:900;
   color:#073b3b;
-  margin-top:4px;
 }
-.last-seen {
-  color:#777;
-  font-size:13px;
-  margin-top:14px;
-}
-.alert-card {
-  padding:14px 16px;
-  border-radius:16px;
-  background:#fff;
-  border:1px solid #eee;
-  margin:12px 0;
-}
-.alert-red { border-left:6px solid #d40000; }
-.alert-yellow { border-left:6px solid #e6b800; }
 </style>
 
 <div class="monitor-hero">
   <h1>🦜 Toucan Monitor Platform</h1>
-  <p>Cloud-connected HVAC health monitoring for Delta-T, humidity, barometric pressure, WiFi signal, alerts, and device history.</p>
+  <p>Live HVAC health monitoring, Delta-T tracking, humidity, alerts, and cloud-connected equipment data.</p>
 </div>
 
 <div class="monitor-grid">
-  <div class="monitor-stat">
-    <div class="label">Active Devices</div>
-    <div class="value">{{ devices|length }}</div>
+  <div class="big-card">
+    <div class="label">Devices</div>
+    <div class="value">{{ device_cards|length }}</div>
   </div>
-  <div class="monitor-stat">
+  <div class="big-card">
     <div class="label">Open Alerts</div>
     <div class="value">{{ alerts|length }}</div>
   </div>
-  <div class="monitor-stat">
-    <div class="label">Platform Status</div>
+  <div class="big-card">
+    <div class="label">Cloud</div>
     <div class="value">Online</div>
   </div>
 </div>
@@ -125,42 +100,48 @@
 <div class="card">
   <h2>Connected Devices</h2>
 
-  {% if devices %}
-    {% for d in devices %}
+  {% if device_cards %}
+    {% for card in device_cards %}
+      {% set d = card.device %}
+      {% set r = card.latest %}
+
       <div class="device-card">
         <div class="device-top">
           <div>
             <h3 style="margin:0;">
-              <a href="/monitoring/platform/device/{{ d.device_uid }}">
-                {{ d.device_name or d.device_uid }}
-              </a>
+              <a href="/monitoring/platform/device/{{ d.device_uid }}">{{ d.device_name }}</a>
             </h3>
             <p style="margin:6px 0;color:#667;">{{ d.device_uid }}</p>
           </div>
+          <div>
+            <span class="pill {% if card.is_online %}online{% else %}offline{% endif %}">
+              {% if card.is_online %}🟢 Online{% else %}🔴 Offline{% endif %}
+            </span>
 
-          {% if d.health_status == "Healthy" %}
-            <span class="status-pill status-healthy">🟢 Healthy</span>
-          {% elif d.health_status == "Watch" %}
-            <span class="status-pill status-watch">🟡 Watch</span>
-          {% elif d.health_status == "Service Recommended" %}
-            <span class="status-pill status-service">🔴 Service Recommended</span>
-          {% else %}
-            <span class="status-pill status-unknown">⚪ {{ d.health_status or "Unknown" }}</span>
-          {% endif %}
+            {% if card.health_status == "Healthy" %}
+              <span class="pill healthy">Healthy</span>
+            {% elif card.health_status == "Watch" %}
+              <span class="pill watch">Watch</span>
+            {% elif card.health_status == "Service Recommended" %}
+              <span class="pill service">Service</span>
+            {% else %}
+              <span class="pill unknown">{{ card.health_status }}</span>
+            {% endif %}
+          </div>
         </div>
 
-        <div class="metric-row">
-          <div class="metric"><b>Supply</b><span>{{ d.supply_temp or "—" }}°</span></div>
-          <div class="metric"><b>Return</b><span>{{ d.return_temp or "—" }}°</span></div>
-          <div class="metric"><b>Delta-T</b><span>{{ d.delta_t or "—" }}°</span></div>
-          <div class="metric"><b>Humidity</b><span>{{ d.humidity or "—" }}%</span></div>
-          <div class="metric"><b>Pressure</b><span>{{ d.barometric_pressure or "—" }}</span></div>
-          <div class="metric"><b>WiFi</b><span>{{ d.wifi_rssi or "—" }}</span></div>
-        </div>
-
-        <div class="last-seen">
-          Last seen: {{ d.last_seen or "No readings yet" }}
-        </div>
+        {% if r %}
+          <div class="metric-row">
+            <div class="metric"><b>Supply</b><span>{{ "%.1f"|format(r.supply_temp or 0) }}°</span></div>
+            <div class="metric"><b>Return</b><span>{{ "%.1f"|format(r.return_temp or 0) }}°</span></div>
+            <div class="metric"><b>Delta-T</b><span>{{ "%.1f"|format(r.temp_split or 0) }}°</span></div>
+            <div class="metric"><b>Humidity</b><span>{{ "%.0f"|format(r.humidity or 0) }}%</span></div>
+            <div class="metric"><b>Running</b><span>{% if r.system_running %}Yes{% else %}No{% endif %}</span></div>
+          </div>
+          <p style="color:#777;font-size:13px;margin-top:14px;">Last seen: {{ d.last_seen }}</p>
+        {% else %}
+          <p>No readings yet.</p>
+        {% endif %}
       </div>
     {% endfor %}
   {% else %}
@@ -169,14 +150,15 @@
 </div>
 
 <div class="card">
-  <h2>Open Alerts</h2>
+  <h2>Recent Alerts</h2>
   {% if alerts %}
     {% for a in alerts %}
-      <div class="alert-card {% if a.alert_level == 'red' %}alert-red{% else %}alert-yellow{% endif %}">
-        <b>{% if a.alert_level == "red" %}🔴{% else %}🟡{% endif %} {{ a.alert_title }}</b><br>
-        {{ a.alert_message }}<br>
-        <small>{{ a.device_uid }} • {{ a.created_at }}</small>
-      </div>
+      <p>
+        {% if a.severity == "danger" %}🔴{% else %}🟡{% endif %}
+        <b>{{ a.alert_type }}</b><br>
+        {{ a.message }}
+      </p>
+      <hr>
     {% endfor %}
   {% else %}
     <p>No open alerts.</p>
