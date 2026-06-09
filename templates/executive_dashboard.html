@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+.exec-hero {
+  background: linear-gradient(135deg, #e9fffc, #ffffff);
+  border: 1px solid rgba(64,224,208,.45);
+  border-radius: 28px;
+  padding: 30px;
+  box-shadow: 0 18px 45px rgba(0,80,80,.14);
+}
+.exec-grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
+  gap:16px;
+  margin:20px 0;
+}
+.exec-card {
+  background:#fff;
+  border:1px solid #dceeee;
+  border-radius:22px;
+  padding:20px;
+  box-shadow:0 10px 28px rgba(0,0,0,.06);
+}
+.exec-card .label {
+  color:#667;
+  font-size:12px;
+  font-weight:900;
+  text-transform:uppercase;
+  letter-spacing:.06em;
+}
+.exec-card .value {
+  font-size:34px;
+  font-weight:900;
+  color:#073b3b;
+}
+.exec-row {
+  border:1px solid #dceeee;
+  border-radius:16px;
+  padding:14px;
+  margin:10px 0;
+  background:#fff;
+}
+</style>
+
+<div class="exec-hero">
+  <h1>🦜 Toucan Executive Dashboard</h1>
+  <p>One command center for jobs, customers, Filter Club revenue, monitors, alerts, and VIP accounts.</p>
+</div>
+
+<div class="exec-grid">
+  <div class="exec-card"><div class="label">Open Jobs</div><div class="value">{{ open_jobs }}</div></div>
+  <div class="exec-card"><div class="label">Customers</div><div class="value">{{ total_customers }}</div></div>
+  <div class="exec-card"><div class="label">Filter Members</div><div class="value">{{ filter_members|length }}</div></div>
+  <div class="exec-card"><div class="label">Filter MRR</div><div class="value">${{ "%.0f"|format(filter_mrr) }}</div></div>
+  <div class="exec-card"><div class="label">Filter ARR</div><div class="value">${{ "%.0f"|format(filter_arr) }}</div></div>
+  <div class="exec-card"><div class="label">Monitors Online</div><div class="value">{{ monitors_online }}/{{ monitors|length }}</div></div>
+</div>
+
+<div class="card">
+  <h2>Quick Money Links</h2>
+  <p>
+    <a class="action-btn" href="/reports/filter-club">Filter Club Dashboard</a>
+    <a class="action-btn" href="/reports/filter-club/due">Filter Due Report</a>
+    <a class="action-btn" href="/reports/filter-club/signups">Filter Signups</a>
+    <a class="action-btn" href="/monitoring/platform">Toucan Monitor</a>
+    <a class="action-btn" href="/service-jobs">Open Service Jobs</a>
+  </p>
+</div>
+
+<div class="card">
+  <h2>⭐ Top VIP Customers</h2>
+  {% if vip_customers %}
+    {% for c, vip in vip_customers %}
+      <div class="exec-row">
+        <h3 style="margin:0;"><a href="/customer/{{ c.id }}">{{ c.first_name }} {{ c.last_name }}</a></h3>
+        <p>
+          <b>Score:</b> {{ vip.score }}/100 |
+          <b>Tier:</b> {{ vip.tier }} |
+          <b>Revenue:</b> ${{ "%.2f"|format(vip.invoice_total) }} |
+          <b>Filter:</b> {% if c.filter_club_member %}Active{% else %}No{% endif %}
+        </p>
+      </div>
+    {% endfor %}
+  {% else %}
+    <p>No VIP data yet.</p>
+  {% endif %}
+</div>
+
+<div class="card">
+  <h2>Recent Service Jobs</h2>
+  {% if recent_jobs %}
+    {% for j in recent_jobs %}
+      <div class="exec-row">
+        <h3 style="margin:0;"><a href="/service-jobs/{{ j.id }}">Service Job #{{ j.id }}</a></h3>
+        <p><b>Status:</b> {{ j.status }} | <b>Priority:</b> {{ j.priority }} | <b>Date:</b> {{ j.scheduled_date }}</p>
+        <p>{{ j.description[:180] if j.description else "No description" }}</p>
+      </div>
+    {% endfor %}
+  {% else %}
+    <p>No jobs yet.</p>
+  {% endif %}
+</div>
+
+<div class="card">
+  <h2>Monitor Alerts</h2>
+  {% if monitor_alerts %}
+    {% for a in monitor_alerts %}
+      <div class="exec-row">
+        <p>{% if a.severity == "danger" %}🔴{% else %}🟡{% endif %} <b>{{ a.alert_type }}</b></p>
+        <p>{{ a.message }}</p>
+      </div>
+    {% endfor %}
+  {% else %}
+    <p>No monitor alerts.</p>
+  {% endif %}
+</div>
+
+{% endblock %}

@@ -2665,6 +2665,54 @@ def update_customer_filter_club(customer_id):
     return redirect(url_for("customer_detail", customer_id=customer.id))
 
 
+
+
+@app.route("/executive-dashboard")
+def executive_dashboard():
+    ensure_filter_club_columns()
+
+    open_jobs = ServiceJob.query.filter(ServiceJob.status != "Paid").count()
+    total_customers = Customer.query.count()
+
+    filter_members = Customer.query.filter_by(filter_club_member=True).all()
+    filter_mrr = sum(float(c.filter_monthly_price or 0) for c in filter_members)
+    filter_arr = filter_mrr * 12
+
+    monitors = MonitoringDevice.query.all()
+    monitors_online = 0
+    for d in monitors:
+        if d.last_seen and (datetime.utcnow() - d.last_seen).total_seconds() < 300:
+            monitors_online += 1
+
+    monitor_alerts = MonitoringAlert.query.order_by(MonitoringAlert.id.desc()).limit(10).all()
+
+    vip_customers = []
+    for c in Customer.query.all():
+        try:
+            vip = vip_customer_summary(c)
+            vip_customers.append((c, vip))
+        except Exception:
+            pass
+
+    vip_customers = sorted(vip_customers, key=lambda x: x[1]["score"], reverse=True)[:10]
+
+    recent_jobs = ServiceJob.query.order_by(ServiceJob.id.desc()).limit(8).all()
+
+    return render_template(
+        "executive_dashboard.html",
+        open_jobs=open_jobs,
+        total_customers=total_customers,
+        filter_members=filter_members,
+        filter_mrr=filter_mrr,
+        filter_arr=filter_arr,
+        monitors=monitors,
+        monitors_online=monitors_online,
+        monitor_alerts=monitor_alerts,
+        vip_customers=vip_customers,
+        recent_jobs=recent_jobs
+    )
+
+
 @app.route("/monitoring")
 def monitoring():
     return redirect("/monitoring/platform")
