@@ -2384,21 +2384,8 @@ def upload_monitoring_data():
 
 
 @app.route("/monitoring")
-def monitoring_dashboard():
-    devices = MonitoringDevice.query.order_by(MonitoringDevice.id.desc()).all()
-
-    latest_readings = {}
-    for device in devices:
-        latest = SensorReading.query.filter_by(device_id=device.id).order_by(SensorReading.timestamp.desc()).first()
-        latest_readings[device.id] = latest
-
-    return render_template(
-        "monitoring.html",
-        devices=devices,
-        latest_readings=latest_readings
-    )
-
-
+def monitoring():
+    return redirect("/monitoring/platform")
 
 
 @app.route("/monitoring/device/<int:device_id>")
