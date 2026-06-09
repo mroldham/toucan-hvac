@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Toucan HVAC Filter Club</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      margin:0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #43d3c7, #eafffb);
+      color:#102330;
+    }
+    .wrap {
+      max-width:1100px;
+      margin:0 auto;
+      padding:40px 18px;
+    }
+    .hero {
+      text-align:center;
+      padding:40px 20px;
+    }
+    .hero h1 {
+      font-size:52px;
+      margin:0 0 12px;
+      color:#073b3b;
+    }
+    .hero p {
+      font-size:22px;
+      max-width:760px;
+      margin:0 auto;
+    }
+    .grid {
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:24px;
+      margin-top:30px;
+    }
+    @media(max-width:850px){
+      .grid { grid-template-columns:1fr; }
+      .hero h1 { font-size:38px; }
+    }
+    .card {
+      background:white;
+      border-radius:26px;
+      padding:28px;
+      box-shadow:0 18px 45px rgba(0,80,80,.16);
+      border:1px solid rgba(255,132,0,.18);
+    }
+    .benefit {
+      padding:14px 0;
+      border-bottom:1px solid #e8f4f2;
+      font-size:18px;
+    }
+    label {
+      display:block;
+      font-weight:800;
+      margin:12px 0 6px;
+    }
+    input, select, textarea {
+      width:100%;
+      padding:13px;
+      border:1px solid #dceeee;
+      border-radius:14px;
+      font-size:16px;
+      box-sizing:border-box;
+    }
+    button, .btn {
+      display:inline-block;
+      margin-top:18px;
+      padding:14px 24px;
+      border-radius:999px;
+      border:1px solid rgba(255,132,0,.25);
+      background:#22bfb8;
+      color:white;
+      font-weight:900;
+      font-size:18px;
+      text-decoration:none;
+      box-shadow:0 8px 18px rgba(255,132,0,.08);
+      cursor:pointer;
+    }
+    .price {
+      font-size:42px;
+      font-weight:900;
+      color:#073b3b;
+    }
+    .small {
+      color:#667;
+      font-size:14px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="hero">
+    <h1>🦜 Toucan Filter Club</h1>
+    <p>Fresh HVAC filters delivered or scheduled before your system starts struggling.</p>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h2>Why Join?</h2>
+      <div class="benefit">✅ Stop forgetting filter changes</div>
+      <div class="benefit">✅ Help protect airflow and efficiency</div>
+      <div class="benefit">✅ Choose 30, 60, 90, or 180 day schedules</div>
+      <div class="benefit">✅ Keep your HVAC equipment history organized</div>
+      <div class="benefit">✅ Built by a local HVAC company, not a faceless subscription box</div>
+
+      <h2 style="margin-top:24px;">Simple starting plan</h2>
+      <div class="price">$14.99/mo</div>
+      <p class="small">Final pricing may vary by filter size, quantity, and delivery/service area.</p>
+    </div>
+
+    <div class="card">
+      <h2>Request Filter Club Signup</h2>
+
+      <form method="POST">
+        <label>First Name</label>
+        <input name="first_name" required>
+
+        <label>Last Name</label>
+        <input name="last_name" required>
+
+        <label>Phone</label>
+        <input name="phone">
+
+        <label>Email</label>
+        <input name="email">
+
+        <label>Service Address</label>
+        <input name="address">
+
+        <label>Filter Size</label>
+        <input name="filter_size" placeholder="20x20x1, 16x25x1, etc.">
+
+        <label>How often?</label>
+        <select name="frequency_days">
+          <option value="30">Every 30 days</option>
+          <option value="60">Every 60 days</option>
+          <option value="90" selected>Every 90 days</option>
+          <option value="180">Every 180 days</option>
+        </select>
+
+        <label>Notes</label>
+        <textarea name="notes" rows="4" placeholder="Number of filters, pet hair, allergies, hard-to-reach attic unit, etc."></textarea>
+
+        <button type="submit">Join the Filter Club</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

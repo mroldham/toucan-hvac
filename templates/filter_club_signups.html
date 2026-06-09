@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="card">
+  <h1>🦜 Filter Club Signups</h1>
+  <p>New public requests from the Filter Club landing page.</p>
+  <p><a class="action-btn" href="/reports/filter-club">Back to Filter Club Dashboard</a></p>
+</div>
+
+<div class="card">
+  {% if signups %}
+    {% for s in signups %}
+      <div style="border:1px solid #dceeee;border-radius:18px;padding:16px;margin:12px 0;background:#fff;">
+        <h3 style="margin:0;">{{ s.first_name }} {{ s.last_name }}</h3>
+        <p><b>Phone:</b> {{ s.phone or "—" }} | <b>Email:</b> {{ s.email or "—" }}</p>
+        <p><b>Address:</b> {{ s.address or "—" }}</p>
+        <p><b>Filter:</b> {{ s.filter_size or "—" }} | <b>Frequency:</b> {{ s.frequency_days or "—" }} days</p>
+        <p><b>Status:</b> {{ s.status }} | <b>Created:</b> {{ s.created_at }}</p>
+        {% if s.notes %}<p><b>Notes:</b> {{ s.notes }}</p>{% endif %}
+      </div>
+    {% endfor %}
+  {% else %}
+    <p>No public Filter Club signups yet.</p>
+  {% endif %}
+</div>
+
+{% endblock %}

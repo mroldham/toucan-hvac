@@ -66,6 +66,22 @@ class Customer(db.Model):
     customer_since = db.Column(db.DateTime, default=datetime.utcnow)
 
 
+
+
+class FilterClubSignup(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    first_name = db.Column(db.String(120), nullable=False)
+    last_name = db.Column(db.String(120), nullable=False)
+    phone = db.Column(db.String(50), nullable=True)
+    email = db.Column(db.String(120), nullable=True)
+    address = db.Column(db.String(255), nullable=True)
+    filter_size = db.Column(db.String(80), nullable=True)
+    frequency_days = db.Column(db.Integer, nullable=True)
+    notes = db.Column(db.Text, nullable=True)
+    status = db.Column(db.String(40), default="New")
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
 class CustomerPhoto(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     customer_id = db.Column(db.Integer, db.ForeignKey("customer.id"), nullable=False)
@@ -2440,6 +2456,42 @@ def upload_monitoring_data():
     }
 
 
+
+
+
+
+@app.route("/filter-club", methods=["GET", "POST"])
+def public_filter_club():
+    if request.method == "POST":
+        signup = FilterClubSignup(
+            first_name=request.form.get("first_name", "").strip(),
+            last_name=request.form.get("last_name", "").strip(),
+            phone=request.form.get("phone"),
+            email=request.form.get("email"),
+            address=request.form.get("address"),
+            filter_size=request.form.get("filter_size"),
+            frequency_days=int(request.form.get("frequency_days") or 90),
+            notes=request.form.get("notes"),
+            status="New"
+        )
+        db.session.add(signup)
+        db.session.commit()
+
+        flash("Thank you. Your Filter Club request was received.")
+        return redirect("/filter-club/thanks")
+
+    return render_template("public_filter_club.html")
+
+
+@app.route("/filter-club/thanks")
+def public_filter_club_thanks():
+    return render_template("public_filter_club_thanks.html")
+
+
+@app.route("/reports/filter-club/signups")
+def filter_club_signups():
+    signups = FilterClubSignup.query.order_by(FilterClubSignup.created_at.desc()).all()
+    return render_template("filter_club_signups.html", signups=signups)
 
 
 @app.route("/reports/filter-club")
