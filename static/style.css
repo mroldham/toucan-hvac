@@ -3061,15 +3061,3 @@ textarea:focus {
   background:#f4a300 !important;
   margin-top:8px;
 }
-
-
-/* TOUCAN BEAK ACCENT - easy rollback: remove this block only.
-   Subtle orange outline for public-facing pill/action buttons.
-   Technician login is intentionally excluded. */
-body:not(.login-page) .public-page .action-btn,
-body:not(.login-page) .public-page .pill,
-body:not(.login-page) .hero .action-btn,
-body:not(.login-page) .public-hero .action-btn {
-  border: 1px solid rgba(255, 138, 0, 0.28) !important;
-  box-shadow: 0 0 0 1px rgba(255, 138, 0, 0.08), 0 8px 18px rgba(255, 138, 0, 0.06);
-}
