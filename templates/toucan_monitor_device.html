@@ -55,6 +55,16 @@
   padding:10px;
   border-bottom:1px solid #edf3f3;
 }
+
+.timeline-item {
+  border-left:4px solid #40E0D0;
+  padding:10px 0 10px 14px;
+  margin:10px 0;
+}
+.timeline-item b {
+  color:#073b3b;
+}
+
 </style>
 
 <div class="device-hero">
@@ -134,6 +144,25 @@
       Forecasting will improve as amp clamps, vibration, pressure, and line temperature sensors are added.
     </p>
   </div>
+
+
+<div class="panel">
+  <h2>Device Activity Timeline</h2>
+
+  {% if readings %}
+    {% for r in readings[:8] %}
+      <div class="timeline-item">
+        <b>Reading Uploaded</b><br>
+        Delta-T {{ "%.1f"|format(r.temp_split or 0) }}°,
+        Supply {{ "%.1f"|format(r.supply_temp or 0) }}°,
+        Return {{ "%.1f"|format(r.return_temp or 0) }}°<br>
+        <small>{{ r.timestamp }}</small>
+      </div>
+    {% endfor %}
+  {% else %}
+    <p>No activity yet.</p>
+  {% endif %}
+</div>
 
 <div class="panel">
   <h2>Reading History</h2>
