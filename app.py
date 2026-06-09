@@ -57,6 +57,14 @@ class Customer(db.Model):
     mailing_address = db.Column(db.String(255))
     birthday = db.Column(db.String(20))
 
+    filter_club_member = db.Column(db.Boolean, default=False)
+    filter_size = db.Column(db.String(80), nullable=True)
+    filter_frequency_days = db.Column(db.Integer, nullable=True)
+    filter_monthly_price = db.Column(db.Float, nullable=True)
+    filter_last_service = db.Column(db.DateTime, nullable=True)
+    filter_next_due = db.Column(db.DateTime, nullable=True)
+    customer_since = db.Column(db.DateTime, default=datetime.utcnow)
+
 
 class CustomerPhoto(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -391,6 +399,55 @@ def logout():
     session.clear()
     flash("Logged out.")
     return redirect(url_for("login"))
+
+
+
+
+def ensure_filter_club_columns():
+    from sqlalchemy import text as sa_text, inspect
+    try:
+        inspector = inspect(db.engine)
+        cols = [c["name"] for c in inspector.get_columns("customer")]
+        needed = {
+            "filter_club_member": "BOOLEAN DEFAULT 0",
+            "filter_size": "VARCHAR(80)",
+            "filter_frequency_days": "INTEGER",
+            "filter_monthly_price": "FLOAT",
+            "filter_last_service": "DATETIME",
+            "filter_next_due": "DATETIME",
+            "customer_since": "DATETIME"
+        }
+        with db.engine.begin() as conn:
+            for col, sql_type in needed.items():
+                if col not in cols:
+                    conn.execute(sa_text(f"ALTER TABLE customer ADD COLUMN {col} {sql_type}"))
+    except Exception as e:
+        print("Filter Club column check skipped:", e)
+
+
+def customer_value_summary(customer_id):
+    total = 0
+    invoice_count = 0
+
+    try:
+        invoices = ToucanInvoice.query.filter_by(customer_id=customer_id).all()
+        invoice_count = len(invoices)
+        for inv in invoices:
+            total += float(getattr(inv, "total", 0) or getattr(inv, "amount", 0) or 0)
+    except Exception:
+        pass
+
+    customer = Customer.query.get(customer_id)
+    filter_revenue = 0
+    if customer and customer.filter_club_member and customer.filter_monthly_price:
+        filter_revenue = float(customer.filter_monthly_price or 0) * 12
+
+    return {
+        "lifetime_revenue": total,
+        "invoice_count": invoice_count,
+        "filter_revenue_estimate": filter_revenue,
+        "vip_score": int(min(100, (total / 100) + (invoice_count * 3) + (20 if customer and customer.filter_club_member else 0)))
+    }
 
 
 @app.route("/customers", methods=["GET", "POST"])
@@ -2381,6 +2438,63 @@ def upload_monitoring_data():
         "temp_split": temp_split,
         "alerts_created": len(alerts)
     }
+
+
+
+
+@app.route("/reports/filter-club")
+def filter_club_report():
+    ensure_filter_club_columns()
+
+    members = Customer.query.filter_by(filter_club_member=True).order_by(Customer.last_name.asc()).all()
+    all_customers = Customer.query.order_by(Customer.last_name.asc()).all()
+
+    monthly_revenue = sum(float(c.filter_monthly_price or 0) for c in members)
+    annual_revenue = monthly_revenue * 12
+
+    now = datetime.utcnow()
+    due_soon = []
+    overdue = []
+
+    for c in members:
+        if c.filter_next_due:
+            if c.filter_next_due < now:
+                overdue.append(c)
+            elif c.filter_next_due <= now + timedelta(days=30):
+                due_soon.append(c)
+
+    return render_template(
+        "filter_club_report.html",
+        members=members,
+        all_customers=all_customers,
+        monthly_revenue=monthly_revenue,
+        annual_revenue=annual_revenue,
+        due_soon=due_soon,
+        overdue=overdue
+    )
+
+
+@app.route("/customer/<int:customer_id>/filter-club", methods=["POST"])
+def update_customer_filter_club(customer_id):
+    ensure_filter_club_columns()
+
+    customer = Customer.query.get_or_404(customer_id)
+
+    customer.filter_club_member = bool(request.form.get("filter_club_member"))
+    customer.filter_size = request.form.get("filter_size")
+    customer.filter_frequency_days = int(request.form.get("filter_frequency_days") or 90)
+    customer.filter_monthly_price = float(request.form.get("filter_monthly_price") or 0)
+
+    last_service = request.form.get("filter_last_service")
+    if last_service:
+        try:
+            customer.filter_last_service = datetime.strptime(last_service, "%Y-%m-%d")
+            customer.filter_next_due = customer.filter_last_service + timedelta(days=customer.filter_frequency_days)
+        except Exception:
+            pass
+
+    db.session.commit()
+    return redirect(url_for("customer_detail", customer_id=customer.id))
 
 
 @app.route("/monitoring")
