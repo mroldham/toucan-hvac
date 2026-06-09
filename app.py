@@ -109,6 +109,17 @@ class SensorReading(db.Model):
     overflow_alert = db.Column(db.Boolean, default=False)
     system_running = db.Column(db.Boolean, default=False)
 
+    compressor_amps = db.Column(db.Float, nullable=True)
+    blower_amps = db.Column(db.Float, nullable=True)
+    condenser_fan_amps = db.Column(db.Float, nullable=True)
+    total_amps = db.Column(db.Float, nullable=True)
+
+    compressor_running = db.Column(db.Boolean, default=False)
+    blower_running = db.Column(db.Boolean, default=False)
+
+    runtime_minutes = db.Column(db.Float, nullable=True)
+    voltage = db.Column(db.Float, nullable=True)
+
     raw_json = db.Column(db.Text, nullable=True)
 
 class PropertyPhoto(db.Model):
@@ -2150,8 +2161,36 @@ class MonitoringAlert(db.Model):
     notification_sent_at = db.Column(db.DateTime, nullable=True)
 
 
+
+
+def ensure_monitor_amp_columns():
+    from sqlalchemy import text as sa_text, inspect
+    try:
+        inspector = inspect(db.engine)
+        cols = [c["name"] for c in inspector.get_columns("sensor_reading")]
+
+        needed = {
+            "compressor_amps": "FLOAT",
+            "blower_amps": "FLOAT",
+            "condenser_fan_amps": "FLOAT",
+            "total_amps": "FLOAT",
+            "compressor_running": "BOOLEAN DEFAULT 0",
+            "blower_running": "BOOLEAN DEFAULT 0",
+            "runtime_minutes": "FLOAT",
+            "voltage": "FLOAT"
+        }
+
+        with db.engine.begin() as conn:
+            for col, sql_type in needed.items():
+                if col not in cols:
+                    conn.execute(sa_text(f"ALTER TABLE sensor_reading ADD COLUMN {col} {sql_type}"))
+    except Exception as e:
+        print("Monitor amp column check skipped:", e)
+
+
 @app.route("/api/monitoring/upload", methods=["POST"])
 def upload_monitoring_data():
+    ensure_monitor_amp_columns()
     data = request.get_json(silent=True) or {}
 
     device_uid = data.get("device_uid")
@@ -2202,6 +2241,18 @@ def upload_monitoring_data():
         temp_split=temp_split,
         overflow_alert=bool(data.get("overflow_alert", False)),
         system_running=bool(data.get("system_running", False)),
+
+        compressor_amps=data.get("compressor_amps"),
+        blower_amps=data.get("blower_amps"),
+        condenser_fan_amps=data.get("condenser_fan_amps"),
+        total_amps=data.get("total_amps"),
+
+        compressor_running=bool(data.get("compressor_running", False)),
+        blower_running=bool(data.get("blower_running", False)),
+
+        runtime_minutes=data.get("runtime_minutes"),
+        voltage=data.get("voltage"),
+
         raw_json=str(data)
     )
 

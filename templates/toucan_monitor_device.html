@@ -50,12 +50,28 @@
 
 {% if readings %}
   {% set latest = readings[0] %}
-  <div class="metric-row">
-    <div class="metric"><b>Supply</b><span>{{ "%.1f"|format(latest.supply_temp or 0) }}°</span></div>
-    <div class="metric"><b>Return</b><span>{{ "%.1f"|format(latest.return_temp or 0) }}°</span></div>
-    <div class="metric"><b>Delta-T</b><span>{{ "%.1f"|format(latest.temp_split or 0) }}°</span></div>
-    <div class="metric"><b>Humidity</b><span>{{ "%.0f"|format(latest.humidity or 0) }}%</span></div>
-    <div class="metric"><b>Running</b><span>{% if latest.system_running %}Yes{% else %}No{% endif %}</span></div>
+
+  <div class="card">
+    <h2>HVAC Airside</h2>
+    <div class="metric-row">
+      <div class="metric"><b>Supply</b><span>{{ "%.1f"|format(latest.supply_temp or 0) }}°</span></div>
+      <div class="metric"><b>Return</b><span>{{ "%.1f"|format(latest.return_temp or 0) }}°</span></div>
+      <div class="metric"><b>Delta-T</b><span>{{ "%.1f"|format(latest.temp_split or 0) }}°</span></div>
+      <div class="metric"><b>Humidity</b><span>{{ "%.0f"|format(latest.humidity or 0) }}%</span></div>
+      <div class="metric"><b>Running</b><span>{% if latest.system_running %}Yes{% else %}No{% endif %}</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Electrical / Amp Clamp Ready</h2>
+    <div class="metric-row">
+      <div class="metric"><b>Compressor</b><span>{{ "%.1f"|format(latest.compressor_amps or 0) }}A</span></div>
+      <div class="metric"><b>Blower</b><span>{{ "%.1f"|format(latest.blower_amps or 0) }}A</span></div>
+      <div class="metric"><b>Condenser Fan</b><span>{{ "%.1f"|format(latest.condenser_fan_amps or 0) }}A</span></div>
+      <div class="metric"><b>Total Amps</b><span>{{ "%.1f"|format(latest.total_amps or 0) }}A</span></div>
+      <div class="metric"><b>Runtime</b><span>{{ "%.0f"|format(latest.runtime_minutes or 0) }}m</span></div>
+      <div class="metric"><b>Voltage</b><span>{{ "%.0f"|format(latest.voltage or 0) }}V</span></div>
+    </div>
   </div>
 {% endif %}
 
@@ -69,6 +85,8 @@
         <th>Return</th>
         <th>Delta-T</th>
         <th>Humidity</th>
+        <th>Comp A</th>
+        <th>Blower A</th>
         <th>Running</th>
       </tr>
       {% for r in readings %}
@@ -78,6 +96,8 @@
         <td>{{ "%.1f"|format(r.return_temp or 0) }}°</td>
         <td>{{ "%.1f"|format(r.temp_split or 0) }}°</td>
         <td>{{ "%.0f"|format(r.humidity or 0) }}%</td>
+        <td>{{ "%.1f"|format(r.compressor_amps or 0) }}</td>
+        <td>{{ "%.1f"|format(r.blower_amps or 0) }}</td>
         <td>{% if r.system_running %}Yes{% else %}No{% endif %}</td>
       </tr>
       {% endfor %}
