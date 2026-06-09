@@ -2524,6 +2524,43 @@ def filter_club_signups():
     return render_template("filter_club_signups.html", signups=signups)
 
 
+
+
+@app.route("/reports/filter-club/due")
+def filter_club_due_report():
+    ensure_filter_club_columns()
+
+    now = datetime.utcnow()
+    week_end = now + timedelta(days=7)
+    month_end = now + timedelta(days=30)
+
+    members = Customer.query.filter_by(filter_club_member=True).order_by(Customer.last_name.asc()).all()
+
+    overdue = []
+    due_week = []
+    due_month = []
+    no_due_date = []
+
+    for c in members:
+        if not c.filter_next_due:
+            no_due_date.append(c)
+        elif c.filter_next_due < now:
+            overdue.append(c)
+        elif c.filter_next_due <= week_end:
+            due_week.append(c)
+        elif c.filter_next_due <= month_end:
+            due_month.append(c)
+
+    return render_template(
+        "filter_club_due_report.html",
+        overdue=overdue,
+        due_week=due_week,
+        due_month=due_month,
+        no_due_date=no_due_date,
+        now=now
+    )
+
+
 @app.route("/reports/filter-club")
 def filter_club_report():
     ensure_filter_club_columns()

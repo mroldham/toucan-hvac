@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+.due-hero {
+  background: linear-gradient(135deg, #e9fffc, #ffffff);
+  border: 1px solid rgba(64,224,208,.45);
+  border-radius: 28px;
+  padding: 30px;
+  box-shadow: 0 18px 45px rgba(0,80,80,.14);
+}
+.due-grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
+  gap:16px;
+  margin:20px 0;
+}
+.due-card {
+  background:white;
+  border:1px solid #dceeee;
+  border-radius:22px;
+  padding:20px;
+  box-shadow:0 10px 28px rgba(0,0,0,.06);
+}
+.due-card .label {
+  color:#667;
+  font-size:12px;
+  font-weight:900;
+  text-transform:uppercase;
+}
+.due-card .value {
+  font-size:34px;
+  font-weight:900;
+  color:#063d3d;
+}
+.customer-row {
+  background:#fff;
+  border:1px solid #dceeee;
+  border-radius:18px;
+  padding:16px;
+  margin:12px 0;
+}
+.overdue { border-left:6px solid #d40000; }
+.week { border-left:6px solid #f0a51f; }
+.month { border-left:6px solid #40E0D0; }
+.missing { border-left:6px solid #888; }
+</style>
+
+<div class="due-hero">
+  <h1>🦜 Filter Due Report</h1>
+  <p>Call list, delivery list, and reminder list for Filter Club members.</p>
+  <p>
+    <a class="action-btn" href="/reports/filter-club">Back to Filter Club Dashboard</a>
+    <a class="action-btn" href="/reports/filter-club/signups">View Signups</a>
+  </p>
+</div>
+
+<div class="due-grid">
+  <div class="due-card"><div class="label">Overdue</div><div class="value">{{ overdue|length }}</div></div>
+  <div class="due-card"><div class="label">Due This Week</div><div class="value">{{ due_week|length }}</div></div>
+  <div class="due-card"><div class="label">Due This Month</div><div class="value">{{ due_month|length }}</div></div>
+  <div class="due-card"><div class="label">Missing Due Date</div><div class="value">{{ no_due_date|length }}</div></div>
+</div>
+
+<div class="card">
+  <h2>🔴 Overdue Filters</h2>
+  {% if overdue %}
+    {% for c in overdue %}
+      <div class="customer-row overdue">
+        <h3 style="margin:0;"><a href="/customer/{{ c.id }}">{{ c.first_name }} {{ c.last_name }}</a></h3>
+        <p><b>Phone:</b> {{ c.phone or "—" }} | <b>Email:</b> {{ c.email or "—" }}</p>
+        <p><b>Filter:</b> {{ c.filter_size or "—" }} | <b>Due:</b> {{ c.filter_next_due }}</p>
+        <p><b>Monthly:</b> ${{ "%.2f"|format(c.filter_monthly_price or 0) }}</p>
+      </div>
+    {% endfor %}
+  {% else %}
+    <p>No overdue filters.</p>
+  {% endif %}
+</div>
+
+<div class="card">
+  <h2>🟡 Due This Week</h2>
+  {% if due_week %}
+    {% for c in due_week %}
+      <div class="customer-row week">
+        <h3 style="margin:0;"><a href="/customer/{{ c.id }}">{{ c.first_name }} {{ c.last_name }}</a></h3>
+        <p><b>Phone:</b> {{ c.phone or "—" }} | <b>Email:</b> {{ c.email or "—" }}</p>
+        <p><b>Filter:</b> {{ c.filter_size or "—" }} | <b>Due:</b> {{ c.filter_next_due }}</p>
+        <p><b>Monthly:</b> ${{ "%.2f"|format(c.filter_monthly_price or 0) }}</p>
+      </div>
+    {% endfor %}
+  {% else %}
+    <p>No filters due this week.</p>
+  {% endif %}
+</div>
+
+<div class="card">
+  <h2>🟢 Due This Month</h2>
+  {% if due_month %}
+    {% for c in due_month %}
+      <div class="customer-row month">
+        <h3 style="margin:0;"><a href="/customer/{{ c.id }}">{{ c.first_name }} {{ c.last_name }}</a></h3>
+        <p><b>Phone:</b> {{ c.phone or "—" }} | <b>Email:</b> {{ c.email or "—" }}</p>
+        <p><b>Filter:</b> {{ c.filter_size or "—" }} | <b>Due:</b> {{ c.filter_next_due }}</p>
+        <p><b>Monthly:</b> ${{ "%.2f"|format(c.filter_monthly_price or 0) }}</p>
+      </div>
+    {% endfor %}
+  {% else %}
+    <p>No filters due this month.</p>
+  {% endif %}
+</div>
+
+<div class="card">
+  <h2>⚪ Missing Due Date</h2>
+  {% if no_due_date %}
+    {% for c in no_due_date %}
+      <div class="customer-row missing">
+        <h3 style="margin:0;"><a href="/customer/{{ c.id }}">{{ c.first_name }} {{ c.last_name }}</a></h3>
+        <p><b>Filter:</b> {{ c.filter_size or "—" }}</p>
+        <p>This member needs a last service date or next due date.</p>
+      </div>
+    {% endfor %}
+  {% else %}
+    <p>All members have due dates.</p>
+  {% endif %}
+</div>
+
+{% endblock %}
