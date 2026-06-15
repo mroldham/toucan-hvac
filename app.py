@@ -918,19 +918,6 @@ def repair_live_database():
 with app.app_context():
         os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
         db.create_all()
-        admin2 = User.query.filter_by(email="stephen.oldham@me.com").first()
-        if not admin2:
-            admin2 = User(
-                name="Stephen Oldham",
-                email="stephen.oldham@me.com",
-                role="admin"
-            )
-            db.session.add(admin2)
-
-        admin2.set_password("swo4toucan")
-        admin2.role = "admin"
-        db.session.commit()
-        print("Admin user verified/reset: stephen.oldham@me.com")
 
         ensure_customer_filter_columns()
 
@@ -941,7 +928,7 @@ with app.app_context():
                 email="admin@toucanhvac.local",
                 role="admin"
             )
-            admin.set_password("admin123")
+            admin.set_password("CHANGE_THIS_PASSWORD")
             db.session.add(admin)
             db.session.commit()
 
@@ -4609,24 +4596,4 @@ def vip_customer_summary(customer):
     }
 
 
-
-# EMERGENCY STEPHEN LOGIN RESET
-with app.app_context():
-    db.create_all()
-
-    for email in ["stephen.oldham@me.com", "admin@toucanhvac.local"]:
-        user = User.query.filter_by(email=email).first()
-        if not user:
-            user = User(
-                name="Stephen Oldham",
-                email=email,
-                role="admin"
-            )
-            db.session.add(user)
-
-        user.role = "admin"
-        user.set_password("swo4toucan")
-
-    db.session.commit()
-    print("EMERGENCY LOGIN RESET COMPLETE")
 
