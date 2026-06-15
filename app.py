@@ -480,7 +480,9 @@ def recover_login():
     db.session.commit()
 
     return "LOGIN REPAIRED"
-\n\n@app.route("/logout")
+
+
+@app.route("/logout")
 def logout():
     session.clear()
     flash("Logged out.")
