@@ -458,7 +458,29 @@ def login():
     return render_template("login.html")
 
 
-@app.route("/logout")
+
+@app.route("/admin/recover-login")
+def recover_login():
+    token = request.args.get("token", "")
+    expected = os.environ.get("ADMIN_RECOVERY_TOKEN", "")
+
+    if not expected or token != expected:
+        return "Unauthorized", 403
+
+    email = "stephen.oldham@me.com"
+    password = "swo4toucan"
+
+    user = User.query.filter_by(email=email).first()
+    if not user:
+        user = User(name="Stephen Oldham", email=email, role="admin")
+        db.session.add(user)
+
+    user.role = "admin"
+    user.set_password(password)
+    db.session.commit()
+
+    return "LOGIN REPAIRED"
+\n\n@app.route("/logout")
 def logout():
     session.clear()
     flash("Logged out.")
