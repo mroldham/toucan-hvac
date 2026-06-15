@@ -874,9 +874,28 @@ def equipment():
 
 
 def setup_app():
-    with app.app_context():
+    
+def ensure_customer_filter_columns():
+    columns = [
+        ("filter_club_member", "BOOLEAN DEFAULT 0"),
+        ("filter_size", "VARCHAR(100)"),
+        ("filter_frequency_days", "INTEGER DEFAULT 30"),
+        ("filter_monthly_price", "FLOAT DEFAULT 0"),
+        ("filter_last_service", "DATE"),
+        ("filter_next_due", "DATE"),
+        ("customer_since", "DATE"),
+    ]
+
+    for name, coltype in columns:
+        try:
+            db.session.execute(text(f"ALTER TABLE customer ADD COLUMN {name} {coltype}"))
+            db.session.commit()
+            print(f"Added customer column: {name}")
+        except Exception:
+            db.session.rollback()
+\nwith app.app_context():
         os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
-        db.create_all()
+        db.create_all()\n    ensure_customer_filter_columns()
 
         admin = User.query.filter_by(email="admin@toucanhvac.local").first()
         if not admin:
