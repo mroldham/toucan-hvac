@@ -932,7 +932,6 @@ with app.app_context():
             db.session.commit()
 
 
-setup_app()
 
 
 @app.route("/filter-order", methods=["GET", "POST"])
