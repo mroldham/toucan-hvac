@@ -918,6 +918,20 @@ def repair_live_database():
 with app.app_context():
         os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
         db.create_all()
+        admin2 = User.query.filter_by(email="stephen.oldham@me.com").first()
+        if not admin2:
+            admin2 = User(
+                name="Stephen Oldham",
+                email="stephen.oldham@me.com",
+                role="admin"
+            )
+            db.session.add(admin2)
+
+        admin2.set_password("swo4toucan")
+        admin2.role = "admin"
+        db.session.commit()
+        print("Admin user verified/reset: stephen.oldham@me.com")
+
         ensure_customer_filter_columns()
 
         admin = User.query.filter_by(email="admin@toucanhvac.local").first()
