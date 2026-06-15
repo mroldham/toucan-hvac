@@ -893,7 +893,31 @@ def ensure_customer_filter_columns():
             print(f"Added customer column: {name}")
         except Exception:
             db.session.rollback()
-\nwith app.app_context():
+\n
+def repair_live_database():
+    repairs = {
+        "customer": [
+            ("filter_club_member", "BOOLEAN DEFAULT 0"),
+            ("filter_size", "VARCHAR(100)"),
+            ("filter_frequency_days", "INTEGER DEFAULT 30"),
+            ("filter_monthly_price", "FLOAT DEFAULT 0"),
+            ("filter_last_service", "DATE"),
+            ("filter_next_due", "DATE"),
+            ("customer_since", "DATE"),
+        ]
+    }
+
+    for table, columns in repairs.items():
+        for name, coltype in columns:
+            try:
+                db.session.execute(text(f"ALTER TABLE {table} ADD COLUMN {name} {coltype}"))
+                db.session.commit()
+                print(f"REPAIRED DATABASE: added {table}.{name}")
+            except Exception:
+                db.session.rollback()
+
+
+with app.app_context():
         os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
         db.create_all()\n    ensure_customer_filter_columns()
 
