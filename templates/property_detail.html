@@ -8,6 +8,13 @@
 
   <p><b>Address:</b> {{ property.address }}</p>
 
+  <div class="action-row">
+    <a class="action-btn gold" href="{{ url_for('edit_property', property_id=property.id) }}">Edit Property</a>
+    <form method="post" action="{{ url_for('archive_property', property_id=property.id) }}" style="display:inline;" onsubmit="return confirm('Archive this property?');">
+      <button class="action-btn danger" type="submit">Archive Property</button>
+    </form>
+  </div>
+
   {% if customer %}
     <p><b>Customer:</b> {{ customer.first_name }} {{ customer.last_name }}</p>
     <p><b>Phone:</b> {{ customer.phone }}</p>

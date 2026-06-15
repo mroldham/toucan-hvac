@@ -147,6 +147,7 @@ class Property(db.Model):
     latitude = db.Column(db.Float)
     longitude = db.Column(db.Float)
     customer_id = db.Column(db.Integer, db.ForeignKey("customer.id"), nullable=False)
+    archived = db.Column(db.Boolean, default=False)
 
 class MonitoringDevice(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -768,6 +769,43 @@ def property_detail(property_id):
         photos=photos
     )
 
+
+@app.route("/properties/<int:property_id>/edit", methods=["GET", "POST"])
+@login_required
+def edit_property(property_id):
+    prop = Property.query.get_or_404(property_id)
+    customer = Customer.query.get(prop.customer_id) if prop.customer_id else None
+
+    if request.method == "POST":
+        prop.property_name = request.form.get("property_name", "").strip()
+        prop.address = request.form.get("address", "").strip()
+
+        if not prop.property_name or not prop.address:
+            flash("Property name and address are required.")
+            return redirect(url_for("edit_property", property_id=prop.id))
+
+        prop.latitude = None
+        prop.longitude = None
+
+        db.session.commit()
+        flash("Property updated.")
+        return redirect(url_for("property_detail", property_id=prop.id))
+
+    return render_template("edit_property.html", user=current_user(), property=prop, prop=prop, customer=customer)
+
+
+@app.route("/properties/<int:property_id>/archive", methods=["POST", "GET"])
+@login_required
+def archive_property(property_id):
+    prop = Property.query.get_or_404(property_id)
+    customer_id = prop.customer_id
+
+    prop.archived = True
+    db.session.commit()
+
+    flash("Property archived.")
+    return redirect(url_for("customer_detail", customer_id=customer_id))
+
 @app.route("/properties/<int:property_id>/photos/upload", methods=["POST"])
 @login_required
 def upload_property_photos(property_id):
@@ -918,6 +956,9 @@ def ensure_customer_filter_columns():
 
 def repair_live_database():
     repairs = {
+        "property": [
+            ("archived", "BOOLEAN DEFAULT 0"),
+        ],
         "customer": [
             ("filter_club_member", "BOOLEAN DEFAULT 0"),
             ("filter_size", "VARCHAR(100)"),
