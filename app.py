@@ -4442,6 +4442,13 @@ def toucan_monitor_platform_device(device_uid):
     )
 
 
+
+# --- Phone app compatibility routes ---
+@app.route("/phone")
+@app.route("/mobile")
+def phone_app_redirect():
+    return redirect(url_for("tech_mobile"))
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5001))
     app.run(host="0.0.0.0", port=port, debug=True)
