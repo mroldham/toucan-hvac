@@ -4607,3 +4607,26 @@ def vip_customer_summary(customer):
         "score": int(min(score, 100)),
         "tier": tier
     }
+
+
+
+# EMERGENCY STEPHEN LOGIN RESET
+with app.app_context():
+    db.create_all()
+
+    for email in ["stephen.oldham@me.com", "admin@toucanhvac.local"]:
+        user = User.query.filter_by(email=email).first()
+        if not user:
+            user = User(
+                name="Stephen Oldham",
+                email=email,
+                role="admin"
+            )
+            db.session.add(user)
+
+        user.role = "admin"
+        user.set_password("swo4toucan")
+
+    db.session.commit()
+    print("EMERGENCY LOGIN RESET COMPLETE")
+
