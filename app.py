@@ -873,8 +873,6 @@ def equipment():
     return render_template("equipment.html", user=current_user(), rows=rows)
 
 
-def setup_app():
-    
 def ensure_customer_filter_columns():
     columns = [
         ("filter_club_member", "BOOLEAN DEFAULT 0"),
@@ -893,7 +891,7 @@ def ensure_customer_filter_columns():
             print(f"Added customer column: {name}")
         except Exception:
             db.session.rollback()
-\n
+
 def repair_live_database():
     repairs = {
         "customer": [
@@ -919,7 +917,8 @@ def repair_live_database():
 
 with app.app_context():
         os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
-        db.create_all()\n    ensure_customer_filter_columns()
+        db.create_all()
+        ensure_customer_filter_columns()
 
         admin = User.query.filter_by(email="admin@toucanhvac.local").first()
         if not admin:
