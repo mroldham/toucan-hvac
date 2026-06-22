@@ -3131,3 +3131,29 @@ button:hover,
 
 }
 
+
+/* ===== TOUCAN ORANGE BUTTON TEST - EASY TO REMOVE ===== */
+
+.action-btn,
+.primary-btn,
+.quick-action-btn,
+.btn,
+button,
+a.action-btn {
+    border: 2px solid #ff7a00 !important;
+    box-shadow: 0 0 0 2px rgba(255,122,0,.35) !important;
+}
+
+.action-btn:hover,
+.primary-btn:hover,
+.quick-action-btn:hover,
+.btn:hover,
+button:hover,
+a.action-btn:hover {
+    border: 3px solid #ff7a00 !important;
+    box-shadow:
+        0 0 0 3px rgba(255,122,0,.95),
+        0 0 18px rgba(255,122,0,.75) !important;
+    transform: translateY(-2px) !important;
+}
+
