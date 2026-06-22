@@ -3083,3 +3083,33 @@ body:not(.login-page) .nav-pill:not([href*="login"]) {
     0 6px 16px rgba(255, 132, 0, 0.055) !important;
 }
 
+
+/* ===== TOUCAN BEAK HOVER EFFECT ===== */
+
+.action-btn,
+.primary-btn,
+.quick-action-btn,
+button,
+.btn {
+
+    transition:
+        transform 0.25s ease,
+        box-shadow 0.25s ease,
+        border-color 0.25s ease;
+}
+
+.action-btn:hover,
+.primary-btn:hover,
+.quick-action-btn:hover,
+button:hover,
+.btn:hover {
+
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 0 0 2px rgba(255,122,0,.95),
+        0 0 14px rgba(255,122,0,.45);
+
+    border-color: #ff7a00 !important;
+}
+
