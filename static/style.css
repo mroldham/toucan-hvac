@@ -3113,3 +3113,21 @@ button:hover,
     border-color: #ff7a00 !important;
 }
 
+
+/* ===== TOUCAN BEAK HOVER EFFECT ===== */
+
+.action-btn:hover,
+.primary-btn:hover,
+.quick-action-btn:hover,
+button:hover,
+.btn:hover {
+
+    transform: translateY(-2px);
+
+    border: 2px solid #ff7a00 !important;
+
+    box-shadow:
+        0 0 8px rgba(255,122,0,.35);
+
+}
+
