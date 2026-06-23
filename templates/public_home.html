@@ -13,7 +13,8 @@ body{margin:0;font-family:Arial, sans-serif;background:#f5fffd;color:#123;}
 .hero h1{font-size:42px;margin:0;color:#064b4b;}
 .hero p{font-size:20px;max-width:760px;margin:18px auto;}
 .nav{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;padding:18px;background:white;box-shadow:0 2px 12px rgba(0,0,0,.08);}
-.nav a,.btn,button{background:#28c7bd;color:white;text-decoration:none;border:0;border-radius:999px;padding:12px 20px;font-weight:bold;display:inline-block;}
+.nav a,.btn,button{background:#28c7bd;color:white;text-decoration:none;border:2px solid #ff7a00;border-radius:999px;padding:12px 20px;font-weight:bold;display:inline-block;box-shadow:0 0 0 2px rgba(255,122,0,.35);transition:all .25s ease;}
+.nav a:hover,.btn:hover,button:hover{border-color:#ff7a00;box-shadow:0 0 0 3px rgba(255,122,0,.95),0 0 20px rgba(255,122,0,.75);transform:translateY(-2px);}
 .section{max-width:1000px;margin:24px auto;padding:0 18px;}
 .card{background:white;border-radius:22px;padding:22px;box-shadow:0 4px 16px rgba(0,0,0,.08);margin-bottom:18px;}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px;}
