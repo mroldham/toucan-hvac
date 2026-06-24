@@ -454,7 +454,7 @@ def ensure_property_archived_column():
             print("property.archived column already exists or could not be added:", e)
 
 ensure_property_archived_column()
-\n@app.route("/login", methods=["GET", "POST"])
+@app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
         email = request.form.get("email", "").strip().lower()
