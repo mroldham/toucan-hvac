@@ -16,11 +16,32 @@
 
     {% if customer and customer.phone %}
       <a class="invoice-action-link"
+       href="sms:{{ customer.phone }}&body={{ ('Hi ' ~ customer.first_name ~ ', this is Toucan HVAC.
+
+Your invoice #' ~ (invoice.invoice_number or invoice.id)|string ~ ' is ready.
+Total: $' ~ ('%.2f'|format(invoice.total or 0)) ~ '
+
+View your invoice here:
+' ~ request.url ~ '
+
+Thank you,
+Toucan HVAC
+936-334-2944') | urlencode }}">
+       Text Invoice
+    </a>
+
+    <a class="invoice-action-link"
          target="_blank"
          href="/invoices/{{ invoice.id }}/pdf">
          Open PDF Invoice
       </a>
     {% endif %}
+
+    <button type="button"
+            class="invoice-action-link"
+            onclick="shareInvoiceJpg()">
+      📱 Share Invoice
+    </button>
 
     <a class="invoice-action-link" href="/invoices/{{ invoice.id }}/jpg">Export JPG</a>
 
@@ -190,5 +211,60 @@
     border-bottom: none !important;
   }
 </style>
+
+
+<script>
+async function shareInvoiceJpg() {
+  const button = event.currentTarget;
+  const originalText = button.innerText;
+
+  try {
+    button.innerText = "Preparing Invoice...";
+    button.disabled = true;
+
+    const response = await fetch("/invoices/{{ invoice.id }}/jpg", {
+      credentials: "same-origin"
+    });
+
+    if (!response.ok) {
+      throw new Error("Could not create invoice image.");
+    }
+
+    const blob = await response.blob();
+
+    const file = new File(
+      [blob],
+      "Toucan_Invoice_{{ invoice.invoice_number or invoice.id }}.jpg",
+      { type: "image/jpeg" }
+    );
+
+    if (
+      navigator.share &&
+      navigator.canShare &&
+      navigator.canShare({ files: [file] })
+    ) {
+      await navigator.share({
+        title: "Toucan HVAC Invoice {{ invoice.invoice_number or invoice.id }}",
+        text: "Toucan HVAC Invoice #{{ invoice.invoice_number or invoice.id }}",
+        files: [file]
+      });
+    } else {
+      // Fallback for computers/browsers without file sharing
+      const url = URL.createObjectURL(blob);
+      window.open(url, "_blank");
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+    }
+
+  } catch (err) {
+    if (err.name !== "AbortError") {
+      console.error(err);
+      alert("Could not share the invoice. Try Export JPG instead.");
+    }
+  } finally {
+    button.innerText = originalText;
+    button.disabled = false;
+  }
+}
+</script>
 
 {% endblock %}
