@@ -1858,6 +1858,30 @@ def invoice_from_job(job_id):
     )
 
 
+
+def invoice_asset_data(filename):
+    import base64
+    from pathlib import Path
+
+    asset_path = Path(app.root_path) / "static" / filename
+
+    if not asset_path.exists():
+        return ""
+
+    suffix = asset_path.suffix.lower()
+
+    mime = {
+        ".png": "image/png",
+        ".jpg": "image/jpeg",
+        ".jpeg": "image/jpeg",
+    }.get(suffix, "application/octet-stream")
+
+    return (
+        f"data:{mime};base64,"
+        + base64.b64encode(asset_path.read_bytes()).decode("ascii")
+    )
+
+
 @app.route("/invoice-center/<int:invoice_id>/preview")
 @login_required
 def invoice_preview(invoice_id):
@@ -1891,7 +1915,8 @@ def invoice_preview(invoice_id):
         items=items,
         customer=customer,
         property=property,
-        logo_data=logo_data
+        logo_data=logo_data,
+        thank_you_data=invoice_asset_data("thank_you_exact.png")
     )
 
 
@@ -2373,7 +2398,8 @@ def invoice_pdf(invoice_id):
         items=items,
         customer=customer,
         property=property,
-        logo_data=logo_data
+        logo_data=logo_data,
+        thank_you_data=invoice_asset_data("thank_you_exact.png")
     )
 
     pdf_bytes = HTML(
@@ -2421,7 +2447,8 @@ def invoice_jpg(invoice_id):
         items=items,
         customer=customer,
         property=property,
-        logo_data=logo_data
+        logo_data=logo_data,
+        thank_you_data=invoice_asset_data("thank_you_exact.png")
     )
 
     pdf_bytes = HTML(
