@@ -2308,14 +2308,47 @@ def invoice_alias(invoice_id):
 @app.route("/invoice/<int:invoice_id>/pdf")
 @app.route("/invoices/<int:invoice_id>/pdf")
 @login_required
-def invoice_pdf_fallback(invoice_id):
-    flash("PDF export is disabled for now. Use Print Invoice, then Save as PDF.")
-    return redirect(f"/invoice-center/{invoice_id}")
+def invoice_pdf(invoice_id):
+    from io import BytesIO
+    from flask import send_file, request
+    from weasyprint import HTML
 
+    invoice = ToucanInvoice.query.get_or_404(invoice_id)
+    items = ToucanInvoiceItem.query.filter_by(
+        invoice_id=invoice.id
+    ).all()
 
+    customer = (
+        Customer.query.get(invoice.customer_id)
+        if invoice.customer_id else None
+    )
 
+    property = (
+        Property.query.get(invoice.property_id)
+        if invoice.property_id else None
+    )
 
+    html = render_template(
+        "toucan_invoice_detail.html",
+        user=current_user(),
+        invoice=invoice,
+        items=items,
+        customer=customer,
+        property=property,
+        pdf_mode=True
+    )
 
+    pdf_bytes = HTML(
+        string=html,
+        base_url=request.url_root
+    ).write_pdf()
+
+    return send_file(
+        BytesIO(pdf_bytes),
+        mimetype="application/pdf",
+        as_attachment=False,
+        download_name=f"Toucan_Invoice_{invoice.invoice_number or invoice.id}.pdf"
+    )
 
 
 @app.route("/invoice/<int:invoice_id>/jpg")
@@ -2323,96 +2356,65 @@ def invoice_pdf_fallback(invoice_id):
 @app.route("/invoice-center/<int:invoice_id>/jpg")
 @login_required
 def invoice_jpg(invoice_id):
-    from flask import request, send_file
-    from pathlib import Path
-    from urllib.parse import urlparse
-    from playwright.sync_api import sync_playwright
+    from io import BytesIO
+    from flask import send_file, request
+    from weasyprint import HTML
+    import fitz
 
-    export_dir = Path("static/exports")
-    export_dir.mkdir(parents=True, exist_ok=True)
-    output_path = export_dir / f"invoice_{invoice_id}.jpg"
+    invoice = ToucanInvoice.query.get_or_404(invoice_id)
+    items = ToucanInvoiceItem.query.filter_by(
+        invoice_id=invoice.id
+    ).all()
 
-    invoice_url = request.host_url.rstrip("/") + f"/invoice-center/{invoice_id}"
-    parsed = urlparse(request.host_url)
-    host = parsed.hostname or "127.0.0.1"
+    customer = (
+        Customer.query.get(invoice.customer_id)
+        if invoice.customer_id else None
+    )
 
-    with sync_playwright() as pw:
-        browser = pw.chromium.launch()
-        context = browser.new_context(viewport={"width": 1000, "height": 1400}, device_scale_factor=2)
+    property = (
+        Property.query.get(invoice.property_id)
+        if invoice.property_id else None
+    )
 
-        for name, value in request.cookies.items():
-            context.add_cookies([{
-                "name": name,
-                "value": value,
-                "domain": host,
-                "path": "/"
-            }])
+    html = render_template(
+        "toucan_invoice_detail.html",
+        user=current_user(),
+        invoice=invoice,
+        items=items,
+        customer=customer,
+        property=property,
+        pdf_mode=True
+    )
 
-        page = context.new_page()
-        page.goto(invoice_url, wait_until="networkidle")
+    # Build the invoice as a real PDF first.
+    pdf_bytes = HTML(
+        string=html,
+        base_url=request.url_root
+    ).write_pdf()
 
-        page.add_style_tag(content="""
-            header, nav, footer,
-            .top-nav, .navbar, .nav, .site-header,
-            .action-bar, .action-btn, .toolbar, .button-row,
-            button, form, .flash, .messages, .alert,
-            .no-print, .hide-print {
-                display: none !important;
-                visibility: hidden !important;
-            }
+    # Convert the FIRST invoice page to a high-resolution JPG.
+    doc = fitz.open(
+        stream=pdf_bytes,
+        filetype="pdf"
+    )
 
-            body {
-                background: white !important;
-                margin: 0 !important;
-                padding: 0 !important;
-            }
+    page = doc[0]
 
-            main, .container, .content, .page, .card {
-                box-shadow: none !important;
-            }
-        """)
+    pix = page.get_pixmap(
+        matrix=fitz.Matrix(2.5, 2.5),
+        alpha=False
+    )
 
-        handle = page.evaluate_handle("""
-        () => {
-            const selectors = [
-                '.paper-invoice',
-                '.invoice-paper',
-                '.invoice-page',
-                '.toucan-invoice',
-                '.print-invoice',
-                '.invoice-sheet',
-                '#invoice',
-                '#invoice-paper'
-            ];
+    jpg_bytes = pix.tobytes("jpeg")
 
-            for (const s of selectors) {
-                const el = document.querySelector(s);
-                if (el) return el;
-            }
+    doc.close()
 
-            const all = Array.from(document.querySelectorAll('div, main, section, article'));
-            const candidates = all
-                .filter(el => {
-                    const txt = (el.innerText || '').toLowerCase();
-                    const r = el.getBoundingClientRect();
-                    return txt.includes('invoice') && r.width > 400 && r.height > 400;
-                })
-                .sort((a, b) => {
-                    const ar = a.getBoundingClientRect();
-                    const br = b.getBoundingClientRect();
-                    return (br.width * br.height) - (ar.width * ar.height);
-                });
-
-            return candidates[0] || document.body;
-        }
-        """)
-
-        element = handle.as_element()
-        element.screenshot(path=str(output_path), type="jpeg", quality=95)
-
-        browser.close()
-
-    return send_file(output_path, mimetype="image/jpeg", as_attachment=True, download_name=f"invoice_{invoice_id}.jpg")
+    return send_file(
+        BytesIO(jpg_bytes),
+        mimetype="image/jpeg",
+        as_attachment=True,
+        download_name=f"Toucan_Invoice_{invoice.invoice_number or invoice.id}.jpg"
+    )
 
 
 class MonitoringAlert(db.Model):

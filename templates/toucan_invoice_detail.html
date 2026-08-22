@@ -15,6 +15,12 @@
     </button>
 
     <a class="invoice-action-link"
+       target="_blank"
+       href="/invoices/{{ invoice.id }}/pdf">
+       Open PDF Invoice
+    </a>
+
+    <a class="invoice-action-link"
        href="/invoices/{{ invoice.id }}/jpg">
        Download JPG
     </a>
@@ -193,18 +199,25 @@
 
 
 
+
+
+
 <script>
-async function shareInvoiceJpg(button) {
-    const originalText = button.innerText;
+let invoiceShareFile = null;
+let invoiceShareError = null;
+
+async function prepareInvoiceJpg() {
+    const button = document.getElementById("shareInvoiceButton");
+
+    if (button) {
+        button.disabled = true;
+        button.innerText = "Preparing Invoice...";
+    }
 
     try {
-        button.disabled = true;
-        button.innerText = "Creating JPG...";
-
         const response = await fetch(
             "/invoices/{{ invoice.id }}/jpg",
             {
-                method: "GET",
                 credentials: "same-origin",
                 cache: "no-store"
             }
@@ -212,7 +225,7 @@ async function shareInvoiceJpg(button) {
 
         if (!response.ok) {
             throw new Error(
-                "Invoice JPG request failed: " + response.status
+                "JPG request returned HTTP " + response.status
             );
         }
 
@@ -220,66 +233,82 @@ async function shareInvoiceJpg(button) {
 
         if (!blob.type.startsWith("image/")) {
             throw new Error(
-                "Server did not return an image. Returned: " + blob.type
+                "Expected image/jpeg but received " + blob.type
             );
         }
 
-        const file = new File(
+        invoiceShareFile = new File(
             [blob],
             "Toucan_Invoice_{{ invoice.invoice_number or invoice.id }}.jpg",
-            { type: "image/jpeg" }
+            {
+                type: "image/jpeg",
+                lastModified: Date.now()
+            }
         );
 
-        if (
-            navigator.share &&
-            navigator.canShare &&
-            navigator.canShare({ files: [file] })
-        ) {
-            await navigator.share({
-                files: [file],
-                title: "Toucan HVAC Invoice #{{ invoice.invoice_number or invoice.id }}"
-            });
-
-            return;
+        if (button) {
+            button.disabled = false;
+            button.innerText = "📱 Share JPG Invoice";
         }
 
-        /*
-         * Safari fallback:
-         * open the ACTUAL JPG so it can be shared/saved manually.
-         */
-        const imageUrl = URL.createObjectURL(blob);
-        const newWindow = window.open(imageUrl, "_blank");
-
-        if (!newWindow) {
-            const a = document.createElement("a");
-            a.href = imageUrl;
-            a.download =
-                "Toucan_Invoice_{{ invoice.invoice_number or invoice.id }}.jpg";
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
-        }
-
-        setTimeout(function () {
-            URL.revokeObjectURL(imageUrl);
-        }, 120000);
+        console.log(
+            "Invoice JPG ready:",
+            invoiceShareFile.name,
+            invoiceShareFile.size,
+            invoiceShareFile.type
+        );
 
     } catch (err) {
+        invoiceShareError = err;
+        console.error("Invoice preload failed:", err);
 
-        if (err.name !== "AbortError") {
-            console.error("Invoice sharing error:", err);
-
-            alert(
-                "Could not open the share sheet.\n\n" +
-                "Use Download JPG and share the invoice image from there."
-            );
+        if (button) {
+            button.disabled = false;
+            button.innerText = "Open JPG Invoice";
         }
-
-    } finally {
-        button.disabled = false;
-        button.innerText = originalText;
     }
 }
+
+function shareInvoiceJpg(button) {
+
+    /*
+     * IMPORTANT:
+     * navigator.share is called immediately from the user's tap.
+     * No network request happens before it.
+     */
+
+    if (
+        invoiceShareFile &&
+        navigator.share &&
+        (!navigator.canShare ||
+         navigator.canShare({ files: [invoiceShareFile] }))
+    ) {
+        navigator.share({
+            files: [invoiceShareFile],
+            title: "Toucan HVAC Invoice #{{ invoice.invoice_number or invoice.id }}"
+        }).catch(function(err) {
+            if (err.name !== "AbortError") {
+                console.error("Share failed:", err);
+                window.location.href =
+                    "/invoices/{{ invoice.id }}/jpg";
+            }
+        });
+
+        return;
+    }
+
+    /*
+     * Reliable fallback:
+     * Open the ACTUAL invoice JPG directly.
+     * On iPhone use Safari's Share button -> Messages.
+     */
+    window.location.href =
+        "/invoices/{{ invoice.id }}/jpg";
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+    prepareInvoiceJpg();
+});
 </script>
 
 {% endblock %}
