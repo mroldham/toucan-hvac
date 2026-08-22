@@ -261,12 +261,14 @@ html, body {
     position: absolute;
     left: 1.08in;
     top: 3.35in;
-    font-family: "Brush Script MT", "Apple Chancery", cursive;
-    font-size: 31pt;
-    font-weight: 800;
-    font-style: italic;
-    transform: rotate(-17deg);
+    width: 2.25in;
     z-index: 5;
+}
+
+.thank-you img {
+    display: block;
+    width: 100%;
+    height: auto;
 }
 
 /* ---------- CHECK NOTE ---------- */
@@ -425,7 +427,8 @@ html, body {
         {% endfor %}
 
         <div class="thank-you">
-            Thank You!
+            <img src="{{ url_for('static', filename='thank_you_exact.png') }}"
+                 alt="Thank You">
         </div>
 
         <div class="total-row">
