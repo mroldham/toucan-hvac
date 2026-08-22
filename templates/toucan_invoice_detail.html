@@ -474,6 +474,102 @@
     border-top: 0 !important;
 }
 
+
+
+/* =========================================================
+   LOCKED INVOICE CUSTOMER / DATE / JOB LAYOUT
+   Unique names prevent base.html collisions.
+   ========================================================= */
+
+.invoice-web-page .inv-customer-grid {
+    width: 100%;
+    height: 1.20in;
+    position: relative;
+    display: block;
+    margin: 0.02in 0 0 0;
+    padding: 0;
+}
+
+.invoice-web-page .inv-to-label {
+    position: absolute;
+    left: 0;
+    top: 0.08in;
+    font: 800 14pt Arial, Helvetica, sans-serif;
+}
+
+.invoice-web-page .inv-to-lines {
+    position: absolute;
+    left: 0.48in;
+    top: 0.03in;
+    width: 4.20in;
+}
+
+.invoice-web-page .inv-to-line {
+    position: relative;
+    height: 0.34in;
+    border-bottom: 1.6px solid #111;
+    font: 400 11.5pt Arial, Helvetica, sans-serif;
+}
+
+.invoice-web-page .inv-to-line span {
+    position: absolute;
+    left: 0.10in;
+    bottom: 0.05in;
+    white-space: nowrap;
+}
+
+.invoice-web-page .inv-date-area {
+    position: absolute;
+    right: 0.30in;
+    top: 0.48in;
+    display: flex;
+    align-items: flex-end;
+    gap: 0.10in;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+}
+
+.invoice-web-page .inv-date-label {
+    font: 800 13pt Arial, Helvetica, sans-serif;
+    white-space: nowrap;
+}
+
+.invoice-web-page .inv-date-value {
+    width: 1.58in;
+    padding-bottom: 0.03in;
+    border-bottom: 1.6px solid #111;
+    text-align: center;
+    font: 400 11.5pt Arial, Helvetica, sans-serif;
+    white-space: nowrap;
+}
+
+.invoice-web-page .inv-job-row {
+    width: 100%;
+    display: flex;
+    align-items: flex-end;
+    margin: 0.02in 0 0.18in 0;
+    padding: 0;
+    border: 0;
+}
+
+.invoice-web-page .inv-job-label {
+    width: 1.63in;
+    flex: 0 0 1.63in;
+    font: 800 13pt Arial, Helvetica, sans-serif;
+    white-space: nowrap;
+}
+
+.invoice-web-page .inv-job-line {
+    flex: 1;
+    min-width: 0;
+    min-height: 0.24in;
+    padding: 0 0.08in 0.04in 0.08in;
+    border-bottom: 2px solid #111;
+    font: 400 11.5pt Arial, Helvetica, sans-serif;
+}
+
 </style>
 <div class="invoice-sheet">
 
@@ -498,47 +594,45 @@
 
     </div>
 
-    <div class="customer-row">
+    <div class="inv-customer-grid">
 
-        <div class="to-label">TO:</div>
+        <div class="inv-to-label">TO:</div>
 
-        <div class="to-lines">
+        <div class="inv-to-lines">
 
-            <div class="to-line">
-                <span class="to-value">
+            <div class="inv-to-line">
+                <span>
                     {% if customer %}
                     {{ customer.first_name }} {{ customer.last_name }}
                     {% endif %}
                 </span>
             </div>
 
-            <div class="to-line">
-                <span class="to-value">
+            <div class="inv-to-line">
+                <span>
                     {% if customer %}{{ customer.phone or "" }}{% endif %}
                 </span>
             </div>
 
-            <div class="to-line">
-                <span class="to-value">
+            <div class="inv-to-line">
+                <span>
                     {% if customer %}{{ customer.email or "" }}{% endif %}
                 </span>
             </div>
 
         </div>
 
-        <div class="date-area">
-            DATE:
-            <span class="date-value">
-                {{ invoice.invoice_date or "" }}
-            </span>
+        <div class="inv-date-area">
+            <span class="inv-date-label">DATE:</span>
+            <span class="inv-date-value">{{ invoice.invoice_date or "" }}</span>
         </div>
 
     </div>
 
-    <div class="job-row">
-        <div class="job-label">JOB LOCATION:</div>
+    <div class="inv-job-row">
+        <div class="inv-job-label">JOB LOCATION:</div>
 
-        <div class="job-line">
+        <div class="inv-job-line">
             {% if property %}
                 {{ property.address or "" }}
             {% endif %}
