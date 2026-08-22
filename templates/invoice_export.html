@@ -427,8 +427,9 @@ html, body {
         {% endfor %}
 
         <div class="thank-you">
-            <img src="{{ url_for('static', filename='thank_you_exact.png') }}"
-                 alt="Thank You">
+            {% if thank_you_data %}
+            <img src="{{ thank_you_data }}" alt="">
+            {% endif %}
         </div>
 
         <div class="total-row">
