@@ -419,6 +419,61 @@
 }
 
 
+
+/* =========================================================
+   FINAL WEBSITE INVOICE ALIGNMENT FIX
+   Do not change invoice fonts/export styling here.
+   ========================================================= */
+
+/* Give the letterhead enough room for toucanhvac.com */
+.invoice-web-page .invoice-header {
+    height: 1.48in !important;
+}
+
+/* Keep customer section in its proper position */
+.invoice-web-page .customer-row {
+    height: 1.18in !important;
+    margin-top: 0.02in !important;
+}
+
+/* Put DATE back beside the customer information */
+.invoice-web-page .date-area {
+    top: 0.52in !important;
+    right: 0.35in !important;
+}
+
+/* Job location belongs below TO/date without overlap */
+.invoice-web-page .job-row {
+    margin-top: 0.02in !important;
+    margin-bottom: 0.18in !important;
+}
+
+/*
+   Kill decorative turquoise rules inherited from base.html.
+   Do NOT touch the black rules belonging to the actual invoice.
+*/
+.invoice-web-page .invoice-sheet::before,
+.invoice-web-page .invoice-sheet::after,
+.invoice-web-page .invoice-header::before,
+.invoice-web-page .invoice-header::after,
+.invoice-web-page .customer-row::before,
+.invoice-web-page .customer-row::after {
+    content: none !important;
+    display: none !important;
+    border: 0 !important;
+    background: none !important;
+}
+
+/* Explicitly prevent a colored header separator */
+.invoice-web-page .invoice-header {
+    border-bottom: 0 !important;
+}
+
+/* Preserve the invoice itself */
+.invoice-web-page .invoice-sheet {
+    border-top: 0 !important;
+}
+
 </style>
 <div class="invoice-sheet">
 
