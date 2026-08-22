@@ -1857,6 +1857,44 @@ def invoice_from_job(job_id):
         property=property
     )
 
+
+@app.route("/invoice-center/<int:invoice_id>/preview")
+@login_required
+def invoice_preview(invoice_id):
+    import base64
+
+    invoice = ToucanInvoice.query.get_or_404(invoice_id)
+    items = ToucanInvoiceItem.query.filter_by(invoice_id=invoice.id).all()
+
+    customer = (
+        Customer.query.get(invoice.customer_id)
+        if invoice.customer_id else None
+    )
+
+    property = (
+        Property.query.get(invoice.property_id)
+        if invoice.property_id else None
+    )
+
+    logo_path = Path(app.root_path) / "static" / "logo.png"
+    logo_data = ""
+
+    if logo_path.exists():
+        logo_data = (
+            "data:image/png;base64,"
+            + base64.b64encode(logo_path.read_bytes()).decode("ascii")
+        )
+
+    return render_template(
+        "invoice_export.html",
+        invoice=invoice,
+        items=items,
+        customer=customer,
+        property=property,
+        logo_data=logo_data
+    )
+
+
 @app.route("/invoice-center/<int:invoice_id>")
 @login_required
 def toucan_invoice_detail(invoice_id):

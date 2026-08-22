@@ -1,718 +1,210 @@
 {% extends "base.html" %}
+
 {% block content %}
-<div class="invoice-web-page">
-<div class="invoice-actions no-print">
-  <a href="/invoice-center">← Back to Invoices</a>
-  <div class="invoice-action-buttons">
-    <button type="button" onclick="window.open('/invoices/{{ invoice.id }}/pdf', '_blank')">Print Invoice</button>
-    <button type="button" class="invoice-action-link" id="shareInvoiceButton" onclick="shareInvoiceJpg(this)">📱 Share JPG Invoice</button>
-    <a class="invoice-action-link" target="_blank" href="/invoices/{{ invoice.id }}/pdf">Open PDF Invoice</a>
-    <a class="invoice-action-link" href="/invoices/{{ invoice.id }}/jpg">Download JPG</a>
-    <a class="invoice-action-link" href="/invoice-center/{{ invoice.id }}/mark-paid">Mark Paid</a>
-  </div>
+
+<div class="master-invoice-page">
+
+    <div class="master-invoice-actions no-print">
+
+        <a class="master-back"
+           href="/invoice-center">
+            ← Back to Invoices
+        </a>
+
+        <div class="master-buttons">
+
+            <a class="invoice-btn teal"
+               target="_blank"
+               href="/invoices/{{ invoice.id }}/pdf">
+                🖨 Print Invoice
+            </a>
+
+            <button type="button"
+                    id="shareInvoiceButton"
+                    class="invoice-btn orange"
+                    onclick="shareInvoiceJpg(this)">
+                📤 Share Invoice
+            </button>
+
+            <a class="invoice-btn teal"
+               target="_blank"
+               href="/invoices/{{ invoice.id }}/pdf">
+                Open PDF
+            </a>
+
+            <a class="invoice-btn teal"
+               href="/invoices/{{ invoice.id }}/jpg">
+                Download JPG
+            </a>
+
+            <a class="invoice-btn teal"
+               href="/invoice-center/{{ invoice.id }}/mark-paid">
+                Mark Paid
+            </a>
+
+        </div>
+    </div>
+
+    <div class="master-preview-wrap">
+
+        <iframe
+            class="master-invoice-frame"
+            src="/invoice-center/{{ invoice.id }}/preview"
+            title="Toucan HVAC Invoice">
+        </iframe>
+
+    </div>
+
 </div>
+
+
 <style>
 
-@page {
-    size: Letter;
-    margin: 0;
-}
-
-.invoice-web-page,
-.invoice-web-page * {
+.master-invoice-page {
+    width: 100%;
+    padding: 18px 10px 45px;
+    background: #f5fbfa;
     box-sizing: border-box;
 }
 
-.invoice-web-page {
-    width: 100%;
-    margin: 0;
-    padding: 18px 0 40px;
-    background: #f7fbfb;
-    color: #111;
-    font-family: Arial, Helvetica, sans-serif;
-    border: 0 !important;
-    outline: 0 !important;
-    box-shadow: none !important;
-}
-
-.invoice-web-page::before,
-.invoice-web-page::after {
-    content: none !important;
-    display: none !important;
-    border: 0 !important;
-}
-
-.invoice-sheet {
-    width: 8.5in;
-    height: 11in;
-    position: relative;
-    padding: 0.35in 0.38in 0.30in 0.38in;
-    background: white;
-}
-
-/* ---------- HEADER ---------- */
-
-.invoice-header {
-    position: relative;
-    height: 1.28in;
-}
-
-.logo {
-    position: absolute;
-    left: 0.02in;
-    top: 0.02in;
-    width: 0.82in;
-    height: auto;
-}
-
-.company {
-    position: absolute;
-    left: 1.65in;
-    top: 0;
-    width: 4.45in;
-    text-align: center;
-}
-
-.company h1 {
-    margin: 0 0 0.10in 0;
-    font-size: 29pt;
-    font-weight: 400;
-    line-height: 1;
-}
-
-.company div {
-    font-size: 11.5pt;
-    line-height: 1.25;
-}
-
-.invoice-meta {
-    position: absolute;
-    right: 0.05in;
-    top: 0;
-    width: 1.35in;
-    text-align: right;
-}
-
-.invoice-meta .title {
-    font-size: 22pt;
-    font-weight: 800;
-    line-height: 1;
-}
-
-.invoice-meta .number {
-    margin-top: 0.12in;
-    font-size: 15pt;
-    font-weight: 800;
-}
-
-/* ---------- TO + DATE ---------- */
-
-.customer-row {
-    position: relative;
-    height: 1.25in;
-    margin-top: 0.05in;
-}
-
-.to-label {
-    position: absolute;
-    top: 0.08in;
-    left: 0;
-    font-size: 14pt;
-    font-weight: 800;
-}
-
-.to-lines {
-    position: absolute;
-    left: 0.48in;
-    top: 0.03in;
-    width: 4.20in;
-}
-
-.to-line {
-    height: 0.34in;
-    border-bottom: 1.6px solid #111;
-    position: relative;
-}
-
-.to-value {
-    position: absolute;
-    left: 0.10in;
-    bottom: 0.05in;
-    font-size: 11.5pt;
-}
-
-.date-area {
-    position: absolute;
-    right: 0.35in;
-    top: 0.68in;
-    font-size: 13pt;
-    font-weight: 800;
-}
-
-.date-value {
-    display: inline-block;
-    width: 1.58in;
-    margin-left: 0.08in;
-    padding-bottom: 0.03in;
-    text-align: center;
-    border-bottom: 1.6px solid #111;
-    font-size: 11.5pt;
-    font-weight: 400;
-}
-
-/* ---------- JOB LOCATION ---------- */
-
-.job-row {
-    display: flex;
-    align-items: flex-end;
-    margin-top: 0.02in;
-    margin-bottom: 0.18in;
-}
-
-.job-label {
-    width: 1.63in;
-    font-size: 13pt;
-    font-weight: 800;
-}
-
-.job-line {
-    flex: 1;
-    border-bottom: 2px solid #111;
-    min-height: 0.24in;
-    padding: 0 0.08in 0.04in 0.08in;
-    font-size: 11.5pt;
-}
-
-/* ---------- SERVICE BOX ---------- */
-
-.service-box {
-    position: relative;
-    width: 100%;
-    height: 5.20in;
-    border: 3px solid #111;
-    border-radius: 0.22in;
-    overflow: hidden;
-}
-
-.service-header {
-    height: 0.35in;
-    border-bottom: 1.3px solid #777;
-    display: flex;
-    align-items: center;
-    font-size: 12pt;
-    font-style: italic;
-    font-weight: 800;
-}
-
-.service-header-left {
-    width: 84%;
-    padding-left: 0.12in;
-}
-
-.service-header-right {
-    width: 16%;
-    height: 100%;
-    border-left: 1.3px solid #777;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.service-row {
-    display: flex;
-    height: 0.258in;
-    border-bottom: 1px solid #888;
-    font-size: 10.8pt;
-}
-
-.service-desc {
-    width: 84%;
-    display: flex;
-    align-items: center;
-    padding: 0 0.09in;
-}
-
-.row-num {
-    width: 0.28in;
-    flex: none;
-}
-
-.service-text {
-    flex: 1;
-}
-
-.service-amount {
-    width: 16%;
-    border-left: 1.3px solid #777;
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    padding-right: 0.09in;
-    white-space: nowrap;
-}
-
-.total-row {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    height: 0.31in;
-    display: flex;
-    font-size: 11pt;
-    background: white;
-}
-
-.total-left {
-    width: 84%;
-}
-
-.total-right {
-    width: 16%;
-    border-left: 1.3px solid #777;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-weight: 800;
-    white-space: nowrap;
-}
-
-/* ---------- THANK YOU ---------- */
-
-.thank-you {
-    position: absolute;
-    left: 1.08in;
-    top: 3.35in;
-    font-family: "Brush Script MT", "Apple Chancery", cursive;
-    font-size: 31pt;
-    font-weight: 800;
-    font-style: italic;
-    transform: rotate(-17deg);
-    z-index: 5;
-}
-
-/* ---------- CHECK NOTE ---------- */
-
-.check-note {
-    margin-top: 0.09in;
-    font-size: 9.5pt;
-    font-style: italic;
-}
-
-/* ---------- SIGNATURE ---------- */
-
-.signature-row {
-    position: absolute;
-    left: 0.38in;
-    right: 0.38in;
-    bottom: 0.34in;
-    display: flex;
-    align-items: flex-end;
-}
-
-.signature-block {
-    width: 56%;
-    display: flex;
-    align-items: flex-end;
-    gap: 0.12in;
-}
-
-.date-block {
-    width: 44%;
-    display: flex;
-    align-items: flex-end;
-    gap: 0.12in;
-    padding-left: 0.35in;
-}
-
-.signature-label {
-    font-size: 12pt;
-    font-weight: 800;
-}
-
-.signature-line {
-    flex: 1;
-    border-bottom: 1.8px solid #111;
-    height: 0.20in;
-}
-
-.invoice-actions {
-    width: 8.5in;
-    max-width: calc(100% - 28px);
+.master-invoice-actions {
+    width: 816px;
+    max-width: calc(100% - 20px);
     margin: 0 auto 14px;
-    padding: 0;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 14px;
-    flex-wrap: wrap;
-    background: transparent !important;
-    border: 0 !important;
-    box-shadow: none !important;
 }
 
-.invoice-actions > a {
-    color: #168e87 !important;
-    font: 700 15px Arial, Helvetica, sans-serif !important;
+.master-back {
+    display: inline-block;
+    margin-bottom: 12px;
+
+    background: #2db8ad;
+    color: white !important;
+
+    padding: 11px 18px;
+    border-radius: 12px;
+
+    font: 700 15px Arial, Helvetica, sans-serif;
     text-decoration: none !important;
+
+    box-shadow: 0 3px 8px rgba(0,0,0,.12);
 }
 
-.invoice-action-buttons {
+.master-buttons {
     display: flex;
-    gap: 9px;
     flex-wrap: wrap;
-    margin: 0;
+    gap: 10px;
 }
 
-.invoice-action-buttons button,
-.invoice-action-buttons .invoice-action-link {
+.invoice-btn {
     appearance: none;
     -webkit-appearance: none;
+
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-height: 42px;
-    padding: 10px 15px !important;
-    border: 0 !important;
-    border-radius: 12px !important;
-    background: #2bb8ae !important;
-    color: #fff !important;
-    font: 700 14px Arial, Helvetica, sans-serif !important;
-    line-height: 1 !important;
+
+    min-height: 44px;
+
+    padding: 10px 17px;
+
+    border: 0;
+    border-radius: 12px;
+
+    color: white !important;
+
+    font: 700 15px Arial, Helvetica, sans-serif !important;
+
     text-decoration: none !important;
+
     cursor: pointer;
-    box-shadow: 0 2px 5px rgba(0,0,0,.12) !important;
+
+    box-shadow: 0 3px 8px rgba(0,0,0,.15);
+
+    box-sizing: border-box;
 }
 
-.invoice-action-buttons #shareInvoiceButton {
-    background: #f7a51a !important;
+.invoice-btn.teal {
+    background: #2db8ad !important;
 }
 
-.invoice-action-buttons button:hover,
-.invoice-action-buttons .invoice-action-link:hover {
-    filter: brightness(.96);
+.invoice-btn.orange {
+    background: #ffa516 !important;
+}
+
+.invoice-btn:hover {
     transform: translateY(-1px);
 }
 
-.invoice-action-buttons button:disabled {
-    opacity: .65;
-    cursor: wait;
-    transform: none;
+.master-preview-wrap {
+    width: 816px;
+    height: 1056px;
+
+    max-width: 100%;
+
+    margin: 0 auto;
+
+    background: white;
+
+    box-shadow: 0 6px 20px rgba(0,0,0,.14);
+
+    overflow: hidden;
 }
 
-.invoice-web-page .invoice-sheet {
-    margin: 0 auto !important;
-    box-shadow: 0 8px 24px rgba(0,0,0,.13) !important;
-    border: 0 !important;
-    outline: 0 !important;
+.master-invoice-frame {
+    width: 816px;
+    height: 1056px;
+
+    display: block;
+
+    border: 0;
+    margin: 0;
+    padding: 0;
+
+    background: white;
+}
+
+@media (max-width: 850px) {
+
+    .master-preview-wrap {
+        width: 100%;
+        overflow: auto;
+    }
+
+    .master-invoice-frame {
+        width: 816px;
+    }
+
 }
 
 @media print {
-    .no-print { display:none !important; }
-    .invoice-web-page { padding:0 !important; background:#fff !important; }
-    .invoice-web-page .invoice-sheet { margin:0 !important; box-shadow:none !important; }
-}
 
-@media (max-width: 900px) {
-    .invoice-web-page { overflow-x: auto; }
-    .invoice-web-page .invoice-sheet { transform-origin: top left; }
-    .invoice-actions { width: auto; }
-}
+    .no-print {
+        display: none !important;
+    }
 
+    .master-invoice-page {
+        padding: 0;
+        background: white;
+    }
 
+    .master-preview-wrap {
+        box-shadow: none;
+    }
 
-/* =========================================================
-   FINAL WEBSITE INVOICE ALIGNMENT FIX
-   Do not change invoice fonts/export styling here.
-   ========================================================= */
-
-/* Give the letterhead enough room for toucanhvac.com */
-.invoice-web-page .invoice-header {
-    height: 1.48in !important;
-}
-
-/* Keep customer section in its proper position */
-.invoice-web-page .customer-row {
-    height: 1.18in !important;
-    margin-top: 0.02in !important;
-}
-
-/* Put DATE back beside the customer information */
-.invoice-web-page .date-area {
-    top: 0.52in !important;
-    right: 0.35in !important;
-}
-
-/* Job location belongs below TO/date without overlap */
-.invoice-web-page .job-row {
-    margin-top: 0.02in !important;
-    margin-bottom: 0.18in !important;
-}
-
-/*
-   Kill decorative turquoise rules inherited from base.html.
-   Do NOT touch the black rules belonging to the actual invoice.
-*/
-.invoice-web-page .invoice-sheet::before,
-.invoice-web-page .invoice-sheet::after,
-.invoice-web-page .invoice-header::before,
-.invoice-web-page .invoice-header::after,
-.invoice-web-page .customer-row::before,
-.invoice-web-page .customer-row::after {
-    content: none !important;
-    display: none !important;
-    border: 0 !important;
-    background: none !important;
-}
-
-/* Explicitly prevent a colored header separator */
-.invoice-web-page .invoice-header {
-    border-bottom: 0 !important;
-}
-
-/* Preserve the invoice itself */
-.invoice-web-page .invoice-sheet {
-    border-top: 0 !important;
-}
-
-
-
-/* =========================================================
-   LOCKED INVOICE CUSTOMER / DATE / JOB LAYOUT
-   Unique names prevent base.html collisions.
-   ========================================================= */
-
-.invoice-web-page .inv-customer-grid {
-    width: 100%;
-    height: 1.20in;
-    position: relative;
-    display: block;
-    margin: 0.02in 0 0 0;
-    padding: 0;
-}
-
-.invoice-web-page .inv-to-label {
-    position: absolute;
-    left: 0;
-    top: 0.08in;
-    font: 800 14pt Arial, Helvetica, sans-serif;
-}
-
-.invoice-web-page .inv-to-lines {
-    position: absolute;
-    left: 0.48in;
-    top: 0.03in;
-    width: 4.20in;
-}
-
-.invoice-web-page .inv-to-line {
-    position: relative;
-    height: 0.34in;
-    border-bottom: 1.6px solid #111;
-    font: 400 11.5pt Arial, Helvetica, sans-serif;
-}
-
-.invoice-web-page .inv-to-line span {
-    position: absolute;
-    left: 0.10in;
-    bottom: 0.05in;
-    white-space: nowrap;
-}
-
-.invoice-web-page .inv-date-area {
-    position: absolute;
-    right: 0.30in;
-    top: 0.48in;
-    display: flex;
-    align-items: flex-end;
-    gap: 0.10in;
-    margin: 0;
-    padding: 0;
-    border: 0;
-    background: transparent;
-}
-
-.invoice-web-page .inv-date-label {
-    font: 800 13pt Arial, Helvetica, sans-serif;
-    white-space: nowrap;
-}
-
-.invoice-web-page .inv-date-value {
-    width: 1.58in;
-    padding-bottom: 0.03in;
-    border-bottom: 1.6px solid #111;
-    text-align: center;
-    font: 400 11.5pt Arial, Helvetica, sans-serif;
-    white-space: nowrap;
-}
-
-.invoice-web-page .inv-job-row {
-    width: 100%;
-    display: flex;
-    align-items: flex-end;
-    margin: 0.02in 0 0.18in 0;
-    padding: 0;
-    border: 0;
-}
-
-.invoice-web-page .inv-job-label {
-    width: 1.63in;
-    flex: 0 0 1.63in;
-    font: 800 13pt Arial, Helvetica, sans-serif;
-    white-space: nowrap;
-}
-
-.invoice-web-page .inv-job-line {
-    flex: 1;
-    min-width: 0;
-    min-height: 0.24in;
-    padding: 0 0.08in 0.04in 0.08in;
-    border-bottom: 2px solid #111;
-    font: 400 11.5pt Arial, Helvetica, sans-serif;
 }
 
 </style>
-<div class="invoice-sheet">
 
-    <div class="invoice-header">
 
-        <img class="logo" src="{{ url_for('static', filename='logo.png') }}" alt="Toucan logo">
-
-        <div class="company">
-            <h1>Stephen Oldham</h1>
-            <div>2227 Beaumont Ave. #2, Liberty, Texas, 77575</div>
-            <div>stephen.oldham@me.com</div>
-            <div>936-334-2944</div>
-            <div>toucanhvac.com</div>
-        </div>
-
-        <div class="invoice-meta">
-            <div class="title">INVOICE</div>
-            <div class="number">
-                {{ invoice.invoice_number or invoice.id }}
-            </div>
-        </div>
-
-    </div>
-
-    <div class="inv-customer-grid">
-
-        <div class="inv-to-label">TO:</div>
-
-        <div class="inv-to-lines">
-
-            <div class="inv-to-line">
-                <span>
-                    {% if customer %}
-                    {{ customer.first_name }} {{ customer.last_name }}
-                    {% endif %}
-                </span>
-            </div>
-
-            <div class="inv-to-line">
-                <span>
-                    {% if customer %}{{ customer.phone or "" }}{% endif %}
-                </span>
-            </div>
-
-            <div class="inv-to-line">
-                <span>
-                    {% if customer %}{{ customer.email or "" }}{% endif %}
-                </span>
-            </div>
-
-        </div>
-
-        <div class="inv-date-area">
-            <span class="inv-date-label">DATE:</span>
-            <span class="inv-date-value">{{ invoice.invoice_date or "" }}</span>
-        </div>
-
-    </div>
-
-    <div class="inv-job-row">
-        <div class="inv-job-label">JOB LOCATION:</div>
-
-        <div class="inv-job-line">
-            {% if property %}
-                {{ property.address or "" }}
-            {% endif %}
-        </div>
-    </div>
-
-    <div class="service-box">
-
-        <div class="service-header">
-            <div class="service-header-left">
-                SERVICES
-            </div>
-
-            <div class="service-header-right">
-                AMOUNT +/-
-            </div>
-        </div>
-
-        {% for i in range(1,18) %}
-        <div class="service-row">
-
-            <div class="service-desc">
-                <span class="row-num">{{ i }}</span>
-
-                <span class="service-text">
-                    {% if items|length >= i %}
-                        {{ items[i-1].description }}
-                    {% endif %}
-                </span>
-            </div>
-
-            <div class="service-amount">
-                {% if items|length >= i and (items[i-1].line_total or 0) != 0 %}
-                    ${{ "%.2f"|format(items[i-1].line_total or 0) }}
-                {% endif %}
-            </div>
-
-        </div>
-        {% endfor %}
-
-        <div class="thank-you">
-            Thank You!
-        </div>
-
-        <div class="total-row">
-            <div class="total-left"></div>
-
-            <div class="total-right">
-                TOTAL&nbsp; ${{ "%.2f"|format(invoice.total or 0) }}
-            </div>
-        </div>
-
-    </div>
-
-    <div class="check-note">
-        * Make check payable to Stephen Oldham
-    </div>
-
-    <div class="signature-row">
-
-        <div class="signature-block">
-            <span class="signature-label">SIGNATURE</span>
-            <span class="signature-line"></span>
-        </div>
-
-        <div class="date-block">
-            <span class="signature-label">DATE</span>
-            <span class="signature-line"></span>
-        </div>
-
-    </div>
-
-</div>
-</div>
 <script>
+
 let invoiceShareFile = null;
-let invoiceShareError = null;
+
 
 async function prepareInvoiceJpg() {
-    const button = document.getElementById("shareInvoiceButton");
+
+    const button =
+        document.getElementById("shareInvoiceButton");
 
     if (button) {
         button.disabled = true;
@@ -720,6 +212,7 @@ async function prepareInvoiceJpg() {
     }
 
     try {
+
         const response = await fetch(
             "/invoices/{{ invoice.id }}/jpg",
             {
@@ -730,17 +223,12 @@ async function prepareInvoiceJpg() {
 
         if (!response.ok) {
             throw new Error(
-                "JPG request returned HTTP " + response.status
+                "Invoice JPG returned HTTP " +
+                response.status
             );
         }
 
         const blob = await response.blob();
-
-        if (!blob.type.startsWith("image/")) {
-            throw new Error(
-                "Expected image/jpeg but received " + blob.type
-            );
-        }
 
         invoiceShareFile = new File(
             [blob],
@@ -753,66 +241,73 @@ async function prepareInvoiceJpg() {
 
         if (button) {
             button.disabled = false;
-            button.innerText = "📱 Share JPG Invoice";
+            button.innerText = "📤 Share Invoice";
         }
 
-        console.log(
-            "Invoice JPG ready:",
-            invoiceShareFile.name,
-            invoiceShareFile.size,
-            invoiceShareFile.type
-        );
-
     } catch (err) {
-        invoiceShareError = err;
-        console.error("Invoice preload failed:", err);
+
+        console.error(
+            "Invoice preload failed:",
+            err
+        );
 
         if (button) {
             button.disabled = false;
-            button.innerText = "Open JPG Invoice";
+            button.innerText = "Open JPG";
         }
+
     }
 }
 
-function shareInvoiceJpg(button) {
 
-    /*
-     * IMPORTANT:
-     * navigator.share is called immediately from the user's tap.
-     * No network request happens before it.
-     */
+function shareInvoiceJpg(button) {
 
     if (
         invoiceShareFile &&
         navigator.share &&
-        (!navigator.canShare ||
-         navigator.canShare({ files: [invoiceShareFile] }))
+        (
+            !navigator.canShare ||
+            navigator.canShare({
+                files: [invoiceShareFile]
+            })
+        )
     ) {
+
         navigator.share({
-            files: [invoiceShareFile],
-            title: "Toucan HVAC Invoice #{{ invoice.invoice_number or invoice.id }}"
+
+            title:
+                "Toucan HVAC Invoice #{{ invoice.invoice_number or invoice.id }}",
+
+            files: [invoiceShareFile]
+
         }).catch(function(err) {
+
             if (err.name !== "AbortError") {
-                console.error("Share failed:", err);
+
+                console.error(
+                    "Share failed:",
+                    err
+                );
+
                 window.location.href =
                     "/invoices/{{ invoice.id }}/jpg";
             }
+
         });
 
         return;
     }
 
-    /*
-     * Reliable fallback:
-     * Open the ACTUAL invoice JPG directly.
-     * On iPhone use Safari's Share button -> Messages.
-     */
     window.location.href =
         "/invoices/{{ invoice.id }}/jpg";
 }
 
-document.addEventListener("DOMContentLoaded", function() {
-    prepareInvoiceJpg();
-});
+
+document.addEventListener(
+    "DOMContentLoaded",
+    prepareInvoiceJpg
+);
+
 </script>
+
 {% endblock %}
