@@ -2318,12 +2318,24 @@ def invoice_pdf(invoice_id):
     customer = Customer.query.get(invoice.customer_id) if invoice.customer_id else None
     property = Property.query.get(invoice.property_id) if invoice.property_id else None
 
+    import base64
+
+    logo_path = Path(app.root_path) / "static" / "logo.png"
+    logo_data = ""
+
+    if logo_path.exists():
+        logo_data = (
+            "data:image/png;base64,"
+            + base64.b64encode(logo_path.read_bytes()).decode("ascii")
+        )
+
     html = render_template(
         "invoice_export.html",
         invoice=invoice,
         items=items,
         customer=customer,
-        property=property
+        property=property,
+        logo_data=logo_data
     )
 
     pdf_bytes = HTML(
@@ -2354,12 +2366,24 @@ def invoice_jpg(invoice_id):
     customer = Customer.query.get(invoice.customer_id) if invoice.customer_id else None
     property = Property.query.get(invoice.property_id) if invoice.property_id else None
 
+    import base64
+
+    logo_path = Path(app.root_path) / "static" / "logo.png"
+    logo_data = ""
+
+    if logo_path.exists():
+        logo_data = (
+            "data:image/png;base64,"
+            + base64.b64encode(logo_path.read_bytes()).decode("ascii")
+        )
+
     html = render_template(
         "invoice_export.html",
         invoice=invoice,
         items=items,
         customer=customer,
-        property=property
+        property=property,
+        logo_data=logo_data
     )
 
     pdf_bytes = HTML(

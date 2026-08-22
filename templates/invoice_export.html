@@ -2,370 +2,460 @@
 <html>
 <head>
 <meta charset="UTF-8">
+
 <style>
 @page {
     size: Letter;
-    margin: 0.35in;
+    margin: 0;
 }
 
 * {
     box-sizing: border-box;
 }
 
-body {
+html, body {
     margin: 0;
-    background: white;
+    padding: 0;
+    background: #fff;
     color: #111;
     font-family: Arial, Helvetica, sans-serif;
-    font-size: 12px;
 }
 
-.invoice-page {
-    width: 7.8in;
-    min-height: 10.2in;
-    margin: 0 auto;
+.invoice-sheet {
+    width: 8.5in;
+    height: 11in;
     position: relative;
+    padding: 0.35in 0.38in 0.30in 0.38in;
+    background: white;
 }
 
-.header {
-    display: table;
-    width: 100%;
-    margin-bottom: 18px;
+/* ---------- HEADER ---------- */
+
+.invoice-header {
+    position: relative;
+    height: 1.28in;
 }
 
-.logo-box,
-.company-box,
-.invoice-box {
-    display: table-cell;
-    vertical-align: top;
-}
-
-.logo-box {
-    width: 120px;
-}
-
-.logo-box img {
-    width: 105px;
+.logo {
+    position: absolute;
+    left: 0.02in;
+    top: 0.02in;
+    width: 0.82in;
     height: auto;
 }
 
-.company-box {
-    padding-left: 12px;
-    line-height: 1.45;
+.company {
+    position: absolute;
+    left: 1.65in;
+    top: 0;
+    width: 4.45in;
+    text-align: center;
 }
 
-.company-box h1 {
-    margin: 0 0 4px 0;
-    font-size: 23px;
-    font-weight: 700;
+.company h1 {
+    margin: 0 0 0.10in 0;
+    font-size: 29pt;
+    font-weight: 400;
+    line-height: 1;
 }
 
-.invoice-box {
-    width: 170px;
+.company div {
+    font-size: 11.5pt;
+    line-height: 1.25;
+}
+
+.invoice-meta {
+    position: absolute;
+    right: 0.05in;
+    top: 0;
+    width: 1.35in;
     text-align: right;
 }
 
-.invoice-title {
-    font-size: 31px;
+.invoice-meta .title {
+    font-size: 22pt;
     font-weight: 800;
-    letter-spacing: 1px;
+    line-height: 1;
 }
 
-.invoice-number {
-    font-size: 22px;
-    font-weight: 700;
-    margin-top: 7px;
+.invoice-meta .number {
+    margin-top: 0.12in;
+    font-size: 15pt;
+    font-weight: 800;
 }
 
-.top-info {
-    display: table;
-    width: 100%;
-    margin-top: 12px;
-    margin-bottom: 12px;
+/* ---------- TO + DATE ---------- */
+
+.customer-row {
+    position: relative;
+    height: 1.25in;
+    margin-top: 0.05in;
 }
 
-.to-box,
-.date-box {
-    display: table-cell;
-    vertical-align: top;
+.to-label {
+    position: absolute;
+    top: 0.08in;
+    left: 0;
+    font-size: 14pt;
+    font-weight: 800;
 }
 
-.to-box {
-    width: 68%;
+.to-lines {
+    position: absolute;
+    left: 0.48in;
+    top: 0.03in;
+    width: 4.20in;
 }
 
-.date-box {
-    width: 32%;
-    text-align: right;
-}
-
-.label {
-    font-weight: bold;
-    font-size: 12px;
-}
-
-.line {
-    border-bottom: 1px solid #333;
-    height: 22px;
+.to-line {
+    height: 0.34in;
+    border-bottom: 1.6px solid #111;
     position: relative;
 }
 
-.line-value {
+.to-value {
     position: absolute;
-    left: 8px;
-    bottom: 3px;
+    left: 0.10in;
+    bottom: 0.05in;
+    font-size: 11.5pt;
 }
 
-.date-line {
+.date-area {
+    position: absolute;
+    right: 0.35in;
+    top: 0.68in;
+    font-size: 13pt;
+    font-weight: 800;
+}
+
+.date-value {
     display: inline-block;
-    min-width: 145px;
-    border-bottom: 1px solid #333;
+    width: 1.58in;
+    margin-left: 0.08in;
+    padding-bottom: 0.03in;
     text-align: center;
-    padding-bottom: 3px;
+    border-bottom: 1.6px solid #111;
+    font-size: 11.5pt;
+    font-weight: 400;
 }
 
-.job-location {
-    margin: 8px 0 14px 0;
-    display: table;
-    width: 100%;
-}
+/* ---------- JOB LOCATION ---------- */
 
-.job-label,
-.job-value {
-    display: table-cell;
+.job-row {
+    display: flex;
+    align-items: flex-end;
+    margin-top: 0.02in;
+    margin-bottom: 0.18in;
 }
 
 .job-label {
-    width: 105px;
-    font-weight: bold;
+    width: 1.63in;
+    font-size: 13pt;
+    font-weight: 800;
 }
 
-.job-value {
-    border-bottom: 1px solid #333;
-    padding: 0 6px 3px 6px;
-}
-
-table.services {
-    width: 100%;
-    border-collapse: collapse;
-    table-layout: fixed;
-    margin-top: 6px;
-}
-
-.services th {
-    font-size: 13px;
-    text-align: left;
+.job-line {
+    flex: 1;
     border-bottom: 2px solid #111;
-    padding: 6px 4px;
+    min-height: 0.24in;
+    padding: 0 0.08in 0.04in 0.08in;
+    font-size: 11.5pt;
 }
 
-.services th.amount,
-.services td.amount {
-    width: 145px;
-    text-align: right;
+/* ---------- SERVICE BOX ---------- */
+
+.service-box {
+    position: relative;
+    width: 100%;
+    height: 5.20in;
+    border: 3px solid #111;
+    border-radius: 0.22in;
+    overflow: hidden;
 }
 
-.services td {
-    height: 28px;
-    border-bottom: 1px solid #bbb;
-    padding: 4px 6px;
-    vertical-align: middle;
+.service-header {
+    height: 0.35in;
+    border-bottom: 1.3px solid #777;
+    display: flex;
+    align-items: center;
+    font-size: 12pt;
+    font-style: italic;
+    font-weight: 800;
 }
 
-.row-number {
-    display: inline-block;
-    width: 24px;
-    color: #555;
+.service-header-left {
+    width: 84%;
+    padding-left: 0.12in;
+}
+
+.service-header-right {
+    width: 16%;
+    height: 100%;
+    border-left: 1.3px solid #777;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.service-row {
+    display: flex;
+    height: 0.258in;
+    border-bottom: 1px solid #888;
+    font-size: 10.8pt;
+}
+
+.service-desc {
+    width: 84%;
+    display: flex;
+    align-items: center;
+    padding: 0 0.09in;
+}
+
+.row-num {
+    width: 0.28in;
+    flex: none;
 }
 
 .service-text {
-    display: inline;
+    flex: 1;
 }
 
-.total-row td {
-    border-top: 2px solid #111;
-    border-bottom: none;
-    font-size: 17px;
-    font-weight: bold;
-    padding-top: 9px;
+.service-amount {
+    width: 16%;
+    border-left: 1.3px solid #777;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding-right: 0.09in;
+    white-space: nowrap;
 }
 
-.bottom {
-    margin-top: 18px;
+.total-row {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 0.31in;
+    display: flex;
+    font-size: 11pt;
+    background: white;
 }
+
+.total-left {
+    width: 84%;
+}
+
+.total-right {
+    width: 16%;
+    border-left: 1.3px solid #777;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+/* ---------- THANK YOU ---------- */
+
+.thank-you {
+    position: absolute;
+    left: 1.08in;
+    top: 3.35in;
+    font-family: "Brush Script MT", "Apple Chancery", cursive;
+    font-size: 31pt;
+    font-weight: 800;
+    font-style: italic;
+    transform: rotate(-17deg);
+    z-index: 5;
+}
+
+/* ---------- CHECK NOTE ---------- */
+
+.check-note {
+    margin-top: 0.09in;
+    font-size: 9.5pt;
+    font-style: italic;
+}
+
+/* ---------- SIGNATURE ---------- */
 
 .signature-row {
-    display: table;
-    width: 100%;
-    margin-top: 18px;
+    position: absolute;
+    left: 0.38in;
+    right: 0.38in;
+    bottom: 0.34in;
+    display: flex;
+    align-items: flex-end;
 }
 
-.signature,
-.sig-date {
-    display: table-cell;
-    vertical-align: bottom;
+.signature-block {
+    width: 56%;
+    display: flex;
+    align-items: flex-end;
+    gap: 0.12in;
 }
 
-.signature {
-    width: 70%;
+.date-block {
+    width: 44%;
+    display: flex;
+    align-items: flex-end;
+    gap: 0.12in;
+    padding-left: 0.35in;
 }
 
-.sig-date {
-    width: 30%;
-}
-
-.signature-line,
-.sig-date-line {
-    display: inline-block;
-    border-bottom: 1px solid #333;
-    height: 20px;
+.signature-label {
+    font-size: 12pt;
+    font-weight: 800;
 }
 
 .signature-line {
-    width: 72%;
-}
-
-.sig-date-line {
-    width: 62%;
-}
-
-.thank-you {
-    margin-top: 25px;
-    font-family: cursive;
-    font-size: 32px;
-    font-style: italic;
-    transform: rotate(-4deg);
-    width: 220px;
-}
-
-.check-note {
-    margin-top: 20px;
-    font-size: 11px;
+    flex: 1;
+    border-bottom: 1.8px solid #111;
+    height: 0.20in;
 }
 </style>
 </head>
 
 <body>
-<div class="invoice-page">
 
-    <div class="header">
-        <div class="logo-box">
-            <img src="{{ url_for('static', filename='logo.png', _external=True) }}">
-        </div>
+<div class="invoice-sheet">
 
-        <div class="company-box">
+    <div class="invoice-header">
+
+        {% if logo_data %}
+        <img class="logo" src="{{ logo_data }}">
+        {% endif %}
+
+        <div class="company">
             <h1>Stephen Oldham</h1>
-            <div>2227 Beaumont Ave. #2</div>
-            <div>Liberty, Texas 77575</div>
+            <div>2227 Beaumont Ave. #2, Liberty, Texas, 77575</div>
             <div>stephen.oldham@me.com</div>
             <div>936-334-2944</div>
         </div>
 
-        <div class="invoice-box">
-            <div class="invoice-title">INVOICE</div>
-            <div class="invoice-number">
+        <div class="invoice-meta">
+            <div class="title">INVOICE</div>
+            <div class="number">
                 {{ invoice.invoice_number or invoice.id }}
             </div>
         </div>
+
     </div>
 
-    <div class="top-info">
-        <div class="to-box">
-            <div class="label">TO:</div>
+    <div class="customer-row">
 
-            <div class="line">
-                <span class="line-value">
+        <div class="to-label">TO:</div>
+
+        <div class="to-lines">
+
+            <div class="to-line">
+                <span class="to-value">
                     {% if customer %}
                     {{ customer.first_name }} {{ customer.last_name }}
                     {% endif %}
                 </span>
             </div>
 
-            <div class="line">
-                <span class="line-value">
+            <div class="to-line">
+                <span class="to-value">
                     {% if customer %}{{ customer.phone or "" }}{% endif %}
                 </span>
             </div>
 
-            <div class="line">
-                <span class="line-value">
+            <div class="to-line">
+                <span class="to-value">
                     {% if customer %}{{ customer.email or "" }}{% endif %}
                 </span>
             </div>
+
         </div>
 
-        <div class="date-box">
-            <span class="label">DATE:</span>
-            <span class="date-line">{{ invoice.invoice_date or "" }}</span>
+        <div class="date-area">
+            DATE:
+            <span class="date-value">
+                {{ invoice.invoice_date or "" }}
+            </span>
         </div>
+
     </div>
 
-    <div class="job-location">
+    <div class="job-row">
         <div class="job-label">JOB LOCATION:</div>
-        <div class="job-value">
-            {% if property %}{{ property.address or "" }}{% endif %}
+
+        <div class="job-line">
+            {% if property %}
+                {{ property.address or "" }}
+            {% endif %}
         </div>
     </div>
 
-    <table class="services">
-        <thead>
-            <tr>
-                <th>SERVICES</th>
-                <th class="amount">AMOUNT +/-</th>
-            </tr>
-        </thead>
+    <div class="service-box">
 
-        <tbody>
-        {% for i in range(1,19) %}
-            <tr>
-                <td>
-                    <span class="row-number">{{ i }}</span>
-                    <span class="service-text">
-                        {% if items|length >= i %}
-                            {{ items[i-1].description }}
-                        {% endif %}
-                    </span>
-                </td>
+        <div class="service-header">
+            <div class="service-header-left">
+                SERVICES
+            </div>
 
-                <td class="amount">
-                    {% if items|length >= i and (items[i-1].line_total or 0) != 0 %}
-                        ${{ "%.2f"|format(items[i-1].line_total or 0) }}
+            <div class="service-header-right">
+                AMOUNT +/-
+            </div>
+        </div>
+
+        {% for i in range(1,18) %}
+        <div class="service-row">
+
+            <div class="service-desc">
+                <span class="row-num">{{ i }}</span>
+
+                <span class="service-text">
+                    {% if items|length >= i %}
+                        {{ items[i-1].description }}
                     {% endif %}
-                </td>
-            </tr>
+                </span>
+            </div>
+
+            <div class="service-amount">
+                {% if items|length >= i and (items[i-1].line_total or 0) != 0 %}
+                    ${{ "%.2f"|format(items[i-1].line_total or 0) }}
+                {% endif %}
+            </div>
+
+        </div>
         {% endfor %}
 
-            <tr class="total-row">
-                <td></td>
-                <td class="amount">
-                    TOTAL&nbsp;&nbsp; ${{ "%.2f"|format(invoice.total or 0) }}
-                </td>
-            </tr>
-        </tbody>
-    </table>
+        <div class="thank-you">
+            Thank You!
+        </div>
 
-    <div class="bottom">
+        <div class="total-row">
+            <div class="total-left"></div>
 
-        <div class="signature-row">
-            <div class="signature">
-                <b>SIGNATURE</b>
-                <span class="signature-line"></span>
-            </div>
-
-            <div class="sig-date">
-                <b>DATE</b>
-                <span class="sig-date-line"></span>
+            <div class="total-right">
+                TOTAL&nbsp; ${{ "%.2f"|format(invoice.total or 0) }}
             </div>
         </div>
 
-        <div class="thank-you">Thank You!</div>
+    </div>
 
-        <div class="check-note">
-            * Make check payable to Stephen Oldham
+    <div class="check-note">
+        * Make check payable to Stephen Oldham
+    </div>
+
+    <div class="signature-row">
+
+        <div class="signature-block">
+            <span class="signature-label">SIGNATURE</span>
+            <span class="signature-line"></span>
+        </div>
+
+        <div class="date-block">
+            <span class="signature-label">DATE</span>
+            <span class="signature-line"></span>
         </div>
 
     </div>
 
 </div>
+
 </body>
 </html>
