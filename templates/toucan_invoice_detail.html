@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
+<div class="invoice-web-page">
 <div class="invoice-actions no-print">
   <a href="/invoice-center">← Back to Invoices</a>
   <div class="invoice-action-buttons">
@@ -17,16 +18,28 @@
     margin: 0;
 }
 
-* {
+.invoice-web-page,
+.invoice-web-page * {
     box-sizing: border-box;
 }
 
-html, body {
+.invoice-web-page {
+    width: 100%;
     margin: 0;
-    padding: 0;
-    background: #fff;
+    padding: 18px 0 40px;
+    background: #f7fbfb;
     color: #111;
     font-family: Arial, Helvetica, sans-serif;
+    border: 0 !important;
+    outline: 0 !important;
+    box-shadow: none !important;
+}
+
+.invoice-web-page::before,
+.invoice-web-page::after {
+    content: none !important;
+    display: none !important;
+    border: 0 !important;
 }
 
 .invoice-sheet {
@@ -322,11 +335,89 @@ html, body {
     height: 0.20in;
 }
 
-.invoice-actions { max-width: 8.5in; margin: 14px auto; }
-.invoice-action-buttons { display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; }
-.invoice-action-buttons button, .invoice-action-buttons a { font: 600 14px Arial,Helvetica,sans-serif; padding:9px 13px; border:1px solid #888; border-radius:7px; background:#fff; color:#111; text-decoration:none; cursor:pointer; }
-.invoice-sheet { margin: 0 auto; box-shadow: 0 0 10px rgba(0,0,0,.12); }
-@media print { .no-print { display:none !important; } .invoice-sheet { margin:0; box-shadow:none; } }
+.invoice-actions {
+    width: 8.5in;
+    max-width: calc(100% - 28px);
+    margin: 0 auto 14px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    flex-wrap: wrap;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+}
+
+.invoice-actions > a {
+    color: #168e87 !important;
+    font: 700 15px Arial, Helvetica, sans-serif !important;
+    text-decoration: none !important;
+}
+
+.invoice-action-buttons {
+    display: flex;
+    gap: 9px;
+    flex-wrap: wrap;
+    margin: 0;
+}
+
+.invoice-action-buttons button,
+.invoice-action-buttons .invoice-action-link {
+    appearance: none;
+    -webkit-appearance: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 42px;
+    padding: 10px 15px !important;
+    border: 0 !important;
+    border-radius: 12px !important;
+    background: #2bb8ae !important;
+    color: #fff !important;
+    font: 700 14px Arial, Helvetica, sans-serif !important;
+    line-height: 1 !important;
+    text-decoration: none !important;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0,0,0,.12) !important;
+}
+
+.invoice-action-buttons #shareInvoiceButton {
+    background: #f7a51a !important;
+}
+
+.invoice-action-buttons button:hover,
+.invoice-action-buttons .invoice-action-link:hover {
+    filter: brightness(.96);
+    transform: translateY(-1px);
+}
+
+.invoice-action-buttons button:disabled {
+    opacity: .65;
+    cursor: wait;
+    transform: none;
+}
+
+.invoice-web-page .invoice-sheet {
+    margin: 0 auto !important;
+    box-shadow: 0 8px 24px rgba(0,0,0,.13) !important;
+    border: 0 !important;
+    outline: 0 !important;
+}
+
+@media print {
+    .no-print { display:none !important; }
+    .invoice-web-page { padding:0 !important; background:#fff !important; }
+    .invoice-web-page .invoice-sheet { margin:0 !important; box-shadow:none !important; }
+}
+
+@media (max-width: 900px) {
+    .invoice-web-page { overflow-x: auto; }
+    .invoice-web-page .invoice-sheet { transform-origin: top left; }
+    .invoice-actions { width: auto; }
+}
+
 
 </style>
 <div class="invoice-sheet">
@@ -465,6 +556,7 @@ html, body {
 
     </div>
 
+</div>
 </div>
 <script>
 let invoiceShareFile = null;
