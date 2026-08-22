@@ -2314,28 +2314,16 @@ def invoice_pdf(invoice_id):
     from weasyprint import HTML
 
     invoice = ToucanInvoice.query.get_or_404(invoice_id)
-    items = ToucanInvoiceItem.query.filter_by(
-        invoice_id=invoice.id
-    ).all()
-
-    customer = (
-        Customer.query.get(invoice.customer_id)
-        if invoice.customer_id else None
-    )
-
-    property = (
-        Property.query.get(invoice.property_id)
-        if invoice.property_id else None
-    )
+    items = ToucanInvoiceItem.query.filter_by(invoice_id=invoice.id).all()
+    customer = Customer.query.get(invoice.customer_id) if invoice.customer_id else None
+    property = Property.query.get(invoice.property_id) if invoice.property_id else None
 
     html = render_template(
-        "toucan_invoice_detail.html",
-        user=current_user(),
+        "invoice_export.html",
         invoice=invoice,
         items=items,
         customer=customer,
-        property=property,
-        pdf_mode=True
+        property=property
     )
 
     pdf_bytes = HTML(
@@ -2362,51 +2350,32 @@ def invoice_jpg(invoice_id):
     import fitz
 
     invoice = ToucanInvoice.query.get_or_404(invoice_id)
-    items = ToucanInvoiceItem.query.filter_by(
-        invoice_id=invoice.id
-    ).all()
-
-    customer = (
-        Customer.query.get(invoice.customer_id)
-        if invoice.customer_id else None
-    )
-
-    property = (
-        Property.query.get(invoice.property_id)
-        if invoice.property_id else None
-    )
+    items = ToucanInvoiceItem.query.filter_by(invoice_id=invoice.id).all()
+    customer = Customer.query.get(invoice.customer_id) if invoice.customer_id else None
+    property = Property.query.get(invoice.property_id) if invoice.property_id else None
 
     html = render_template(
-        "toucan_invoice_detail.html",
-        user=current_user(),
+        "invoice_export.html",
         invoice=invoice,
         items=items,
         customer=customer,
-        property=property,
-        pdf_mode=True
+        property=property
     )
 
-    # Build the invoice as a real PDF first.
     pdf_bytes = HTML(
         string=html,
         base_url=request.url_root
     ).write_pdf()
 
-    # Convert the FIRST invoice page to a high-resolution JPG.
-    doc = fitz.open(
-        stream=pdf_bytes,
-        filetype="pdf"
-    )
-
+    doc = fitz.open(stream=pdf_bytes, filetype="pdf")
     page = doc[0]
 
     pix = page.get_pixmap(
-        matrix=fitz.Matrix(2.5, 2.5),
+        matrix=fitz.Matrix(2.2, 2.2),
         alpha=False
     )
 
     jpg_bytes = pix.tobytes("jpeg")
-
     doc.close()
 
     return send_file(
