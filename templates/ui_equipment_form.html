@@ -2,7 +2,12 @@
 {% block content %}
 
 <div class="card">
-  <h1>{{ title }}</h1>
+  <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+    <img src="{{ url_for('static', filename='keel-billed-toucan.jpg') }}"
+         alt="Toucan"
+         style="width:42px; height:42px; object-fit:cover; border-radius:50%;">
+    <h1 style="margin:0;">{{ title }}</h1>
+  </div>
   <p><b>Property:</b> {{ property.property_name }} — {{ property.address }}</p>
 
   <form method="POST" class="form-card">
@@ -11,6 +16,20 @@
 
     <label>Filter Size</label>
     <input name="filter_size" value="{{ equipment.filter_size if equipment else '' }}" placeholder="20x25x1">
+
+
+    <label>Refrigerant Type</label>
+    <select name="refrigerant_type">
+      <option value="">Select refrigerant</option>
+      {% set current_refrigerant = equipment.refrigerant_type if equipment and equipment.refrigerant_type else '' %}
+      <option value="R-22" {% if current_refrigerant == 'R-22' %}selected{% endif %}>R-22</option>
+      <option value="R-410A" {% if current_refrigerant == 'R-410A' %}selected{% endif %}>R-410A</option>
+      <option value="R-32" {% if current_refrigerant == 'R-32' %}selected{% endif %}>R-32</option>
+      <option value="R-454B" {% if current_refrigerant == 'R-454B' %}selected{% endif %}>R-454B</option>
+      <option value="R-407C" {% if current_refrigerant == 'R-407C' %}selected{% endif %}>R-407C</option>
+      <option value="R-404A" {% if current_refrigerant == 'R-404A' %}selected{% endif %}>R-404A</option>
+      <option value="Other" {% if current_refrigerant == 'Other' %}selected{% endif %}>Other / Unknown</option>
+    </select>
 
     <label>Heating Type</label>
     <select name="heat_type">

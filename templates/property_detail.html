@@ -114,6 +114,7 @@
       <div class="equipment-body">
 
         <p><b>Unit:</b> {{ unit.unit_name or "Equipment" }}</p>
+        <p><b>Refrigerant:</b> {{ unit.refrigerant_type or "Not recorded" }}</p>
 
         {% if unit.air_handler_model or unit.air_handler_serial %}
           <p><b>Air Handler Model:</b> {{ unit.air_handler_model or "—" }}</p>
@@ -153,6 +154,11 @@
         <a class="action-btn"
            href="/equipment/{{ unit.id }}">
            View
+        </a>
+
+        <a class="action-btn gold"
+           href="/ui/equipment/{{ unit.id }}/edit">
+           Edit Equipment
         </a>
 
         <a class="action-btn gold"

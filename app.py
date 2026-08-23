@@ -244,6 +244,7 @@ class Equipment(db.Model):
     unit_name = db.Column(db.String(120), nullable=False)
     heat_type = db.Column(db.String(50))
     filter_size = db.Column(db.String(50))
+    refrigerant_type = db.Column(db.String(50))
     model_number = db.Column(db.String(120))
     serial_number = db.Column(db.String(120))
     notes = db.Column(db.Text)
@@ -971,6 +972,9 @@ def repair_live_database():
         "property": [
             ("archived", "BOOLEAN DEFAULT 0"),
         ],
+        "equipment": [
+            ("refrigerant_type", "VARCHAR(50)"),
+        ],
         "customer": [
             ("filter_club_member", "BOOLEAN DEFAULT 0"),
             ("filter_size", "VARCHAR(100)"),
@@ -997,6 +1001,7 @@ with app.app_context():
         db.create_all()
 
         ensure_customer_filter_columns()
+        repair_live_database()
 
         admin = User.query.filter_by(email="admin@toucanhvac.local").first()
         if not admin:
@@ -1175,6 +1180,7 @@ def ui_add_equipment(property_id):
             unit_name=request.form.get("unit_name") or "HVAC Unit",
             heat_type=request.form.get("heat_type"),
             filter_size=request.form.get("filter_size"),
+            refrigerant_type=request.form.get("refrigerant_type"),
             model_number=request.form.get("condenser_model") or request.form.get("furnace_model") or request.form.get("air_handler_model"),
             serial_number=request.form.get("condenser_serial") or request.form.get("furnace_serial") or request.form.get("air_handler_serial"),
             furnace_model=request.form.get("furnace_model"),
@@ -1206,6 +1212,7 @@ def ui_edit_equipment(equipment_id):
         equipment.unit_name = request.form.get("unit_name") or "HVAC Unit"
         equipment.heat_type = request.form.get("heat_type")
         equipment.filter_size = request.form.get("filter_size")
+        equipment.refrigerant_type = request.form.get("refrigerant_type")
         equipment.furnace_model = request.form.get("furnace_model")
         equipment.furnace_serial = request.form.get("furnace_serial")
         equipment.evaporator_model = request.form.get("evaporator_model")
