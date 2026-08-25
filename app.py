@@ -455,6 +455,11 @@ def ensure_property_archived_column():
             print("property.archived column already exists or could not be added:", e)
 
 ensure_property_archived_column()
+
+@app.route("/favicon.ico")
+def favicon():
+    return app.send_static_file("favicon.ico")
+
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
